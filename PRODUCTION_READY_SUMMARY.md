@@ -40,40 +40,6 @@
 - ✅ No linting errors remaining
 - ✅ Proper Vite configuration
 
-## ✅ New Production Scaffolding (This Session)
-
-### 1. Environment & Config
-- ✅ Added `.env.example` with all required API keys and feature flags
-- ✅ Introduced `src/config.ts` for typed, centralized configuration
-
-### 2. Data & Services
-- ✅ Added lightweight HTTP client (`src/services/http.ts`) with timeout and error handling
-- ✅ Added Etherscan service stubs (`src/services/chain/etherscan.ts`) for wallet and token txs
-- ✅ Created `src/services/index.ts` as a stable import surface
-
-### 3. Data Fetching & Caching
-- ✅ Installed `@tanstack/react-query` and wrapped app with `QueryClientProvider`
-- ✅ Added `src/providers/queryClient.ts` with production-friendly defaults
-
-### 4. Observability
-- ✅ Installed `@sentry/react` and optional init (`src/observability/sentry.ts`) gated by DSN
-
-### 5. Core Dependencies Installed
-- ✅ `@tanstack/react-query`, `viem`, `axios`, `@sentry/react`
-
-## 🔧 Required Configuration (Before Going Live)
-- Set API keys in `.env` (Etherscan/BscScan/PolygonScan, Dune, TokenSniffer, Honeypot, Twitter)
-- Provide `VITE_SENTRY_DSN` to enable error monitoring in production
-- Review feature flags (`VITE_FEATURE_*`) and enable only what’s ready
-
-## 🚀 Next Steps Toward 1M Users
-- Implement backend ingestion pipelines and alert delivery (Telegram/Discord/Email/Twitter)
-- Add rate limiting, queues, and caching for external APIs (server-side)
-- Build New Token Scanner + Rugpull Detector services (use RPC, factory events, heuristics)
-- Integrate MEV/mempool monitoring and liquidity flow analytics
-- Add DAO tracker and airdrop hunter data sources
-- Harden privacy/compliance workflows (GDPR DSAR, retention policies)
-
 ## 🚀 Production Ready Features
 
 ### Error Handling

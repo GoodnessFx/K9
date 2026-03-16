@@ -76,7 +76,7 @@ const mockAnalyses: SecurityAnalysis[] = [
   }
 ];
 
-export function SecurityScanner({ searchQuery = '' }: { searchQuery?: string }) {
+export function SecurityScanner() {
   const [scanning, setScanning] = useState(false);
   const [searchAddress, setSearchAddress] = useState('');
   const [scanProgress, setScanProgress] = useState(0);
@@ -293,7 +293,7 @@ export function SecurityScanner({ searchQuery = '' }: { searchQuery?: string }) 
 
                 <div className="p-4 border rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
-                    <Eye className="h-4 w-4 text-blue-600" />
+                    <Eye className="h-4 w-4 text-purple-600" />
                     <span className="text-sm font-medium">Honeypot</span>
                   </div>
                   <span className={`text-sm font-semibold ${
@@ -343,14 +343,7 @@ export function SecurityScanner({ searchQuery = '' }: { searchQuery?: string }) 
       <div>
         <h2 className="text-xl font-semibold mb-4">Recent Security Scans</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {mockAnalyses
-            .filter((a) => {
-              const q = searchQuery.trim().toLowerCase();
-              if (!q) return true;
-              const text = `${a.contractAddress} ${a.riskLevel} ${a.findings.join(' ')}`.toLowerCase();
-              return text.includes(q);
-            })
-            .map((analysis, index) => (
+          {mockAnalyses.map((analysis, index) => (
             <motion.div
               key={analysis.contractAddress}
               initial={{ opacity: 0, y: 20 }}

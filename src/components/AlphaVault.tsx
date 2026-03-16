@@ -124,7 +124,7 @@ export function AlphaVault() {
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'defi': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-      case 'tradfi': return 'bg-slate-100 text-slate-800 dark:bg-slate-900 dark:text-slate-300';
+      case 'tradfi': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
       case 'nft': return 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300';
       case 'airdrop': return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300';
       case 'dev': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300';
@@ -146,7 +146,7 @@ export function AlphaVault() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Archive className="h-8 w-8 text-blue-600" />
+            <Archive className="h-8 w-8 text-purple-600" />
             Alpha Vault
           </h1>
           <p className="text-muted-foreground">

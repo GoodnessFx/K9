@@ -130,7 +130,7 @@ export function Settings({ open, onOpenChange }: SettingsProps) {
 
   const accentColors = [
     { name: 'Blue', value: 'blue' },
-    { name: 'Indigo', value: 'indigo' },
+    { name: 'Purple', value: 'purple' },
     { name: 'Green', value: 'green' },
     { name: 'Orange', value: 'orange' },
     { name: 'Red', value: 'red' },
@@ -196,7 +196,7 @@ export function Settings({ open, onOpenChange }: SettingsProps) {
                     className="w-full justify-start gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
                   >
                     <Zap className="h-4 w-4" />
-                    Smart Features
+                    AI Features
                   </TabsTrigger>
                   <TabsTrigger 
                     value="security" 
@@ -526,16 +526,16 @@ export function Settings({ open, onOpenChange }: SettingsProps) {
                       </div>
                     </TabsContent>
 
-                    {/* Smart Features Tab */}
+                    {/* AI Features Tab */}
                     <TabsContent value="ai" className="mt-0 space-y-6">
                       <div>
-                        <h3 className="text-lg font-medium mb-4">Hunter Settings</h3>
+                        <h3 className="text-lg font-medium mb-4">AI Hunter Settings</h3>
                         <div className="space-y-4">
                           <div className="flex items-center justify-between">
                             <div className="space-y-1">
-                              <Label>Enable Smart Features</Label>
+                              <Label>Enable AI Features</Label>
                               <p className="text-sm text-muted-foreground">
-                                Enable analysis and automatic trading signal generation
+                                Allow AI to analyze and generate trading signals
                               </p>
                             </div>
                             <Switch
@@ -547,7 +547,7 @@ export function Settings({ open, onOpenChange }: SettingsProps) {
                           {settings.aiEnabled && (
                             <>
                               <div className="space-y-2">
-                                <Label>Confidence Threshold: {settings.aiConfidenceThreshold}%</Label>
+                                <Label>AI Confidence Threshold: {settings.aiConfidenceThreshold}%</Label>
                                 <Slider
                                   value={[settings.aiConfidenceThreshold]}
                                   onValueChange={([value]) => handleSettingChange('aiConfidenceThreshold', value)}
@@ -556,10 +556,10 @@ export function Settings({ open, onOpenChange }: SettingsProps) {
                                   step={5}
                                 />
                                 <p className="text-xs text-muted-foreground">
-                                  Only show signals above this confidence level
+                                  Only show AI signals above this confidence level
                                 </p>
                               </div>
-                               
+                              
                               <div className="flex items-center justify-between">
                                 <div className="space-y-1">
                                   <Label>🐕 Show Dog Images for New Alpha</Label>

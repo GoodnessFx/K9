@@ -104,7 +104,7 @@ const trendingTopics = [
   { name: 'Foundry Testing', mentions: 38, trend: '+34%' }
 ];
 
-export function DeveloperFeed({ searchQuery = '' }: { searchQuery?: string }) {
+export function DeveloperFeed() {
   const [updates, setUpdates] = useState(mockUpdates);
   const [activeCategory, setActiveCategory] = useState('all');
 
@@ -114,22 +114,11 @@ export function DeveloperFeed({ searchQuery = '' }: { searchQuery?: string }) {
     activeCategory === 'all' || update.category === activeCategory
   );
 
-  const displayUpdates = filteredUpdates.filter(update => {
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
-    return (
-      update.title.toLowerCase().includes(q) ||
-      update.description.toLowerCase().includes(q) ||
-      update.category.toLowerCase().includes(q) ||
-      update.tags.some(tag => tag.toLowerCase().includes(q))
-    );
-  });
-
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'framework': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
       case 'tool': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-      case 'protocol': return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300';
+      case 'protocol': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
       case 'security': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
       case 'sdk': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
@@ -174,7 +163,7 @@ export function DeveloperFeed({ searchQuery = '' }: { searchQuery?: string }) {
         const newUpdate: DeveloperUpdate = {
           id: Date.now().toString(),
           title: 'New Developer Tool Released',
-          description: 'New release detected in the ecosystem...',
+          description: 'AI detected a new release in the ecosystem...',
           category: 'tool',
           impact: 'medium',
           tags: ['new-release'],
@@ -234,7 +223,7 @@ export function DeveloperFeed({ searchQuery = '' }: { searchQuery?: string }) {
 
           {/* Updates */}
           <div className="space-y-4">
-            {displayUpdates.map((update, index) => (
+            {filteredUpdates.map((update, index) => (
               <motion.div
                 key={update.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -343,11 +332,11 @@ export function DeveloperFeed({ searchQuery = '' }: { searchQuery?: string }) {
             </div>
           </Card>
 
-          {/* Developer Digest */}
+          {/* AI Developer Digest */}
           <Card className="p-4">
             <h3 className="font-semibold mb-4 flex items-center gap-2">
               <Rocket className="h-5 w-5 text-purple-600" />
-              Developer Digest
+              AI Developer Digest
             </h3>
             <div className="space-y-3">
               <div className="p-3 bg-accent/50 rounded-lg">

@@ -16,16 +16,13 @@ import {
   TrendingUp,
   Code,
   Users,
-  Archive,
-  Gift
+  Archive
 } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
   activeTab: string;
   onTabChange: (tab: string) => void;
-  searchQuery: string;
-  onSearchChange: (value: string) => void;
 }
 
 const navigationItems = [
@@ -33,12 +30,11 @@ const navigationItems = [
   { id: 'radar', label: 'Radar', icon: Zap },
   { id: 'security', label: 'Scanner', icon: Shield },
   { id: 'vault', label: 'Vault', icon: Archive },
-  { id: 'airdrops', label: 'Airdrops', icon: Gift },
   { id: 'dev', label: 'Dev Feed', icon: Code },
   { id: 'community', label: 'Community', icon: Users }
 ];
 
-export function Layout({ children, activeTab, onTabChange, searchQuery, onSearchChange }: LayoutProps) {
+export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
   const [darkMode, setDarkMode] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -49,7 +45,7 @@ export function Layout({ children, activeTab, onTabChange, searchQuery, onSearch
   };
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div className="min-h-screen bg-background">
       {/* Top Navigation */}
       <motion.nav 
         className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-sm"
@@ -70,42 +66,30 @@ export function Layout({ children, activeTab, onTabChange, searchQuery, onSearch
             </Button>
             
             <motion.div 
-              className="flex items-center gap-3"
-              whileHover={{ scale: 1.02 }}
+              className="flex items-center gap-2"
+              whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.2 }}
             >
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center shadow-lg">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  {/* Dog icon */}
-                  <path d="M17 5C17 3.9 16.1 3 15 3H9C7.9 3 7 3.9 7 5M17 5V19C17 20.1 16.1 21 15 21H9C7.9 21 7 20.1 7 19V5M17 5H7" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-                  <path d="M11 8.5C11 9.33 10.33 10 9.5 10C8.67 10 8 9.33 8 8.5C8 7.67 8.67 7 9.5 7C10.33 7 11 7.67 11 8.5Z" fill="white"/>
-                  <path d="M16 8.5C16 9.33 15.33 10 14.5 10C13.67 10 13 9.33 13 8.5C13 7.67 13.67 7 14.5 7C15.33 7 16 7.67 16 8.5Z" fill="white"/>
-                  <path d="M13.5 14.5C13.5 14.5 13 16 12 16C11 16 10.5 14.5 10.5 14.5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-                  <path d="M7 13L4 10L3 13L4 16L7 13Z" fill="white"/>
-                  <path d="M17 13L20 10L21 13L20 16L17 13Z" fill="white"/>
-                </svg>
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                <span className="text-white font-bold text-sm">T</span>
               </div>
-              <div className="flex flex-col">
-                <span className="font-bold text-xl text-foreground">
-                  TraceDog
-                </span>
-                <span className="text-xs text-muted-foreground font-medium -mt-1">
-                  Alpha Hunter
-                </span>
-              </div>
+              <span className="font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Tracedog
+              </span>
+              <Badge variant="secondary" className="ml-2 text-xs">
+                AI Alpha Hunter
+              </Badge>
             </motion.div>
           </div>
 
           {/* Search Bar */}
-          <div className="flex-none w-36 sm:w-48 md:w-72 ml-4 md:ml-8">
+          <div className="hidden md:flex flex-1 max-w-md mx-8">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Search tokens, projects, or alpha..."
                 className="w-full pl-10 pr-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring"
-                value={searchQuery}
-                onChange={(e) => onSearchChange(e.target.value)}
               />
             </div>
           </div>
@@ -158,12 +142,12 @@ export function Layout({ children, activeTab, onTabChange, searchQuery, onSearch
             ))}
           </div>
 
-          {/* Status */}
+          {/* AI Status */}
           <div className="absolute bottom-4 left-4 right-4">
             <div className="p-3 bg-accent rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium">Hunter Active</span>
+                <span className="text-sm font-medium">AI Hunter Active</span>
               </div>
               <p className="text-xs text-muted-foreground">
                 Scanning 15 sources for alpha signals...
@@ -181,7 +165,7 @@ export function Layout({ children, activeTab, onTabChange, searchQuery, onSearch
         )}
 
         {/* Main Content */}
-        <main className="flex-1 p-4 md:p-6 max-w-screen-2xl mx-auto w-full">
+        <main className="flex-1 p-4 md:p-6">
           {children}
         </main>
       </div>

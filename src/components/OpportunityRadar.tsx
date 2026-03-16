@@ -218,7 +218,7 @@ const RadarVisualization = ({ opportunities }: { opportunities: TradingOpportuni
   
   return (
     <div className="relative">
-      <svg width="300" height="300" className="border rounded-lg bg-gradient-to-br from-blue-50 to-slate-50 dark:from-gray-800 dark:to-gray-900">
+      <svg width="300" height="300" className="border rounded-lg bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900">
         {/* Radar circles */}
         {[20, 40, 60, 80, 100].map((radius) => (
           <circle
@@ -303,7 +303,7 @@ const RadarVisualization = ({ opportunities }: { opportunities: TradingOpportuni
   );
 };
 
-export function OpportunityRadar({ searchQuery = '' }: { searchQuery?: string }) {
+export function OpportunityRadar() {
   const [opportunities, setOpportunities] = useState(mockOpportunities);
   const [scanning, setScanning] = useState(true);
   const [scanProgress, setScanProgress] = useState(0);
@@ -319,7 +319,6 @@ export function OpportunityRadar({ searchQuery = '' }: { searchQuery?: string })
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   // Filter and sort opportunities
-  const query = searchQuery.trim().toLowerCase();
   const filteredOpportunities = opportunities
     .filter(opp => {
       if (filters.action !== 'all' && opp.action !== filters.action) return false;
@@ -334,11 +333,6 @@ export function OpportunityRadar({ searchQuery = '' }: { searchQuery?: string })
         if (!timeframeMap[filters.timeframe]?.some(tf => opp.timeframe.includes(tf.split('-')[0]))) {
           return false;
         }
-      }
-      if (query) {
-        const text = `${opp.token} ${opp.symbol} ${opp.source} ${opp.action} ${opp.timeframe} ${opp.riskLevel}`.toLowerCase();
-        const reasoningText = opp.reasoning?.join(' ').toLowerCase();
-        if (!text.includes(query) && !reasoningText.includes(query)) return false;
       }
       return true;
     })
@@ -436,7 +430,7 @@ export function OpportunityRadar({ searchQuery = '' }: { searchQuery?: string })
             Opportunity Radar
           </h1>
           <p className="text-muted-foreground">
-            Advanced trading intelligence with multi-dimensional analysis
+            Advanced AI-powered trading intelligence with multi-dimensional analysis
           </p>
         </div>
         
@@ -576,7 +570,7 @@ export function OpportunityRadar({ searchQuery = '' }: { searchQuery?: string })
             </div>
             <Progress value={scanProgress} className="mb-2" />
             <p className="text-sm text-muted-foreground">
-              Analyzing 1,247 tokens across 18 exchanges • Models: Technical, Sentiment, On-chain
+              Analyzing 1,247 tokens across 18 exchanges • AI models: Technical, Sentiment, On-chain
             </p>
           </Card>
 

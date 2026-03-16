@@ -21,7 +21,7 @@ import {
   Bookmark
 } from 'lucide-react';
 
-export function Dashboard({ searchQuery = '' }: { searchQuery?: string }) {
+export function Dashboard() {
   const { signals, loading, error, filters, setFilters, refreshFeed, upvoteSignal, downvoteSignal } = useAlphaFeed();
 
   const saveSignal = (signalId: string) => {
@@ -74,7 +74,7 @@ export function Dashboard({ searchQuery = '' }: { searchQuery?: string }) {
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'defi': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-      case 'tradfi': return 'bg-slate-100 text-slate-800 dark:bg-slate-900 dark:text-slate-300';
+      case 'tradfi': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
       case 'nft': return 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300';
       case 'airdrop': return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300';
       case 'dev': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300';
@@ -92,17 +92,6 @@ export function Dashboard({ searchQuery = '' }: { searchQuery?: string }) {
     if (hours < 24) return `${hours}h ago`;
     return `${Math.floor(hours / 24)}d ago`;
   };
-
-  const query = searchQuery.trim().toLowerCase();
-  const displaySignals = signals.filter((s) => {
-    if (filters.category !== 'all' && s.category !== filters.category) return false;
-    if (filters.risk !== 'all' && s.risk !== filters.risk) return false;
-    if (s.confidence < filters.minConfidence) return false;
-    if (!query) return true;
-    const text = `${s.title} ${s.description} ${s.source} ${s.category}`.toLowerCase();
-    const tagMatch = s.tags?.some((t) => t.toLowerCase().includes(query));
-    return text.includes(query) || tagMatch;
-  });
 
   return (
     <div className="space-y-6">
@@ -197,7 +186,7 @@ export function Dashboard({ searchQuery = '' }: { searchQuery?: string }) {
 
       {/* Alpha Signals */}
       <div className="space-y-4">
-        {displaySignals.map((signal, index) => (
+        {signals.map((signal, index) => (
           <motion.div
             key={signal.id}
             initial={{ opacity: 0, y: 20 }}
@@ -317,7 +306,7 @@ export function Dashboard({ searchQuery = '' }: { searchQuery?: string }) {
         ))}
       </div>
 
-      {displaySignals.length === 0 && (
+      {signals.length === 0 && (
         <Card className="p-8 text-center">
           <div className="space-y-2">
             <TrendingUp className="h-12 w-12 mx-auto text-muted-foreground" />
