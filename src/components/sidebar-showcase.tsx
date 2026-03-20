@@ -38,7 +38,7 @@
  import { Link, useLocation } from "react-router-dom"
  import { useState } from "react" 
  import { motion, AnimatePresence } from "motion/react" 
- import LogoMark from "./LogoMark"
+ import { K9Logo } from "./K9Logo"
  import { cn } from "@/lib/utils"
 
  interface SidebarItem {
@@ -63,7 +63,7 @@
            className="w-full justify-start gap-3 mb-3 font-bold text-white hover:bg-white/5 h-12 px-2" 
          > 
            <div className="flex items-center gap-3">
-             <LogoMark size={32} animated={true} />
+             <K9Logo size={32} animated={true} />
              <span className="text-lg tracking-tighter">K9 Terminal</span>
            </div>
            <ChevronsUpDown className="ml-auto h-4 w-4 opacity-30" /> 

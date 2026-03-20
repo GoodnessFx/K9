@@ -11,6 +11,7 @@ import {
   Zap,
   Code,
   Shield,
+  TrendingUp,
   Clock,
 } from 'lucide-react';
 import { Alert } from '../types';
@@ -20,9 +21,10 @@ export function NotificationCenter() {
 
   const getAlertIcon = (type: Alert['type']) => {
     switch (type) {
-      case 'opportunity': return <Zap className="h-4 w-4" />;
+      case 'opportunity': return <TrendingUp className="h-4 w-4" />;
       case 'security': return <Shield className="h-4 w-4" />;
       case 'dev': return <Code className="h-4 w-4" />;
+      case 'opportunity': return <Zap className="h-4 w-4" />;
       default: return <Bell className="h-4 w-4" />;
     }
   };

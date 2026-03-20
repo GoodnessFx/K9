@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Bookmark, Trash2, ExternalLink } from 'lucide-react';
 import { useAlphaFeed } from '../hooks/useAlphaFeed';
-import LogoMark from '../components/LogoMark';
+import { K9Logo } from '../components/K9Logo';
 
 export default function SavedPage() {
   const { signals } = useAlphaFeed();
@@ -112,7 +112,7 @@ export default function SavedPage() {
 
       {/* Background Decor */}
       <div className="fixed bottom-0 right-0 p-12 opacity-[0.02] pointer-events-none">
-        <LogoMark size={300} />
+        <K9Logo size={300} />
       </div>
     </div>
   );
