@@ -116,6 +116,47 @@
   }
 }
 
+:root { 
+  --background: #F7F7F5; 
+  --foreground: #1a1a1a; 
+  --card: #ffffff; 
+  --card-foreground: #1a1a1a; 
+  --border: rgba(0,0,0,0.08); 
+  --input: #ffffff; 
+  --primary: #1a1a1a; 
+  --primary-foreground: #ffffff; 
+  --muted: #EFEFED; 
+  --muted-foreground: #8a8a8a; 
+  --accent: #EFEFED; 
+  --accent-foreground: #1a1a1a; 
+  --radius: 0.5rem; 
+  --sidebar: #F0EFE9; 
+  --sidebar-foreground: #1a1a1a; 
+  --sidebar-border: rgba(0,0,0,0.06); 
+  --sidebar-accent: rgba(0,0,0,0.06); 
+  --sidebar-accent-foreground: #1a1a1a; 
+} 
+
+.dark { 
+  --background: #1c1c1c; 
+  --foreground: #ececec; 
+  --card: #232323; 
+  --card-foreground: #ececec; 
+  --border: rgba(255,255,255,0.08); 
+  --input: #2a2a2a; 
+  --primary: #ececec; 
+  --primary-foreground: #1a1a1a; 
+  --muted: #2a2a2a; 
+  --muted-foreground: #8a8a8a; 
+  --accent: #2a2a2a; 
+  --accent-foreground: #ececec; 
+  --sidebar: #171717; 
+  --sidebar-foreground: #ececec; 
+  --sidebar-border: rgba(255,255,255,0.06); 
+  --sidebar-accent: rgba(255,255,255,0.09); 
+  --sidebar-accent-foreground: #ececec; 
+} 
+
 /* Base mobile rules */
 * { box-sizing: border-box; }
 html { font-size: 16px; -webkit-text-size-adjust: 100%; }
@@ -383,30 +424,20 @@ button, a, [role="button"], input[type="checkbox"], input[type="radio"] {
 /* Touch targets — all interactive elements */ 
 button, a { min-height: 36px; } 
 
-/* ── K9 Claude-style layout ──────────────────────────────────────── */ 
-  
-/* Desktop: show sidebar, hide mobile bar */ 
+/* K9 layout */ 
 @media (min-width: 768px) { 
-  .k9-sidebar-desktop { display: flex !important; } 
-  .k9-mobile-bar      { display: none !important; } 
-  .k9-content         { padding: 28px 40px !important; } 
+  .k9-desk-sidebar { display: flex !important; } 
+  .k9-mob-bar { display: none !important; } 
+  .k9-content { padding: 28px 40px !important; } 
 } 
-  
-/* Mobile: hide sidebar, show top bar */ 
 @media (max-width: 767px) { 
-  .k9-sidebar-desktop { display: none !important; } 
-  .k9-mobile-bar      { display: flex !important; } 
-  .k9-content         { padding: 20px 16px !important; } 
+  .k9-desk-sidebar { display: none !important; } 
+  .k9-mob-bar { display: flex !important; } 
+  .k9-content { padding: 20px 16px !important; } 
 } 
-  
-/* Thin scrollbar on content area */ 
-.k9-content::-webkit-scrollbar       { width: 4px; } 
+.k9-content::-webkit-scrollbar { width: 4px; } 
 .k9-content::-webkit-scrollbar-track { background: transparent; } 
 .k9-content::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.2); border-radius: 10px; } 
-  
-/* Font smoothing */ 
 body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; } 
-  
-/* Nose pulse animation (defined here so it works if inline style doesn't cascade) */ 
 @keyframes km-np { 0%,100% { opacity: 0.2; } 50% { opacity: 0.7; } } 
 .km-np { animation: km-np 2s ease-in-out infinite; } 

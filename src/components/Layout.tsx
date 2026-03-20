@@ -7,34 +7,24 @@ import {
   Settings as SettingsIcon, Moon, Sun, Menu, X, 
 } from 'lucide-react'; 
  
-// ─── Inline K9 Dog Logo ────────────────────────────────────────── 
-// 3D-style Belgian Malinois SVG — warm tan coat, amber eyes, purple collar glow 
- 
 function K9Mark({ size = 26 }: { size?: number }) { 
   return ( 
     <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"> 
       <defs> 
         <radialGradient id="km-b" cx="45%" cy="35%" r="60%"> 
-          <stop offset="0%" stopColor="#D4A055"/> 
-          <stop offset="60%" stopColor="#A8732A"/> 
-          <stop offset="100%" stopColor="#6B4A18"/> 
+          <stop offset="0%" stopColor="#D4A055"/><stop offset="60%" stopColor="#A8732A"/><stop offset="100%" stopColor="#6B4A18"/> 
         </radialGradient> 
         <radialGradient id="km-d" cx="50%" cy="40%" r="55%"> 
-          <stop offset="0%" stopColor="#3A2810"/> 
-          <stop offset="100%" stopColor="#1A1008"/> 
+          <stop offset="0%" stopColor="#3A2810"/><stop offset="100%" stopColor="#1A1008"/> 
         </radialGradient> 
         <radialGradient id="km-n" cx="35%" cy="30%" r="60%"> 
-          <stop offset="0%" stopColor="#5A4A3A"/> 
-          <stop offset="100%" stopColor="#1A1008"/> 
+          <stop offset="0%" stopColor="#5A4A3A"/><stop offset="100%" stopColor="#1A1008"/> 
         </radialGradient> 
         <radialGradient id="km-e" cx="35%" cy="30%" r="70%"> 
-          <stop offset="0%" stopColor="#8B5E2A"/> 
-          <stop offset="70%" stopColor="#3A2010"/> 
-          <stop offset="100%" stopColor="#0A0605"/> 
+          <stop offset="0%" stopColor="#8B5E2A"/><stop offset="70%" stopColor="#3A2010"/><stop offset="100%" stopColor="#0A0605"/> 
         </radialGradient> 
         <radialGradient id="km-c" cx="50%" cy="50%" r="50%"> 
-          <stop offset="0%" stopColor="#A78BFA"/> 
-          <stop offset="100%" stopColor="#6D28D9"/> 
+          <stop offset="0%" stopColor="#A78BFA"/><stop offset="100%" stopColor="#6D28D9"/> 
         </radialGradient> 
         <filter id="km-s"> 
           <feDropShadow dx="0" dy="1" stdDeviation="1.5" floodColor="#00000055"/> 
@@ -67,9 +57,7 @@ function K9Mark({ size = 26 }: { size?: number }) {
   ); 
 } 
  
-// ─── Nav config ─────────────────────────────────────────────────── 
- 
-const NAV_ITEMS = [ 
+const NAV = [ 
   { id: 'dashboard', label: 'Dispatch',    Icon: Zap }, 
   { id: 'radar',     label: 'Hunt',        Icon: TrendingUp }, 
   { id: 'security',  label: 'Is It Safe?', Icon: Shield }, 
@@ -78,8 +66,6 @@ const NAV_ITEMS = [
   { id: 'community', label: 'Community',   Icon: Users }, 
 ]; 
  
-// ─── Layout ─────────────────────────────────────────────────────── 
- 
 interface LayoutProps { 
   children: React.ReactNode; 
   activeTab: string; 
@@ -87,154 +73,87 @@ interface LayoutProps {
 } 
  
 export function Layout({ children, activeTab, onTabChange }: LayoutProps) { 
-  const [dark, setDark]         = useState(true);   // dark by default 
-  const [mobileOpen, setMobile] = useState(false); 
+  const [dark, setDark]           = useState(true); 
+  const [mobileOpen, setMobile]   = useState(false); 
   const [settingsOpen, setSettings] = useState(false); 
  
-  // Apply dark class 
   useEffect(() => { 
     document.documentElement.classList.toggle('dark', dark); 
   }, [dark]); 
  
-  // Close mobile sidebar on resize to desktop 
   useEffect(() => { 
     const fn = () => { if (window.innerWidth >= 768) setMobile(false); }; 
     window.addEventListener('resize', fn); 
     return () => window.removeEventListener('resize', fn); 
   }, []); 
  
-  function navigate(id: string) { 
-    onTabChange(id); 
-    setMobile(false); 
-  } 
+  const bg       = dark ? '#1c1c1c' : '#F7F7F5'; 
+  const sbBg     = dark ? '#171717' : '#F0EFE9'; 
+  const sbBorder = dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'; 
+  const textMain = dark ? '#ececec' : '#1a1a1a'; 
+  const textMut  = dark ? '#8a8a8a' : '#666'; 
+  const hoverBg  = dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.04)'; 
+  const activeBg = dark ? 'rgba(255,255,255,0.09)' : 'rgba(0,0,0,0.06)'; 
  
-  // ── Sidebar content (shared between desktop + mobile) ────────── 
-  const SidebarContent = () => ( 
+  const Sidebar = () => ( 
     <div style={{ 
-      width: 220, 
-      minWidth: 220, 
-      height: '100vh', 
-      background: dark ? '#171717' : '#F0EFE9', 
-      borderRight: `1px solid ${dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, 
-      display: 'flex', 
-      flexDirection: 'column', 
-      overflow: 'hidden', 
-      flexShrink: 0, 
+      width: 220, minWidth: 220, height: '100vh', 
+      background: sbBg, 
+      borderRight: `1px solid ${sbBorder}`, 
+      display: 'flex', flexDirection: 'column', 
+      overflow: 'hidden', flexShrink: 0, 
     }}> 
+ 
       {/* Logo */} 
-      <div style={{ 
-        padding: '18px 14px 10px', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'space-between', 
-      }}> 
+      <div style={{ padding: '18px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}> 
         <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}> 
           <K9Mark size={26} /> 
-          <span style={{ 
-            fontSize: 16, 
-            fontWeight: 700, 
-            letterSpacing: '-0.3px', 
-            color: dark ? '#ececec' : '#1a1a1a', 
-          }}> 
-            K9 
-          </span> 
+          <span style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-0.3px', color: textMain }}>K9</span> 
         </div> 
-        {/* Mobile close button */} 
-        <button 
-          onClick={() => setMobile(false)} 
-          style={{ 
-            border: 'none', background: 'none', cursor: 'pointer', 
-            color: dark ? '#666' : '#888', padding: 4, 
-            display: mobileOpen ? 'flex' : 'none', 
-            alignItems: 'center', 
-          }} 
-        > 
-          <X style={{ width: 16, height: 16 }} /> 
-        </button> 
+        {mobileOpen && ( 
+          <button onClick={() => setMobile(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: textMut, padding: 4, display: 'flex', alignItems: 'center' }}> 
+            <X style={{ width: 16, height: 16 }} /> 
+          </button> 
+        )} 
       </div> 
  
-      {/* Navigation */} 
+      {/* Nav */} 
       <nav style={{ padding: '4px 8px', flex: 1, overflowY: 'auto' }}> 
-        {NAV_ITEMS.map(({ id, label, Icon }) => { 
+        {NAV.map(({ id, label, Icon }) => { 
           const active = activeTab === id; 
           return ( 
             <button 
               key={id} 
-              onClick={() => navigate(id)} 
+              onClick={() => { onTabChange(id); setMobile(false); }} 
               style={{ 
-                width: '100%', 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 9, 
-                padding: '7px 10px', 
-                borderRadius: 6, 
-                border: 'none', 
-                cursor: 'pointer', 
-                textAlign: 'left', 
-                marginBottom: 1, 
-                fontSize: 13, 
+                width: '100%', display: 'flex', alignItems: 'center', gap: 9, 
+                padding: '7px 10px', borderRadius: 6, border: 'none', cursor: 'pointer', 
+                textAlign: 'left', marginBottom: 1, fontSize: 13, 
                 fontWeight: active ? 500 : 400, 
-                background: active 
-                  ? dark ? 'rgba(255,255,255,0.09)' : 'rgba(0,0,0,0.06)' 
-                  : 'transparent', 
-                color: active 
-                  ? dark ? '#ececec' : '#1a1a1a' 
-                  : dark ? '#8a8a8a' : '#666', 
+                background: active ? activeBg : 'transparent', 
+                color: active ? textMain : textMut, 
                 transition: 'background 0.1s, color 0.1s', 
               }} 
-              onMouseEnter={e => { 
-                if (!active) { 
-                  (e.currentTarget as HTMLButtonElement).style.background = dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.04)'; 
-                  (e.currentTarget as HTMLButtonElement).style.color = dark ? '#ececec' : '#1a1a1a'; 
-                } 
-              }} 
-              onMouseLeave={e => { 
-                if (!active) { 
-                  (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; 
-                  (e.currentTarget as HTMLButtonElement).style.color = dark ? '#8a8a8a' : '#666'; 
-                } 
-              }} 
+              onMouseEnter={e => { if (!active) { (e.currentTarget as HTMLButtonElement).style.background = hoverBg; (e.currentTarget as HTMLButtonElement).style.color = textMain; } }} 
+              onMouseLeave={e => { if (!active) { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = textMut; } }} 
             > 
-              <Icon style={{ 
-                width: 15, height: 15, flexShrink: 0, 
-                opacity: active ? 1 : 0.65, 
-              }} /> 
-              <span style={{ 
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', 
-              }}> 
-                {label} 
-              </span> 
+              <Icon style={{ width: 15, height: 15, flexShrink: 0, opacity: active ? 1 : 0.65 }} /> 
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span> 
             </button> 
           ); 
         })} 
       </nav> 
  
       {/* Bottom */} 
-      <div style={{ 
-        padding: '10px 8px', 
-        borderTop: `1px solid ${dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, 
-      }}> 
-        {/* Live status */} 
-        <div style={{ 
-          display: 'flex', alignItems: 'center', gap: 8, 
-          padding: '6px 10px', marginBottom: 2, 
-        }}> 
-          <div style={{ 
-            width: 5, height: 5, borderRadius: '50%', 
-            background: '#22c55e', 
-            boxShadow: '0 0 5px #22c55e', 
-            flexShrink: 0, 
-          }} /> 
-          <span style={{ fontSize: 11, color: dark ? '#555' : '#888' }}> 
-            K9 is watching · sniffs every 90s 
-          </span> 
+      <div style={{ padding: '10px 8px', borderTop: `1px solid ${sbBorder}` }}> 
+        {/* Live dot */} 
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', marginBottom: 2 }}> 
+          <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 5px #22c55e', flexShrink: 0 }} /> 
+          <span style={{ fontSize: 11, color: textMut }}>K9 is watching · sniffs every 90s</span> 
         </div> 
  
         {/* Notifications */} 
-        <div style={{ 
-          padding: '2px 10px 4px', 
-          display: 'flex', alignItems: 'center', gap: 9, 
-        }}> 
+        <div style={{ padding: '0 10px 6px' }}> 
           <NotificationCenter /> 
         </div> 
  
@@ -243,34 +162,21 @@ export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
           onClick={() => setSettings(true)} 
           style={{ 
             width: '100%', display: 'flex', alignItems: 'center', gap: 9, 
-            padding: '7px 10px', borderRadius: 6, 
-            border: 'none', background: 'transparent', cursor: 'pointer', 
-            color: dark ? '#8a8a8a' : '#666', fontSize: 13, 
-            transition: 'background 0.1s', 
+            padding: '7px 10px', borderRadius: 6, border: 'none', 
+            background: 'transparent', cursor: 'pointer', 
+            color: textMut, fontSize: 13, transition: 'background 0.1s', 
           }} 
-          onMouseEnter={e => { 
-            (e.currentTarget as HTMLButtonElement).style.background = dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.04)'; 
-          }} 
-          onMouseLeave={e => { 
-            (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; 
-          }} 
+          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = hoverBg; }} 
+          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }} 
         > 
           <SettingsIcon style={{ width: 14, height: 14, flexShrink: 0, opacity: 0.65 }} /> 
           <span>Settings</span> 
-          {/* Dark mode toggle inside settings row */} 
           <button 
             onClick={e => { e.stopPropagation(); setDark(d => !d); }} 
-            style={{ 
-              marginLeft: 'auto', border: 'none', background: 'none', 
-              cursor: 'pointer', color: dark ? '#666' : '#888', 
-              display: 'flex', alignItems: 'center', padding: 2, 
-            }} 
-            title="Toggle dark/light mode" 
+            style={{ marginLeft: 'auto', border: 'none', background: 'none', cursor: 'pointer', color: textMut, display: 'flex', alignItems: 'center', padding: 2 }} 
+            title={dark ? 'Switch to light' : 'Switch to dark'} 
           > 
-            {dark 
-              ? <Sun style={{ width: 13, height: 13 }} /> 
-              : <Moon style={{ width: 13, height: 13 }} /> 
-            } 
+            {dark ? <Sun style={{ width: 13, height: 13 }} /> : <Moon style={{ width: 13, height: 13 }} />} 
           </button> 
         </button> 
       </div> 
@@ -279,95 +185,54 @@ export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
  
   return ( 
     <div style={{ 
-      display: 'flex', 
-      height: '100vh', 
-      overflow: 'hidden', 
-      background: dark ? '#1c1c1c' : '#F7F7F5', 
-      color: dark ? '#ececec' : '#1a1a1a', 
+      display: 'flex', height: '100vh', overflow: 'hidden', 
+      background: bg, color: textMain, 
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', 
-      WebkitFontSmoothing: 'antialiased', 
+      WebkitFontSmoothing: 'antialiased' as any, 
     }}> 
  
-      {/* Desktop sidebar — always visible on md+ */} 
-      <div className="k9-sidebar-desktop"> 
-        <SidebarContent /> 
+      {/* Desktop sidebar */} 
+      <div className="k9-desk-sidebar"> 
+        <Sidebar /> 
       </div> 
  
-      {/* Mobile sidebar overlay */} 
+      {/* Mobile sidebar */} 
       <AnimatePresence> 
         {mobileOpen && ( 
           <> 
-            <motion.div 
-              key="mob-backdrop" 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }} 
+            <motion.div key="bd" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
               onClick={() => setMobile(false)} 
-              style={{ 
-                position: 'fixed', inset: 0, 
-                background: 'rgba(0,0,0,0.5)', 
-                zIndex: 40, 
-              }} 
+              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 40 }} 
             /> 
-            <motion.div 
-              key="mob-sidebar" 
-              initial={{ x: -240 }} 
-              animate={{ x: 0 }} 
-              exit={{ x: -240 }} 
+            <motion.div key="sb" initial={{ x: -240 }} animate={{ x: 0 }} exit={{ x: -240 }} 
               transition={{ type: 'spring', stiffness: 320, damping: 32 }} 
               style={{ position: 'fixed', left: 0, top: 0, bottom: 0, zIndex: 50 }} 
             > 
-              <SidebarContent /> 
+              <Sidebar /> 
             </motion.div> 
           </> 
         )} 
       </AnimatePresence> 
  
-      {/* Main content area */} 
-      <div style={{ 
-        flex: 1, 
-        display: 'flex', 
-        flexDirection: 'column', 
-        overflow: 'hidden', 
-        minWidth: 0, 
-      }}> 
+      {/* Right side */} 
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}> 
  
         {/* Mobile top bar */} 
-        <div className="k9-mobile-bar" style={{ 
-          display: 'none', 
-          alignItems: 'center', 
-          padding: '11px 14px', 
-          borderBottom: `1px solid ${dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, 
-          background: dark ? '#1c1c1c' : '#F7F7F5', 
-          gap: 10, 
-          flexShrink: 0, 
+        <div className="k9-mob-bar" style={{ 
+          display: 'none', alignItems: 'center', 
+          padding: '11px 14px', gap: 10, flexShrink: 0, 
+          borderBottom: `1px solid ${sbBorder}`, 
+          background: bg, 
         }}> 
-          <button 
-            onClick={() => setMobile(true)} 
-            style={{ 
-              border: 'none', background: 'none', cursor: 'pointer', 
-              color: dark ? '#ececec' : '#1a1a1a', 
-              display: 'flex', alignItems: 'center', padding: 4, 
-            }} 
-          > 
+          <button onClick={() => setMobile(true)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: textMain, display: 'flex', alignItems: 'center', padding: 4 }}> 
             <Menu style={{ width: 19, height: 19 }} /> 
           </button> 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}> 
-            <K9Mark size={22} /> 
-            <span style={{ fontSize: 15, fontWeight: 700 }}>K9</span> 
-          </div> 
+          <K9Mark size={22} /> 
+          <span style={{ fontSize: 15, fontWeight: 700 }}>K9</span> 
         </div> 
  
-        {/* Scrollable content */} 
-        <main 
-          className="k9-content" 
-          style={{ 
-            flex: 1, 
-            overflowY: 'auto', 
-            padding: '28px 40px', 
-          }} 
-        > 
-          {/* Inner max-width container */} 
+        {/* Content */} 
+        <main className="k9-content" style={{ flex: 1, overflowY: 'auto', padding: '28px 40px' }}> 
           <div style={{ maxWidth: 820, margin: '0 auto', width: '100%' }}> 
             {children} 
           </div> 
