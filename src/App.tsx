@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import AppLayout from './components/AppLayout';
 import Dashboard from './pages/Dashboard';
 import Radar from './pages/Radar';
@@ -7,36 +7,51 @@ import ScannerPage from './pages/Scanner';
 import Telegram from './pages/Telegram';
 import Settings from './pages/Settings';
 import Saved from './pages/Saved';
-import Onboarding from './pages/Onboarding';
+import { Onboarding } from './components/Onboarding';
 import { Toaster } from 'sonner';
-import { useSignalStream } from './hooks/useSignalStream';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 export default function App() {
-  useSignalStream();
-  const [showOnboarding, setShowOnboarding] = useState(() => {
-    return !localStorage.getItem('onboarding_complete');
+  const location = useLocation();
+  const [hasOnboarded, setHasOnboarded] = useState(() => {
+    return localStorage.getItem('k9_onboarding_done') === 'true';
   });
 
   useEffect(() => {
-    if (!showOnboarding) {
-      localStorage.setItem('onboarding_complete', 'true');
+    const onboarded = localStorage.getItem('k9_onboarding_done') === 'true';
+    if (onboarded !== hasOnboarded) {
+      setHasOnboarded(onboarded);
     }
-  }, [showOnboarding]);
+  }, [location, hasOnboarded]);
+
+  const completeOnboarding = () => {
+    localStorage.setItem('k9_onboarding_done', 'true');
+    setHasOnboarded(true);
+  };
 
   return (
-    <AppLayout>
-      {showOnboarding && <Onboarding onComplete={() => setShowOnboarding(false)} />}
+    <ErrorBoundary>
+      {!hasOnboarded && <Onboarding onComplete={completeOnboarding} />}
       <Routes>
-        <Route path="/" element={<Navigate to="/feed" replace />} />
-        <Route path="/feed" element={<Dashboard />} />
-        <Route path="/hunt" element={<Radar />} />
-        <Route path="/verify" element={<ScannerPage />} />
-        <Route path="/free-money" element={<Dashboard />} />
-        <Route path="/jobs" element={<Dashboard />} />
-        <Route path="/saved" element={<Saved />} />
-        <Route path="/alerts" element={<Telegram />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="*" element={<Navigate to="/feed" replace />} />
+        <Route
+          path="/*"
+          element={
+            <AppLayout>
+              <Routes>
+                <Route path="/" element={<Navigate to="/feed" replace />} />
+                <Route path="/feed" element={<Dashboard />} />
+                <Route path="/hunt" element={<Radar />} />
+                <Route path="/verify" element={<ScannerPage />} />
+                <Route path="/free-money" element={<Dashboard />} />
+                <Route path="/jobs" element={<Dashboard />} />
+                <Route path="/saved" element={<Saved />} />
+                <Route path="/alerts" element={<Telegram />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="*" element={<Navigate to="/feed" replace />} />
+              </Routes>
+            </AppLayout>
+          }
+        />
       </Routes>
       <Toaster 
         theme="dark" 
@@ -52,6 +67,6 @@ export default function App() {
           },
         }}
       />
-    </AppLayout>
+    </ErrorBoundary>
   );
 }

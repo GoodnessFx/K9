@@ -1,6 +1,6 @@
 import type { Signal } from '../types/index.js';
 
-export const detectCorrelations = (signals: Signal[]): Signal[] => {
+export const detectCorrelations = (_signals: Signal[]): Signal[] => {
   // Watches multiple streams simultaneously and fires when they behave unexpectedly:
   // - price_leads_news — Token price pumps 15%+ with zero news coverage → insider activity
   // - github_leads_price — Commit spike in protocol repo → watch for price follow

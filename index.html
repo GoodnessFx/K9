@@ -1,32 +1,55 @@
-
-  <!DOCTYPE html>
-  <html lang="en">
-    <head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <link rel="preconnect" href="https://fonts.googleapis.com">
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-      <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-      <title>K9</title>
-    
-    <!-- Security Headers -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';" />
-    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-    <meta http-equiv="X-Frame-Options" content="DENY" />
-    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
-    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
-    
-    <!-- SEO Meta Tags -->
-    <meta name="description" content="K9 — Find opportunities before anyone else." />
-    <meta name="keywords" content="defi, tradfi, alpha, trading, ai, cryptocurrency, security, blockchain, analytics" />
-    <meta name="author" content="K9 Team" />
-    <meta property="og:title" content="K9" />
-    <meta property="og:site_name" content="K9" />
-  </head>
-
-    <body>
-      <div id="root"></div>
-      <script type="module" src="/src/main.tsx"></script>
-    </body>
-  </html>
-  
+<!doctype html> 
+<html lang="en"> 
+  <head> 
+    <meta charset="UTF-8" /> 
+    <link rel="icon" type="image/svg+xml" href="/k9-icon.svg" /> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /> 
+    <meta name="description" content="K9 — Find opportunities before anyone else. Real-time signals, free airdrops, crypto jobs, and insider alerts delivered to your phone." /> 
+    <meta name="keywords" content="crypto, airdrop, defi, polymarket, blockchain, jobs, signals, opportunities" /> 
+    <meta name="author" content="K9" /> 
+ 
+    <!-- Security headers --> 
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" /> 
+    <meta http-equiv="X-Frame-Options" content="DENY" /> 
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" /> 
+ 
+    <!-- Open Graph --> 
+    <meta property="og:type" content="website" /> 
+    <meta property="og:url" content="https://k9.app/" /> 
+    <meta property="og:title" content="K9 — Find it before anyone else" /> 
+    <meta property="og:description" content="Real-time crypto signals, free airdrops, jobs, and insider alerts. Delivered to your WhatsApp or Telegram." /> 
+ 
+    <!-- Twitter --> 
+    <meta property="twitter:card" content="summary_large_image" /> 
+    <meta property="twitter:title" content="K9 — Find it before anyone else" /> 
+    <meta property="twitter:description" content="Real-time crypto signals, free airdrops, jobs, and insider alerts." /> 
+ 
+    <title>K9 — Find it before anyone else</title> 
+ 
+    <style> 
+      body { margin: 0; padding: 0; background: #07090D; } 
+      .loading { 
+        display: flex; align-items: center; justify-content: center; 
+        height: 100vh; font-family: system-ui, sans-serif; color: #EEF2F7; 
+      } 
+      .loading-mark { 
+        font-size: 32px; font-weight: 700; letter-spacing: -1px; 
+        color: #EEF2F7; 
+      } 
+      .loading-sub { 
+        margin-top: 8px; font-size: 13px; color: #8A9BB0; 
+      } 
+    </style> 
+  </head> 
+  <body> 
+    <div id="root"> 
+      <div class="loading"> 
+        <div style="text-align:center"> 
+          <div class="loading-mark">K9</div> 
+          <div class="loading-sub">Scanning for opportunities...</div> 
+        </div> 
+      </div> 
+    </div> 
+    <script type="module" src="/src/main.tsx"></script> 
+  </body> 
+</html> 

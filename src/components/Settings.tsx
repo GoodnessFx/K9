@@ -43,17 +43,17 @@ interface SettingsProps {
 }
 
 export function Settings({ open, onOpenChange }: SettingsProps) {
-  const [settings, setSettings] = useState({
+  const defaultSettings = {
     // Profile settings
-    username: 'TraceHunter',
-    email: 'user@k9.app',
+    username: '',
+    email: '',
     avatarUrl: '',
-    bio: 'AI-powered alpha hunter focused on DeFi opportunities',
+    bio: '',
     
     // Notification settings
-    emailNotifications: true,
+    emailNotifications: false,
     pushNotifications: true,
-    soundNotifications: true,
+    soundNotifications: false,
     telegramNotifications: false,
     discordNotifications: false,
     
@@ -74,10 +74,10 @@ export function Settings({ open, onOpenChange }: SettingsProps) {
     minConfidence: 70,
     maxRiskLevel: 'medium',
     autoRefresh: true,
-    refreshInterval: 30,
+    refreshInterval: 90,
     
     // Data sources
-    enabledSources: ['TradingView', 'DefiLlama', 'CoinGecko', 'Uniswap', 'Etherscan'],
+    enabledSources: ['DexScreener', 'DefiLlama', 'CoinGecko', 'Polymarket'],
     
     // Advanced settings
     apiKey: '',
@@ -87,30 +87,37 @@ export function Settings({ open, onOpenChange }: SettingsProps) {
     // AI settings
     aiEnabled: true,
     aiConfidenceThreshold: 75,
-    aiDogImageEnabled: true // New setting for dog images
+  };
+
+  const [settings, setSettings] = useState(() => {
+    try {
+      const saved = localStorage.getItem('k9_settings');
+      if (saved) return { ...defaultSettings, ...JSON.parse(saved) };
+    } catch { /* ignore */ }
+    return defaultSettings;
   });
 
   const [activeTab, setActiveTab] = useState('general');
 
   const handleSettingChange = (key: string, value: any) => {
-    setSettings(prev => ({
+    setSettings((prev: any) => ({
       ...prev,
       [key]: value
     }));
   };
 
   const handleSave = () => {
-    toast.success('Settings saved successfully!', {
-      description: 'Your preferences have been updated.'
-    });
-    // In a real app, this would save to the backend
+    try {
+      localStorage.setItem('k9_settings', JSON.stringify(settings));
+      toast.success('Settings saved');
+    } catch {
+      toast.error('Could not save settings');
+    }
   };
 
   const handleReset = () => {
-    toast.info('Settings reset to defaults', {
-      description: 'All settings have been restored to their default values.'
-    });
-    // Reset to default values
+    setSettings(defaultSettings);
+    toast.info('Settings reset to defaults');
   };
 
   const handleExport = () => {
@@ -126,7 +133,7 @@ export function Settings({ open, onOpenChange }: SettingsProps) {
   };
 
   const availableSources = [
-    'TradingView', 'DefiLlama', 'CoinGecko', 'Uniswap', 'Etherscan',
+    'DexScreener', 'DefiLlama', 'CoinGecko', 'Polymarket', 'Uniswap', 'Etherscan',
     'Dune Analytics', 'The Graph', 'Messari', 'CryptoCompare', 'TokenTerminal'
   ];
 
@@ -145,7 +152,7 @@ export function Settings({ open, onOpenChange }: SettingsProps) {
         <DialogHeader className="p-6 pb-0">
           <DialogTitle className="flex items-center gap-2">
             <SettingsIcon className="h-5 w-5" />
-            K9 Settings
+            Settings
           </DialogTitle>
           <DialogDescription>
             Configure your preferences and customize your alpha hunting experience
@@ -539,7 +546,7 @@ export function Settings({ open, onOpenChange }: SettingsProps) {
                                   if (checked) {
                                     handleSettingChange('enabledSources', [...settings.enabledSources, source]);
                                   } else {
-                                    handleSettingChange('enabledSources', settings.enabledSources.filter(s => s !== source));
+                                    handleSettingChange('enabledSources', settings.enabledSources.filter((s: string) => s !== source));
                                   }
                                 }}
                               />

@@ -1,7 +1,7 @@
-import { Telegraf, Context } from 'telegraf';
+import { Telegraf } from 'telegraf';
 import { config } from '../config/index.js';
 import { store } from '../utils/store.js';
-import type { Signal, SignalCategory } from '../types/index.js';
+import type { Signal } from '../types/index.js';
 import logger from '../utils/logger.js';
 
 const bot = new Telegraf(config.TELEGRAM_BOT_TOKEN);
@@ -135,37 +135,30 @@ K9 · <a href="https://k9.app">Stop missing opportunities</a>
   `;
 }
 
+/*
 function getCategoryEmoji(cat: string): string {
-  switch (cat) {
-    case 'defi': return '🏦';
-    case 'token_launch': return '🚀';
-    case 'airdrop': return '🎁';
-    case 'free': return '🎁';
-    case 'jobs': return '💼';
-    case 'insider': return '🕵️';
-    case 'whale': return '🐋';
-    case 'developer': return '👨‍💻';
-    case 'security': return '🛡️';
-    case 'polymarket': return '🔮';
-    case 'tradfi': return '📉';
-    case 'nft': return '🖼️';
-    case 'macro': return '🌍';
-    case 'stablecoin': return '⚖️';
-    case 'convergence': return '🎯';
-    case 'anomaly': return '⚠️';
-    default: return '📢';
-  }
+  const emojis: Record<string, string> = {
+    defi: '🏦',
+    security: '🛡️',
+    whale: '🐋',
+    market: '📊',
+    convergence: '⚡',
+    airdrop: '🪂',
+    jobs: '💼'
+  };
+  return emojis[cat] || '📡';
 }
 
 function getRiskEmoji(risk: string): string {
-  switch (risk) {
-    case 'low': return '🟢';
-    case 'medium': return '🟡';
-    case 'high': return '🔴';
-    case 'critical': return '🔥';
-    default: return '⚪';
-  }
+  const emojis: Record<string, string> = {
+    low: '🟢',
+    medium: '🟡',
+    high: '🟠',
+    critical: '🔴'
+  };
+  return emojis[risk] || '⚪';
 }
+*/
 
 export const startBot = async () => {
   if (config.TELEGRAM_BOT_TOKEN === 'placeholder') {

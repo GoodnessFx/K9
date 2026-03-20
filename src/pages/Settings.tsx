@@ -34,6 +34,54 @@ export default function SettingsPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  const defaultSettings = { 
+    username: '', 
+    email: '', 
+    avatarUrl: '', 
+    bio: '', 
+    emailNotifications: false, 
+    pushNotifications: true, 
+    soundNotifications: false, 
+    telegramNotifications: false, 
+    discordNotifications: false, 
+    criticalAlerts: true, 
+    highAlerts: true, 
+    mediumAlerts: true, 
+    lowAlerts: false, 
+    theme: 'system', 
+    accentColor: 'blue', 
+    compactMode: false, 
+    animationsEnabled: true, 
+    riskTolerance: 'moderate', 
+    minConfidence: 70, 
+    maxRiskLevel: 'medium', 
+    autoRefresh: true, 
+    refreshInterval: 90, 
+    enabledSources: ['DexScreener', 'DefiLlama', 'CoinGecko', 'Polymarket'], 
+    apiKey: '', 
+    webhookUrl: '', 
+    customFilters: [], 
+    aiEnabled: true, 
+    aiConfidenceThreshold: 75, 
+  }; 
+
+  const [settings, setSettings] = useState(() => { 
+    try { 
+      const saved = localStorage.getItem('k9_settings'); 
+      if (saved) return { ...defaultSettings, ...JSON.parse(saved) }; 
+    } catch { /* ignore */ } 
+    return defaultSettings; 
+  }); 
+
+  const handleSave = () => { 
+    try { 
+      localStorage.setItem('k9_settings', JSON.stringify(settings)); 
+      toast.success('Settings saved'); 
+    } catch { 
+      toast.error('Could not save settings'); 
+    } 
+  };
+
   // Unified Notification Status
   const { data: status, refetch: refetchStatus } = useQuery({
     queryKey: ['notificationStatus'],
@@ -41,7 +89,7 @@ export default function SettingsPage() {
     refetchInterval: 30000,
   });
 
-  const apiKey = 'sk-ant-03-v8A9B10C11D12E13F14G15H16I17J18K19L20M21N22O23P24Q25R26S27T28U29V30W31X32Y33Z34A35B36C37D38E39F40G41H42I43J44K45L46M47N48O49P50Q51R52S53T54U55V56W57X58Y59Z60A61B62C63D64E65F66G67H68I69J70K71L72M73N74O75P76Q77R78S79T80U81V82W83X84Y85Z';
+  const apiKey = '••••••••••••••••••••••••••••••••';
 
   const handleLogout = async () => {
     if (!confirm('Log out of K9?')) return;
@@ -123,7 +171,7 @@ export default function SettingsPage() {
 
         {/* Content Panels */}
         <div className="lg:col-span-2 space-y-10">
-           {activeTab === 'profile' && <ProfileTab />}
+           {activeTab === 'profile' && <ProfileTab settings={settings} setSettings={setSettings} onSave={handleSave} />}
            {activeTab === 'notifications' && <NotificationsTab status={status} onRefresh={refetchStatus} />}
            {activeTab === 'security' && <SecurityTab showApiKey={showApiKey} setShowApiKey={setShowApiKey} apiKey={apiKey} />}
            {activeTab === 'preview' && <PreviewTab />}
@@ -134,7 +182,7 @@ export default function SettingsPage() {
   );
 }
 
-function ProfileTab() {
+function ProfileTab({ settings, setSettings, onSave }: any) {
   return (
     <Card className="p-8 space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div className="flex items-center gap-3 border-b border-border-dim pb-6">
@@ -145,7 +193,7 @@ function ProfileTab() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
          <div className="flex flex-col items-center justify-center p-6 bg-bg-surface border border-dashed border-border-dim rounded-xl">
             <div className="h-24 w-24 rounded-full bg-bg-elevated border-2 border-border-mid flex items-center justify-center mb-4 relative group cursor-pointer overflow-hidden">
-               <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=k9" alt="Avatar" className="w-full h-full" />
+               <img src={settings.avatarUrl || "https://api.dicebear.com/7.x/avataaars/svg?seed=k9"} alt="Avatar" className="w-full h-full" />
                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <span className="text-[10px] font-mono font-medium uppercase tracking-widest text-white">Change</span>
                </div>
@@ -156,13 +204,23 @@ function ProfileTab() {
          <div className="space-y-6">
             <div className="space-y-2">
                <label className="text-[10px] font-mono font-medium uppercase tracking-widest text-text-3">Username</label>
-               <input defaultValue="K9_USER" className="w-full bg-bg-surface border border-border-dim rounded px-4 py-2.5 text-sm font-sans focus:border-border-active outline-none transition-colors" />
+               <input 
+                value={settings.username} 
+                onChange={e => setSettings({...settings, username: e.target.value})}
+                placeholder="K9_USER"
+                className="w-full bg-bg-surface border border-border-dim rounded px-4 py-2.5 text-sm font-sans focus:border-border-active outline-none transition-colors" 
+               />
             </div>
             <div className="space-y-2">
                <label className="text-[10px] font-mono font-medium uppercase tracking-widest text-text-3">Email Address</label>
-               <input defaultValue="user@k9.app" className="w-full bg-bg-surface border border-border-dim rounded px-4 py-2.5 text-sm font-sans focus:border-border-active outline-none transition-colors" />
+               <input 
+                value={settings.email} 
+                onChange={e => setSettings({...settings, email: e.target.value})}
+                placeholder="user@k9.app"
+                className="w-full bg-bg-surface border border-border-dim rounded px-4 py-2.5 text-sm font-sans focus:border-border-active outline-none transition-colors" 
+               />
             </div>
-            <button className="w-full py-2.5 bg-border-active text-text-4 rounded font-sans font-medium text-sm hover:opacity-90 transition-opacity">Update Profile</button>
+            <button onClick={onSave} className="w-full py-2.5 bg-border-active text-text-4 rounded font-sans font-medium text-sm hover:opacity-90 transition-opacity">Update Profile</button>
          </div>
       </div>
     </Card>

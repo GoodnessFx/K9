@@ -1,78 +1,55 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/k9-icon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="K9 — Find opportunities before anyone else." />
-    <meta name="keywords" content="defi, tradfi, alpha, trading, ai, cryptocurrency, security, blockchain, analytics" />
-    <meta name="author" content="K9 Team" />
-    
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://k9.app/" />
-    <meta property="og:title" content="K9 - AI Alpha Hunter" />
-    <meta property="og:description" content="AI-powered alpha tracking platform that hunts trading opportunities while you sleep" />
-    
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://k9.app/" />
-    <meta property="twitter:title" content="K9 - AI Alpha Hunter" />
-    <meta property="twitter:description" content="AI-powered alpha tracking platform that hunts trading opportunities while you sleep" />
-    
-    <title>K9 - Alpha Hunter</title>
-    
-    <style>
-      /* Prevent flash of unstyled content */
-      body {
-        margin: 0;
-        padding: 0;
-        background: #ffffff;
-        color: #1a1a1a;
-      }
-      
-      .dark body {
-        background: #0a0a0a;
-        color: #ffffff;
-      }
-      
-      /* Loading animation */
-      .loading {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-        font-family: system-ui, -apple-system, sans-serif;
-      }
-      
-      .loading-spinner {
-        width: 40px;
-        height: 40px;
-        border: 4px solid #f3f4f6;
-        border-top: 4px solid #3b82f6;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
-      
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-      
-      .loading-text {
-        margin-left: 12px;
-        font-size: 16px;
-        font-weight: 500;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="root">
-      <div class="loading">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">Loading K9...</div>
-      </div>
-    </div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+<!doctype html> 
+<html lang="en"> 
+  <head> 
+    <meta charset="UTF-8" /> 
+    <link rel="icon" type="image/svg+xml" href="/k9-icon.svg" /> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /> 
+    <meta name="description" content="K9 — Find opportunities before anyone else. Real-time signals, free airdrops, crypto jobs, and insider alerts delivered to your phone." /> 
+    <meta name="keywords" content="crypto, airdrop, defi, polymarket, blockchain, jobs, signals, opportunities" /> 
+    <meta name="author" content="K9" /> 
+ 
+    <!-- Security headers --> 
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" /> 
+    <meta http-equiv="X-Frame-Options" content="DENY" /> 
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" /> 
+ 
+    <!-- Open Graph --> 
+    <meta property="og:type" content="website" /> 
+    <meta property="og:url" content="https://k9.app/" /> 
+    <meta property="og:title" content="K9 — Find it before anyone else" /> 
+    <meta property="og:description" content="Real-time crypto signals, free airdrops, jobs, and insider alerts. Delivered to your WhatsApp or Telegram." /> 
+ 
+    <!-- Twitter --> 
+    <meta property="twitter:card" content="summary_large_image" /> 
+    <meta property="twitter:title" content="K9 — Find it before anyone else" /> 
+    <meta property="twitter:description" content="Real-time crypto signals, free airdrops, jobs, and insider alerts." /> 
+ 
+    <title>K9 — Find it before anyone else</title> 
+ 
+    <style> 
+      body { margin: 0; padding: 0; background: #07090D; } 
+      .loading { 
+        display: flex; align-items: center; justify-content: center; 
+        height: 100vh; font-family: system-ui, sans-serif; color: #EEF2F7; 
+      } 
+      .loading-mark { 
+        font-size: 32px; font-weight: 700; letter-spacing: -1px; 
+        color: #EEF2F7; 
+      } 
+      .loading-sub { 
+        margin-top: 8px; font-size: 13px; color: #8A9BB0; 
+      } 
+    </style> 
+  </head> 
+  <body> 
+    <div id="root"> 
+      <div class="loading"> 
+        <div style="text-align:center"> 
+          <div class="loading-mark">K9</div> 
+          <div class="loading-sub">Scanning for opportunities...</div> 
+        </div> 
+      </div> 
+    </div> 
+    <script type="module" src="/src/main.tsx"></script> 
+  </body> 
+</html> 

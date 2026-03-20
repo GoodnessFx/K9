@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Slider } from './ui/slider';
 import { toast } from 'sonner';
 import { MarketPanel } from './MarketPanel';
+import { K9SignalCelebration } from './K9Dog';
+import { useSignalCelebration } from '../hooks/useSignalCelebration';
 import { 
   Zap, 
   RefreshCw, 
@@ -41,6 +43,7 @@ function getRiskIcon(risk: string): string {
 
 export function Dashboard() {
   const { signals, loading, filters, setFilters, refreshFeed, upvoteSignal, downvoteSignal } = useAlphaFeed();
+  const { celebrating, activeSignal, onCelebrationDone } = useSignalCelebration(signals);
 
   const saveSignal = (signalId: string) => {
     const signal = signals.find(s => s.id === signalId);
@@ -125,14 +128,14 @@ export function Dashboard() {
           <div className="flex-1 space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-xs font-mono font-bold uppercase tracking-widest text-muted-foreground">Minimum Alpha Score</span>
-              <span className="text-sm font-mono font-bold text-intel">{filters.minScore}</span>
+              <span className="text-sm font-mono font-bold text-intel">{filters.minConfidence}</span>
             </div>
             <Slider 
-              value={[filters.minScore]} 
+              value={[filters.minConfidence]} 
               min={0} 
               max={100} 
               step={5} 
-              onValueChange={([v]) => setFilters(f => ({ ...f, minScore: v }))}
+              onValueChange={([v]) => setFilters(f => ({ ...f, minConfidence: v }))}
             />
           </div>
           <div className="flex gap-4">
@@ -248,6 +251,12 @@ export function Dashboard() {
           ))}
         </AnimatePresence>
       </div>
+      {/* K9 Celebration — floats above everything */}
+      <K9SignalCelebration 
+        signal={activeSignal} 
+        active={celebrating} 
+        onDone={onCelebrationDone} 
+      />
     </div>
   );
 }

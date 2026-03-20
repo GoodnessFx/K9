@@ -1,9 +1,9 @@
-import axios from 'axios';
+// import axios from 'axios';
 import type { SecurityAnalysis } from '../types/index.js';
-import { config } from '../config/index.js';
+// import { config } from '../config/index.js';
 import logger from '../utils/logger.js';
 
-export const analyzeContract = async (address: string, chain: string): Promise<SecurityAnalysis> => {
+export const analyzeContract = async (address: string, _chain: string): Promise<SecurityAnalysis> => {
   // 1. Fetch source code from Etherscan API (mocked for now)
   // 2. Static analysis — check for patterns:
   //    - Rug pull vectors: withdrawAll, selfdestruct, unlimited mint, owner-only pause

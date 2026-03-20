@@ -21,7 +21,7 @@ import {
 const leaderboardUsers = [
   {
     id: '1',
-    username: 'AlphaHunter_Pro',
+    username: 'K9_Lead_Hunter',
     avatar: 'AH',
     alphaScore: 2847,
     reputation: 4.8,
@@ -96,7 +96,7 @@ const communityPosts = [
   {
     id: '2',
     user: leaderboardUsers[1],
-    content: 'Reminder: Always DYOR and manage risk. The best alpha hunters survive by protecting capital first, profits second. Risk management > everything else 🛡️',
+    content: 'Reminder: Always DYOR and manage risk. The best K9 hunters survive by protecting capital first, profits second. Risk management > everything else 🛡️',
     timestamp: new Date(Date.now() - 1000 * 60 * 120),
     likes: 189,
     comments: 23,
@@ -177,7 +177,7 @@ export function CommunityHub() {
             Community Hub
           </h1>
           <p className="text-muted-foreground">
-            Connect with fellow alpha hunters and share insights
+            Connect with fellow K9 hunters and share insights
           </p>
         </div>
         
@@ -507,7 +507,7 @@ export function CommunityHub() {
               <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">No one followed yet</h3>
               <p className="text-muted-foreground mb-4">
-                Follow top alpha hunters to see their latest signals and insights
+                Follow top K9 hunters to see their latest signals and insights
               </p>
               <Button onClick={() => setActiveTab('leaderboard')}>
                 Browse Leaderboard

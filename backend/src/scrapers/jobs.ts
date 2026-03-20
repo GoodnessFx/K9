@@ -9,7 +9,7 @@ export const scrapeJobs = async (): Promise<RawSignal[]> => {
     // 1. Web3.Career RSS (Simulated fetch)
     // In a production app, we would use a library like 'rss-parser'
     try {
-      const web3CareerRes = await axios.get('https://web3.career/jobs?format=rss');
+      await axios.get('https://web3.career/jobs?format=rss');
       // For now, let's mock 2-3 top jobs if we can't parse easily
       signals.push({
         id: 'job-mod-discord',

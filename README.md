@@ -114,34 +114,30 @@
  cd backend && npm install 
  ``` 
   
- ### Environment variables 
+ ## Environment Variables 
   
- **Backend:** Copy `backend/.env.example` to `backend/.env` 
- ```env 
- # Required — AI signal scoring 
- ANTHROPIC_API_KEY=sk-ant-... 
+ Copy `backend/.env.example` to `backend/.env` and fill in your values. 
   
- # WhatsApp delivery — free at greenapi.com 
- # greenapi.com → create account → create instance → scan QR → copy these 
- GREEN_API_INSTANCE_ID=1101234567 
- GREEN_API_TOKEN=your_token_here 
- MY_WHATSAPP_NUMBER=2348012345678 
- # Format: country code + number, no + or spaces 
+ ### Required 
+ | Variable | What it is | Where to get it | 
+ |----------|-----------|-----------------| 
+ | `ANTHROPIC_API_KEY` | Claude AI for signal scoring | `https://console.anthropic.com`  | 
+ | `TELEGRAM_BOT_TOKEN` | Telegram bot token | Telegram → @BotFather → /newbot | 
+ | `GREEN_API_INSTANCE_ID` | WhatsApp instance | `https://greenapi.com`  (free) | 
+ | `GREEN_API_TOKEN` | WhatsApp API token | Same as above | 
+ | `MY_WHATSAPP_NUMBER` | Your WhatsApp number | Your own number, country code first, no + | 
   
- # Telegram delivery — free 
- # Telegram → @BotFather → /newbot → copy token 
- TELEGRAM_BOT_TOKEN=your_bot_token 
-  
- # Server 
- PORT=3001 
- NODE_ENV=development 
- FRONTEND_URL=http://localhost:5173 
- ``` 
-  
- **Frontend:** Copy `.env.example` to `.env.local` 
- ```env 
- VITE_API_URL=http://localhost:3001 
- ``` 
+ ### Optional (improve signal quality) 
+ | Variable | What it is | 
+ |----------|-----------| 
+ | `GITHUB_TOKEN` | Higher GitHub API rate limits | 
+ | `ETHERSCAN_API_KEY` | Contract safety checking | 
+ | `COINGECKO_API_KEY` | Better market data rate limits | 
+
+**Frontend:** Copy `.env.example` to `.env.local`
+```env
+VITE_API_URL=http://localhost:3001
+``` 
   
  ### Run 
  ```bash 

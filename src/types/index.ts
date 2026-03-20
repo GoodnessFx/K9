@@ -1,26 +1,29 @@
+// Core types for K9 application
 export interface Signal {
   id: string;
   title: string;
-  summary: string;
-  analysis: string;
-  score: number;
+  description?: string;
+  summary?: string;
+  analysis?: string;
+  score?: number;
   confidence: number;
   risk: 'low' | 'medium' | 'high' | 'critical';
-  category: 'defi' | 'security' | 'market' | 'onchain' | 'geo' | 'convergence' | 'airdrop' | 'jobs' | 'insider' | 'prediction' | 'free' | 'nft' | 'developer';
-  sources: string[];
-  timestamp: string;
+  category: 'defi' | 'security' | 'market' | 'onchain' | 'geo' | 'convergence' | 'airdrop' | 'jobs' | 'insider' | 'prediction' | 'free' | 'nft' | 'developer' | 'dev' | 'airdrop' | 'bounty';
+  sources?: string[];
+  source?: string;
+  timestamp: string | Date;
   url?: string;
   upvotes: number;
   downvotes: number;
   isConvergence?: boolean;
   intelligenceBrief?: string;
-  description?: string;
   timeframe?: string;
-  source?: string;
   priceTarget?: string;
   stopLoss?: string;
   tokenSymbol?: string;
   tags?: string[];
+  verified?: boolean;
+  blockchain?: string;
 }
 
 export interface Alert {

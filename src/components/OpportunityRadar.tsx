@@ -94,8 +94,9 @@ const RadarVisualization = ({ signals }: { signals: ScoredSignal[] }) => {
           <circle key={radius} cx={centerX} cy={centerY} r={(radius / 100) * maxRadius} fill="none" stroke="currentColor" strokeWidth="1" opacity="0.2" />
         ))}
         {signals.slice(0, 12).map((signal, index) => {
-          const pos = getRadarPosition(signal.score, signal.risk, index);
-          const color = signal.score > 80 ? '#f59e0b' : '#3b82f6';
+          const score = signal.score ?? signal.confidence ?? 0;
+          const pos = getRadarPosition(score, signal.risk, index);
+          const color = score > 80 ? '#f59e0b' : '#3b82f6';
           
           return (
             <g key={signal.id}>
@@ -308,7 +309,7 @@ export function OpportunityRadar() {
                             <h3 className="font-black text-xl tracking-tight uppercase group-hover:text-primary transition-colors">
                               {signal.tokenSymbol || signal.title.slice(0, 15)}
                             </h3>
-                            {signal.score >= 85 && <Flame className="h-4 w-4 text-orange-500 fill-orange-500 animate-pulse" />}
+                            {(signal.score ?? signal.confidence ?? 0) >= 85 && <Flame className="h-4 w-4 text-orange-500 fill-orange-500 animate-pulse" />}
                           </div>
                           <Badge variant="secondary" className="text-[9px] font-black uppercase tracking-tighter bg-muted/50 border-none">
                             {signal.category}
@@ -405,8 +406,8 @@ export function OpportunityRadar() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
              {[
                { label: 'Total Signals (24h)', value: signals.length, icon: Activity, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-               { label: 'Avg Alpha Score', value: signals.length > 0 ? Math.round(signals.reduce((a, b) => a + b.score, 0) / signals.length) : 0, icon: Target, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
-               { label: 'High Confidence (>85)', value: signals.filter(s => s.score >= 85).length, icon: Zap, color: 'text-amber-500', bg: 'bg-amber-500/10' }
+               { label: 'Avg Alpha Score', value: signals.length > 0 ? Math.round(signals.reduce((a, b) => a + (b.score ?? b.confidence ?? 0), 0) / signals.length) : 0, icon: Target, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
+                { label: 'High Confidence (>85)', value: signals.filter(s => (s.score ?? s.confidence ?? 0) >= 85).length, icon: Zap, color: 'text-amber-500', bg: 'bg-amber-500/10' }
              ].map((stat, i) => (
                <Card key={i} className="p-8 rounded-[2.5rem] border-border/50 bg-background/50 backdrop-blur shadow-sm flex flex-col items-center justify-center text-center relative group overflow-hidden hover:-translate-y-1 transition-all">
                   <div className={`absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 transition-opacity ${stat.color}`}>

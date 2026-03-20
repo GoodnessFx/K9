@@ -18,16 +18,19 @@ export function useNotifications() {
   useEffect(() => {
     if (signals.length === 0) return;
 
-    const newAlerts: Alert[] = signals.map(s => ({
-      id: s.id,
-      type: s.category === 'security' ? 'security' : s.category === 'developer' ? 'dev' : 'opportunity',
-      title: s.title,
-      message: s.summary,
-      priority: s.score >= 90 ? 'critical' : s.score >= 80 ? 'high' : s.score >= 60 ? 'medium' : 'low',
-      read: false, // In a real app, we'd track this in a DB or localStorage
-      createdAt: new Date(s.timestamp),
-      actionUrl: s.category === 'security' ? '/verify' : s.category === 'developer' ? '/feed' : '/feed'
-    }));
+    const newAlerts: Alert[] = signals.map(s => {
+      const score = s.score ?? s.confidence ?? 0;
+      return {
+        id: s.id,
+        type: s.category === 'security' ? 'security' : s.category === 'developer' ? 'dev' : 'opportunity',
+        title: s.title,
+        message: s.summary || s.description || '',
+        priority: score >= 90 ? 'critical' : score >= 80 ? 'high' : score >= 60 ? 'medium' : 'low',
+        read: false, // In a real app, we'd track this in a DB or localStorage
+        createdAt: new Date(s.timestamp),
+        actionUrl: s.category === 'security' ? '/verify' : s.category === 'developer' ? '/feed' : '/feed'
+      };
+    });
 
     // Simple deduplication and state update
     setAlerts(prev => {

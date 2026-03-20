@@ -1,7 +1,6 @@
-import { useState } from 'react';
-import { motion } from 'motion/react';
-import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '../services/api';
+import { useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { useK9DataEngine } from '../hooks/useK9DataEngine';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
@@ -14,22 +13,31 @@ import {
   Clock,
   Users,
   Rocket,
-  TrendingUp
+  TrendingUp,
+  Terminal
 } from 'lucide-react';
-import { AlphaSignal } from '../types';
 
 export function DeveloperFeed() {
-  const [activeCategory, setActiveCategory] = useState('developer');
+  const { signals, loading } = useK9DataEngine();
+  const [activeCategory, setActiveCategory] = useState('dev');
 
-  const { data: updates = [], isLoading } = useQuery<AlphaSignal[]>({
-    queryKey: ['developer-feed', activeCategory],
-    queryFn: () => apiClient.getSignals({ category: activeCategory }),
-    refetchInterval: 60000,
-  });
+  const updates = useMemo(() => {
+    return signals.filter(s => {
+      if (activeCategory === 'dev') return s.category === 'dev' || s.tags.includes('dev');
+      if (activeCategory === 'security') return s.category === 'security' || s.tags.includes('security');
+      return true;
+    });
+  }, [signals, activeCategory]);
+
+  const hotRepos = useMemo(() => {
+    return signals
+      .filter(s => s.category === 'dev' && s.source === 'HackerNews')
+      .slice(0, 5);
+  }, [signals]);
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case 'developer': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+      case 'dev': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
       case 'security': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
     }
@@ -37,22 +45,18 @@ export function DeveloperFeed() {
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'developer': return <Code className="h-4 w-4" />;
+      case 'dev': return <Code className="h-4 w-4" />;
       case 'security': return <Shield className="h-4 w-4" />;
       default: return <Code className="h-4 w-4" />;
     }
   };
 
-  const getTimeAgo = (timestamp: string | Date) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(minutes / 60);
-    
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    return `${Math.floor(hours / 24)}d ago`;
+  const getTimeAgo = (date: Date) => {
+    const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+    if (seconds < 60) return 'just now';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    return `${Math.floor(seconds / 86400)}d ago`;
   };
 
   return (
@@ -61,8 +65,8 @@ export function DeveloperFeed() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Code className="h-8 w-8 text-blue-600" />
-            Developer Feed
+            <Terminal className="h-8 w-8 text-blue-600" />
+            Dev Intel
           </h1>
           <p className="text-muted-foreground">
             Latest tools, frameworks, and updates from the Web3 ecosystem
@@ -73,7 +77,7 @@ export function DeveloperFeed() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3 space-y-6">
           <div className="flex flex-wrap gap-2">
-            {['developer', 'security'].map((category) => (
+            {['dev', 'security'].map((category) => (
               <Button
                 key={category}
                 variant={activeCategory === category ? "default" : "outline"}
@@ -82,16 +86,21 @@ export function DeveloperFeed() {
                 className="flex items-center gap-2 font-bold uppercase"
               >
                 {getCategoryIcon(category)}
-                {category}
+                {category === 'dev' ? 'Developer' : 'Security'}
               </Button>
             ))}
           </div>
 
           <div className="space-y-4">
-            {isLoading ? (
+            {loading && signals.length === 0 ? (
                Array.from({ length: 3 }).map((_, i) => (
                 <Card key={i} className="p-6 h-40 animate-pulse bg-muted/50" />
               ))
+            ) : updates.length === 0 ? (
+              <div className="py-20 text-center text-muted-foreground">
+                <Code className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                <p>No dev signals found in the current scan.</p>
+              </div>
             ) : (
               updates.map((update, index) => (
                 <motion.div
@@ -110,7 +119,7 @@ export function DeveloperFeed() {
                               {update.category.toUpperCase()}
                             </Badge>
                             <Badge variant="outline" className="text-orange-600 border-orange-600 font-bold uppercase text-[10px]">
-                              {update.score >= 80 ? 'HIGH IMPACT' : 'MODERATE IMPACT'}
+                              {update.confidence >= 80 ? 'HIGH IMPACT' : 'MODERATE IMPACT'}
                             </Badge>
                           </div>
                           <h3 className="text-lg font-black uppercase tracking-tight">{update.title}</h3>
@@ -125,13 +134,13 @@ export function DeveloperFeed() {
                           </div>
                           <div className="flex items-center gap-1">
                             <Zap className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                            <span className="text-sm font-black">{update.score} SCORE</span>
+                            <span className="text-sm font-black">{update.confidence} SCORE</span>
                           </div>
                         </div>
                       </div>
 
                       <div className="p-3 bg-muted/30 rounded border-l-2 border-l-muted-foreground text-sm italic">
-                        {update.analysis}
+                        {update.summary}
                       </div>
 
                       <div className="flex flex-wrap gap-2">
@@ -144,7 +153,7 @@ export function DeveloperFeed() {
 
                       <div className="flex items-center gap-4 pt-2 border-t">
                         <Button variant="ghost" size="sm" className="font-bold text-xs uppercase" asChild>
-                          <a href={update.url} target="_blank" rel="noreferrer">
+                          <a href={update.actionUrl} target="_blank" rel="noreferrer">
                             <ExternalLink className="h-3 w-3 mr-1" />
                             View Source
                           </a>
@@ -165,17 +174,21 @@ export function DeveloperFeed() {
               HOT REPOS (24H)
             </h3>
             <div className="space-y-3">
-              {updates.filter(u => u.source === 'GitHub').slice(0, 5).map((repo) => (
-                <div key={repo.id} className="flex items-center justify-between">
-                  <div className="truncate pr-2">
-                    <p className="text-xs font-black truncate">{repo.title.replace('Trending Repo: ', '')}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase font-bold">GITHUB ACTIVITY</p>
+              {hotRepos.length === 0 ? (
+                <p className="text-[10px] text-muted-foreground italic uppercase">Scanning GitHub...</p>
+              ) : (
+                hotRepos.map((repo) => (
+                  <div key={repo.id} className="flex items-center justify-between">
+                    <div className="truncate pr-2">
+                      <p className="text-xs font-black truncate">{repo.title}</p>
+                      <p className="text-[10px] text-muted-foreground uppercase font-bold">{repo.source}</p>
+                    </div>
+                    <Badge variant="outline" className="text-green-600 border-green-600 text-[10px]">
+                      +{Math.floor(repo.confidence / 2)}%
+                    </Badge>
                   </div>
-                  <Badge variant="outline" className="text-green-600 border-green-600 text-[10px]">
-                    +{Math.floor(Math.random() * 50)}%
-                  </Badge>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </Card>
 
@@ -188,12 +201,9 @@ export function DeveloperFeed() {
               <div className="p-3 bg-primary/5 rounded-lg border border-primary/10">
                 <p className="text-xs font-bold mb-1 uppercase">Morning Summary</p>
                 <p className="text-[10px] text-muted-foreground">
-                  Scanning 420+ repos and news sources...
+                  Scanning 8 live sources...
                 </p>
               </div>
-              <Button size="sm" className="w-full font-bold uppercase text-xs">
-                VIEW DIGEST
-              </Button>
             </div>
           </Card>
 

@@ -33,7 +33,7 @@ export default function SavedPage() {
         </div>
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
           <div className="space-y-2">
-            <h2 className="text-4xl font-display font-semibold tracking-tight text-t1 uppercase">My Saved Opportunities</h2>
+            <h2 className="text-4xl font-display font-semibold tracking-tight text-t1 uppercase">Saved</h2>
             <p className="text-t2 max-w-xl text-sm leading-relaxed">
               Your personal list of opportunities you're watching or planning to act on.
             </p>

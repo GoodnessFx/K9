@@ -56,13 +56,13 @@ app.use('/api/broadcast', strictLimiter);
 app.use('/api', routes);
 
 // Error handler
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   logger.error('Unhandled error:', err);
   res.status(500).json({ error: 'Internal server error' });
 });
 
 // Start server
-const server = app.listen(config.PORT, () => {
+app.listen(config.PORT, () => {
   logger.info(`🚀 Server running on http://localhost:${config.PORT}`);
   logger.info(`🌍 NODE_ENV: ${config.NODE_ENV}`);
 });

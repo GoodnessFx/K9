@@ -26,12 +26,12 @@ const SIDEBAR_WIDTH_COLLAPSED = 64;
 const SIDEBAR_WIDTH_EXPANDED = 224;
 
 const NAV_ITEMS = [
-  { path: '/feed', label: 'Feed', icon: Zap },
+  { path: '/feed', label: 'On the Hunt', icon: Zap },
   { path: '/free-money', label: 'Free Money', icon: DollarSign },
   { path: '/jobs', label: 'Jobs', icon: Briefcase },
-  { path: '/hunt', label: 'Find Opportunities', icon: Crosshair },
-  { path: '/verify', label: 'Check If It\'s Safe', icon: ShieldCheck },
-  { path: '/saved', label: 'My Saved Opportunities', icon: Bookmark },
+  { path: '/hunt', label: 'Analysis', icon: Crosshair },
+  { path: '/verify', label: 'Verify', icon: ShieldCheck },
+  { path: '/saved', label: 'Saved', icon: Bookmark },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {

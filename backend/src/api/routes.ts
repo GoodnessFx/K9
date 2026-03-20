@@ -99,7 +99,7 @@ router.post('/notifications/telegram/test', async (_req, res) => {
 });
 
 // POST /api/auth/logout
-router.post('/auth/logout', (req, res) => {
+router.post('/auth/logout', (_req, res) => {
   res.clearCookie('session');
   ok(res, { message: 'Logged out' });
 });
@@ -127,7 +127,7 @@ router.get('/signals/:id/brief', async (req, res) => {
 });
 
 // GET /api/health/scrapers
-router.get('/health/scrapers', async (req, res) => {
+router.get('/health/scrapers', async (_req, res) => {
   const results: Record<string, any> = {};
 
   const scrapers = [

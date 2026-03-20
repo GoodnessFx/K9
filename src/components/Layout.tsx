@@ -1,27 +1,17 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
-import { Badge } from './ui/badge';
 import { NotificationCenter } from './NotificationCenter';
 import { Settings } from './Settings';
+import { K9LogoMark } from './K9Dog';
 import { 
-  Search, 
   Settings as SettingsIcon, 
-  Moon, 
-  Sun,
-  Menu,
-  X,
   Zap,
   Shield,
   Users,
-  MessageSquare,
-  LayoutDashboard,
-  Radar,
-  Database,
   Terminal,
-  Globe,
   Crosshair,
   Bookmark
 } from 'lucide-react';
@@ -32,14 +22,14 @@ interface LayoutProps {
   onTabChange: (tab: string) => void;
 }
 
-const navigationItems = [
-  { id: 'dashboard', label: 'Dispatch', icon: Zap, description: 'Real-time market signals' },
-  { id: 'radar', label: 'Hunt', icon: Crosshair, description: 'Visual opportunity map' },
-  { id: 'security', label: 'Verify', icon: Shield, description: 'Contract risk analysis' },
-  { id: 'vault', label: 'Saved', icon: Bookmark, description: 'Saved opportunities' },
-  { id: 'dev', label: 'Dev Intel', icon: Terminal, description: 'Technical alpha' },
-  { id: 'community', label: 'Community', icon: Users, description: 'Social sentiment' }
-];
+const navigationItems = [ 
+  { id: 'dashboard', label: 'Dispatch',  icon: Zap }, 
+  { id: 'radar',     label: 'Hunt',      icon: Crosshair }, 
+  { id: 'security',  label: 'Verify',    icon: Shield }, 
+  { id: 'vault',     label: 'Saved',     icon: Bookmark }, 
+  { id: 'dev',       label: 'Dev Intel', icon: Terminal }, 
+  { id: 'community', label: 'Community', icon: Users }, 
+]; 
 
 export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -63,17 +53,10 @@ export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
             whileHover={{ scale: 1.02 }}
             onClick={() => onTabChange('dashboard')}
           >
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-              <Zap className="h-5 w-5 text-white fill-white/20" />
-            </div>
-            <div className="flex flex-col leading-none">
-              <span className="font-black text-xl tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                K9
-              </span>
-              <span className="text-[10px] font-bold text-t3 tracking-widest uppercase">
-                Alpha Hunter
-              </span>
-            </div>
+            <div className="flex items-center gap-2"> 
+              <K9LogoMark size={28} animated={true} glowColor="#8B5CF6" /> 
+              <span className="font-bold text-xl tracking-tight">K9</span> 
+            </div> 
           </motion.div>
 
           <div className="flex items-center gap-4">
@@ -93,25 +76,37 @@ export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
       <div className="flex">
         {/* Desktop Sidebar */}
         {!isMobile && (
-          <aside className="w-64 border-r border-line-1 h-[calc(100vh-64px)] sticky top-16 p-4 space-y-2 bg-bg-surface/50">
-            {navigationItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => onTabChange(item.id)}
-                className={cn(
-                  "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all group",
-                  activeTab === item.id 
-                    ? "bg-intel text-white shadow-lg shadow-intel/20" 
-                    : "text-t2 hover:bg-bg-elevated hover:text-t1"
-                )}
-              >
-                <item.icon className={cn(
-                  "h-5 w-5",
-                  activeTab === item.id ? "text-white" : "text-t3 group-hover:text-intel"
-                )} />
-                <span className="font-medium text-sm">{item.label}</span>
-              </button>
-            ))}
+          <aside className="w-64 border-r border-line-1 h-[calc(100vh-64px)] sticky top-16 p-4 flex flex-col justify-between bg-bg-surface/50">
+            <div className="space-y-2">
+              {navigationItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => onTabChange(item.id)}
+                  className={cn(
+                    "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all group",
+                    activeTab === item.id 
+                      ? "bg-intel text-white shadow-lg shadow-intel/20" 
+                      : "text-t2 hover:bg-bg-elevated hover:text-t1"
+                  )}
+                >
+                  <item.icon className={cn(
+                    "h-5 w-5",
+                    activeTab === item.id ? "text-white" : "text-t3 group-hover:text-intel"
+                  )} />
+                  <span className="font-medium text-sm">{item.label}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="p-3 bg-accent rounded-lg"> 
+              <div className="flex items-center gap-2 mb-1"> 
+                <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" /> 
+                <span className="text-sm font-medium">Live</span> 
+              </div> 
+              <p className="text-xs text-muted-foreground"> 
+                Scanning 8 sources · Updates every 90s 
+              </p> 
+            </div>
           </aside>
         )}
 
