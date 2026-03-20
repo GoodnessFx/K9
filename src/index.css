@@ -501,3 +501,18 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   color: #435E75; 
   margin-bottom: 12px; 
 } 
+/* ── K9 layout — desktop sidebar, mobile top bar ── */
+@media (min-width: 768px) {
+  .k9-sidebar-desktop { display: flex !important; }
+  .k9-topbar-mobile   { display: none !important;  }
+  .k9-main-content    { padding: 32px 48px !important; }
+}
+@media (max-width: 767px) {
+  .k9-sidebar-desktop { display: none !important;  }
+  .k9-topbar-mobile   { display: flex !important;  }
+  .k9-main-content    { padding: 20px 16px !important; }
+}
+.k9-main-content::-webkit-scrollbar       { width: 4px; }
+.k9-main-content::-webkit-scrollbar-track { background: transparent; }
+.k9-main-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+body { -webkit-font-smoothing: antialiased; }

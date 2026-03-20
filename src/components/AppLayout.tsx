@@ -1,140 +1,202 @@
-import React, { useState, useEffect } from 'react'; 
-import { AnimatePresence, motion } from 'motion/react'; 
-import { NotificationCenter } from './NotificationCenter'; 
-import { Settings } from './Settings'; 
-import { useLocation, useNavigate } from 'react-router-dom';
-import LogoMark from './LogoMark';
+import { useState, useEffect } from 'react'; 
+import { NavLink, useLocation } from 'react-router-dom'; 
+import { motion, AnimatePresence } from 'framer-motion'; 
 import { 
-  Zap, TrendingUp, Shield, Archive, Code, Users, 
-  Settings as SettingsIcon, Moon, Sun, Menu, X, 
+  Zap, DollarSign, Briefcase, Crosshair, 
+  ShieldCheck, Bookmark, Bell, Settings as SettingsIcon, 
+  Menu, X, Sun, Moon, 
 } from 'lucide-react'; 
+import { useSignalStream } from '../hooks/useSignalStream'; 
+import LogoMark from './LogoMark'; 
  
 const NAV = [ 
-  { id: 'dashboard', label: 'Dispatch',    Icon: Zap, path: '/feed' }, 
-  { id: 'radar',     label: 'Hunt',        Icon: TrendingUp, path: '/hunt' }, 
-  { id: 'security',  label: 'Is It Safe?', Icon: Shield, path: '/verify' }, 
-  { id: 'vault',     label: 'Saved',       Icon: Archive, path: '/saved' }, 
-  { id: 'dev',       label: 'Tech News',   Icon: Code, path: '/feed' }, 
-  { id: 'community', label: 'Community',   Icon: Users, path: '/feed' }, 
+  { path: '/feed',       label: 'Dispatch',    icon: Zap }, 
+  { path: '/free-money', label: 'Free Money',  icon: DollarSign }, 
+  { path: '/jobs',       label: 'Jobs',        icon: Briefcase }, 
+  { path: '/hunt',       label: 'Hunt',        icon: Crosshair }, 
+  { path: '/verify',     label: 'Is It Safe?', icon: ShieldCheck }, 
+  { path: '/saved',      label: 'Saved',       icon: Bookmark }, 
 ]; 
  
 export default function AppLayout({ children }: { children: React.ReactNode }) { 
-  const [dark, setDark]             = useState(true); 
-  const [mobileOpen, setMobile]     = useState(false); 
-  const [settingsOpen, setSettings] = useState(false); 
-  const location = useLocation();
-  const navigate = useNavigate();
+  const [mobileOpen, setMobileOpen] = useState(false); 
+  const [dark, setDark] = useState(true); 
+  const { status } = useSignalStream(); 
+  const location = useLocation(); 
  
   useEffect(() => { 
     document.documentElement.classList.toggle('dark', dark); 
   }, [dark]); 
  
   useEffect(() => { 
-    const fn = () => { if (window.innerWidth >= 768) setMobile(false); }; 
-    window.addEventListener('resize', fn); 
-    return () => window.removeEventListener('resize', fn); 
-  }, []); 
+    setMobileOpen(false); 
+  }, [location.pathname]); 
  
-  const bg       = dark ? '#1c1c1c' : '#F7F7F5'; 
-  const sbBg     = dark ? '#171717' : '#F0EFE9'; 
-  const sbBorder = dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'; 
-  const textMain = dark ? '#ececec' : '#1a1a1a'; 
-  const textMut  = dark ? '#8a8a8a' : '#666'; 
-  const hoverBg  = dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.04)'; 
-  const activeBg = dark ? 'rgba(255,255,255,0.09)' : 'rgba(0,0,0,0.06)'; 
+  const sbBg     = '#0C1119'; 
+  const sbBorder = '1px solid #1C2B3A'; 
+  const bg       = '#070A0F'; 
  
-  const Sidebar = () => ( 
+  const Sidebar = ({ onClose }: { onClose?: () => void }) => ( 
     <div style={{ 
       width: 220, minWidth: 220, height: '100vh', 
       background: sbBg, 
-      borderRight: `1px solid ${sbBorder}`, 
+      borderRight: sbBorder, 
       display: 'flex', flexDirection: 'column', 
       overflow: 'hidden', flexShrink: 0, 
     }}> 
-      {/* Logo */}
+      {/* Logo */} 
       <div style={{ 
-        padding: '18px 16px 14px', 
+        padding: '18px 16px 12px', 
         display: 'flex', alignItems: 'center', 
-        borderBottom: `1px solid ${dark ? '#1C2B3A' : 'rgba(0,0,0,0.06)'}`, 
+        justifyContent: 'space-between', 
+        borderBottom: '1px solid #1C2B3A', 
       }}> 
-        <div style={{ position: 'relative', marginRight: 10 }}> 
-          <LogoMark size={24} animated color="#ECF1F7" /> 
-          <div style={{ 
-            position: 'absolute', bottom: -2, right: -2, 
-            width: 7, height: 7, borderRadius: '50%', 
-            background: '#00BF72', 
-            border: `2px solid ${sbBg}`, 
-          }} /> 
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}> 
+          <div style={{ position: 'relative' }}> 
+            <LogoMark size={28} animated /> 
+            <div style={{ 
+              position: 'absolute', bottom: -1, right: -1, 
+              width: 8, height: 8, borderRadius: '50%', 
+              background: status === 'live' ? '#00BF72' : '#D4A843', 
+              border: `2px solid ${sbBg}`, 
+            }} /> 
+          </div> 
+          <span style={{ 
+            fontSize: 15, fontWeight: 600, 
+            letterSpacing: '0.06em', color: '#ECF1F7', 
+            fontFamily: 'monospace', 
+          }}> 
+            K9 
+          </span> 
         </div> 
-        <span style={{ 
-          fontSize: 14, fontWeight: 700, letterSpacing: '0.12em', 
-          color: textMain, fontFamily: 'monospace', textTransform: 'uppercase', 
-        }}> 
-          K9 
-        </span> 
-        {mobileOpen && ( 
-          <button onClick={() => setMobile(false)} style={{ marginLeft: 'auto', border: 'none', background: 'none', cursor: 'pointer', color: textMut, padding: 4, display: 'flex', alignItems: 'center' }}> 
+        {onClose && ( 
+          <button onClick={onClose} style={{ 
+            border: 'none', background: 'none', cursor: 'pointer', 
+            color: '#435E75', display: 'flex', alignItems: 'center', padding: 4, 
+          }}> 
             <X style={{ width: 16, height: 16 }} /> 
           </button> 
         )} 
       </div> 
  
-      {/* Nav */}
-      <nav style={{ padding: '4px 8px', flex: 1, overflowY: 'auto' }}> 
-        {NAV.map(({ id, label, Icon, path }) => { 
+      {/* Nav items */} 
+      <nav style={{ flex: 1, padding: '8px', overflowY: 'auto' }}> 
+        {NAV.map(({ path, label, icon: Icon }) => { 
           const active = location.pathname === path; 
           return ( 
-            <button 
-              key={id} 
-              onClick={() => { navigate(path); setMobile(false); }} 
+            <NavLink 
+              key={path} 
+              to={path} 
               style={{ 
-                width: '100%', display: 'flex', alignItems: 'center', gap: 9, 
-                padding: '7px 10px', borderRadius: 6, border: 'none', cursor: 'pointer', 
-                textAlign: 'left', marginBottom: 1, fontSize: 13, 
+                display: 'flex', alignItems: 'center', gap: 10, 
+                padding: '8px 10px', borderRadius: 7, marginBottom: 2, 
+                textDecoration: 'none', fontSize: 13, 
                 fontWeight: active ? 500 : 400, 
-                background: active ? activeBg : 'transparent', 
-                color: active ? textMain : textMut, 
+                background: active ? '#111C27' : 'transparent', 
+                color: active ? '#ECF1F7' : '#87A0B8', 
                 transition: 'background 0.1s, color 0.1s', 
+                border: active ? '1px solid #1C2B3A' : '1px solid transparent', 
               }} 
-              onMouseEnter={e => { if (!active) { (e.currentTarget as HTMLButtonElement).style.background = hoverBg; (e.currentTarget as HTMLButtonElement).style.color = textMain; } }} 
-              onMouseLeave={e => { if (!active) { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = textMut; } }} 
+              onMouseEnter={e => { 
+                if (!active) { 
+                  (e.currentTarget as HTMLElement).style.background = '#111C27'; 
+                  (e.currentTarget as HTMLElement).style.color = '#ECF1F7'; 
+                } 
+              }} 
+              onMouseLeave={e => { 
+                if (!active) { 
+                  (e.currentTarget as HTMLElement).style.background = 'transparent'; 
+                  (e.currentTarget as HTMLElement).style.color = '#87A0B8'; 
+                } 
+              }} 
             > 
-              <Icon style={{ width: 15, height: 15, flexShrink: 0, opacity: active ? 1 : 0.65 }} /> 
-              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span> 
-            </button> 
+              <Icon style={{ width: 15, height: 15, flexShrink: 0, opacity: active ? 1 : 0.6 }} /> 
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}> 
+                {label} 
+              </span> 
+              {active && ( 
+                <div style={{ 
+                  marginLeft: 'auto', width: 5, height: 5, 
+                  borderRadius: '50%', background: '#3B82F6', flexShrink: 0, 
+                }} /> 
+              )} 
+            </NavLink> 
           ); 
         })} 
       </nav> 
  
-      {/* Bottom */}
-      <div style={{ padding: '10px 8px', borderTop: `1px solid ${sbBorder}` }}> 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', marginBottom: 2 }}> 
-          <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 5px #22c55e', flexShrink: 0 }} /> 
-          <span style={{ fontSize: 11, color: textMut }}>K9 is watching · sniffs every 90s</span> 
+      {/* Bottom section */} 
+      <div style={{ padding: '8px', borderTop: '1px solid #1C2B3A' }}> 
+        {/* Live status indicator */} 
+        <div style={{ 
+          display: 'flex', alignItems: 'center', gap: 8, 
+          padding: '6px 10px', marginBottom: 4, 
+        }}> 
+          <div style={{ 
+            width: 5, height: 5, borderRadius: '50%', flexShrink: 0, 
+            background: status === 'live' ? '#00BF72' : '#D4A843', 
+            boxShadow: status === 'live' ? '0 0 5px #00BF72' : 'none', 
+          }} /> 
+          <span style={{ fontSize: 11, color: '#435E75' }}> 
+            K9 is watching · sniffs every 90s 
+          </span> 
         </div> 
-        <div style={{ padding: '0 10px 4px' }}> 
-          <NotificationCenter /> 
-        </div> 
-        <button 
-          onClick={() => setSettings(true)} 
+ 
+        {/* Alerts link */} 
+        <NavLink 
+          to="/alerts" 
           style={{ 
-            width: '100%', display: 'flex', alignItems: 'center', gap: 9, 
-            padding: '7px 10px', borderRadius: 6, border: 'none', 
-            background: 'transparent', cursor: 'pointer', 
-            color: textMut, fontSize: 13, transition: 'background 0.1s', 
+            display: 'flex', alignItems: 'center', gap: 10, 
+            padding: '8px 10px', borderRadius: 7, marginBottom: 2, 
+            textDecoration: 'none', fontSize: 13, color: '#87A0B8', 
+            transition: 'background 0.1s, color 0.1s', 
+            border: '1px solid transparent', 
           }} 
-          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = hoverBg; }} 
-          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }} 
+          onMouseEnter={e => { 
+            (e.currentTarget as HTMLElement).style.background = '#111C27'; 
+            (e.currentTarget as HTMLElement).style.color = '#ECF1F7'; 
+          }} 
+          onMouseLeave={e => { 
+            (e.currentTarget as HTMLElement).style.background = 'transparent'; 
+            (e.currentTarget as HTMLElement).style.color = '#87A0B8'; 
+          }} 
         > 
-          <SettingsIcon style={{ width: 14, height: 14, flexShrink: 0, opacity: 0.65 }} /> 
+          <Bell style={{ width: 15, height: 15, opacity: 0.6 }} /> 
+          <span>Alerts</span> 
+        </NavLink> 
+ 
+        {/* Settings + dark mode toggle */} 
+        <NavLink 
+          to="/settings" 
+          style={{ 
+            display: 'flex', alignItems: 'center', gap: 10, 
+            padding: '8px 10px', borderRadius: 7, 
+            textDecoration: 'none', fontSize: 13, color: '#87A0B8', 
+            transition: 'background 0.1s, color 0.1s', 
+            border: '1px solid transparent', 
+          }} 
+          onMouseEnter={e => { 
+            (e.currentTarget as HTMLElement).style.background = '#111C27'; 
+            (e.currentTarget as HTMLElement).style.color = '#ECF1F7'; 
+          }} 
+          onMouseLeave={e => { 
+            (e.currentTarget as HTMLElement).style.background = 'transparent'; 
+            (e.currentTarget as HTMLElement).style.color = '#87A0B8'; 
+          }} 
+        > 
+          <SettingsIcon style={{ width: 15, height: 15, opacity: 0.6 }} /> 
           <span>Settings</span> 
           <button 
-            onClick={e => { e.stopPropagation(); setDark(d => !d); }} 
-            style={{ marginLeft: 'auto', border: 'none', background: 'none', cursor: 'pointer', color: textMut, display: 'flex', alignItems: 'center', padding: 2 }} 
+            onClick={e => { e.preventDefault(); e.stopPropagation(); setDark(d => !d); }} 
+            style={{ 
+              marginLeft: 'auto', border: 'none', background: 'none', 
+              cursor: 'pointer', color: '#435E75', 
+              display: 'flex', alignItems: 'center', padding: 2, 
+            }} 
           > 
             {dark ? <Sun style={{ width: 13, height: 13 }} /> : <Moon style={{ width: 13, height: 13 }} />} 
           </button> 
-        </button> 
+        </NavLink> 
       </div> 
     </div> 
   ); 
@@ -142,56 +204,110 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return ( 
     <div style={{ 
       display: 'flex', height: '100vh', overflow: 'hidden', 
-      background: bg, color: textMain, 
+      background: bg, color: '#ECF1F7', 
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', 
+      WebkitFontSmoothing: 'antialiased', 
     }}> 
-      <div className="k9-desk-sidebar"> 
+ 
+      {/* Desktop sidebar — always visible on screens 768px and wider */} 
+      <div className="k9-sidebar-desktop"> 
         <Sidebar /> 
       </div> 
  
+      {/* Mobile sidebar — slides in from left as overlay */} 
       <AnimatePresence> 
         {mobileOpen && ( 
           <> 
-            <motion.div key="bd" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
-              onClick={() => setMobile(false)} 
-              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 40 }} 
+            <motion.div 
+              key="overlay" 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              onClick={() => setMobileOpen(false)} 
+              style={{ 
+                position: 'fixed', inset: 0, 
+                background: 'rgba(7,10,15,0.85)', 
+                zIndex: 60, 
+              }} 
             /> 
-            <motion.div key="sb" initial={{ x: -240 }} animate={{ x: 0 }} exit={{ x: -240 }} 
-              transition={{ type: 'spring', stiffness: 320, damping: 32 }} 
-              style={{ position: 'fixed', left: 0, top: 0, bottom: 0, zIndex: 50 }} 
+            <motion.div 
+              key="sidebar" 
+              initial={{ x: -240 }} 
+              animate={{ x: 0 }} 
+              exit={{ x: -240 }} 
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }} 
+              style={{ position: 'fixed', left: 0, top: 0, bottom: 0, zIndex: 70 }} 
             > 
-              <Sidebar /> 
+              <Sidebar onClose={() => setMobileOpen(false)} /> 
             </motion.div> 
           </> 
         )} 
       </AnimatePresence> 
  
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}> 
-        <div className="k9-mob-bar" style={{ 
-          display: 'none', alignItems: 'center', 
-          padding: '11px 14px', gap: 10, flexShrink: 0, 
-          borderBottom: `1px solid ${sbBorder}`, background: bg, 
-        }}> 
-          <button onClick={() => setMobile(true)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: textMain, display: 'flex', alignItems: 'center', padding: 4 }}> 
-            <Menu style={{ width: 19, height: 19 }} /> 
+      {/* Right side — top bar (mobile only) + page content */} 
+      <div style={{ 
+        flex: 1, display: 'flex', flexDirection: 'column', 
+        overflow: 'hidden', minWidth: 0, 
+      }}> 
+ 
+        {/* Mobile top bar — hidden on desktop, shown on mobile */} 
+        <div 
+          className="k9-topbar-mobile" 
+          style={{ 
+            display: 'none', alignItems: 'center', gap: 12, 
+            padding: '10px 16px', flexShrink: 0, 
+            borderBottom: '1px solid #1C2B3A', 
+            background: '#0C1119', 
+          }} 
+        > 
+          <button 
+            onClick={() => setMobileOpen(true)} 
+            style={{ 
+              border: 'none', background: 'none', cursor: 'pointer', 
+              color: '#ECF1F7', display: 'flex', alignItems: 'center', padding: 4, 
+            }} 
+          > 
+            <Menu style={{ width: 20, height: 20 }} /> 
           </button> 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}> 
-            <LogoMark size={20} color={textMain} /> 
+            <LogoMark size={24} animated /> 
             <span style={{ 
-              fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', 
-              fontFamily: 'monospace', textTransform: 'uppercase', 
-            }}>K9</span> 
+              fontSize: 14, fontWeight: 600, 
+              letterSpacing: '0.06em', fontFamily: 'monospace', 
+            }}> 
+              K9 
+            </span> 
+          </div> 
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}> 
+            <div style={{ 
+              display: 'flex', alignItems: 'center', gap: 6, 
+              padding: '4px 8px', borderRadius: 5, 
+              background: '#111C27', border: '1px solid #1C2B3A', 
+            }}> 
+              <div style={{ 
+                width: 5, height: 5, borderRadius: '50%', 
+                background: status === 'live' ? '#00BF72' : '#D4A843', 
+              }} /> 
+              <span style={{ 
+                fontSize: 9, fontFamily: 'monospace', 
+                color: '#87A0B8', letterSpacing: '0.1em', 
+              }}> 
+                {(status || 'OFFLINE').toUpperCase()} 
+              </span> 
+            </div> 
           </div> 
         </div> 
  
-        <main className="k9-content" style={{ flex: 1, overflowY: 'auto', padding: '28px 40px' }}> 
-          <div style={{ maxWidth: 820, margin: '0 auto', width: '100%' }}> 
+        {/* Page content */} 
+        <main 
+          className="k9-main-content" 
+          style={{ flex: 1, overflowY: 'auto', padding: '32px 48px' }} 
+        > 
+          <div style={{ maxWidth: 900, margin: '0 auto', width: '100%' }}> 
             {children} 
           </div> 
         </main> 
       </div> 
- 
-      <Settings open={settingsOpen} onOpenChange={setSettings} /> 
     </div> 
   ); 
 } 
