@@ -441,3 +441,20 @@ button, a { min-height: 36px; }
 body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; } 
 @keyframes km-np { 0%,100% { opacity: 0.2; } 50% { opacity: 0.7; } } 
 .km-np { animation: km-np 2s ease-in-out infinite; } 
+/* ── K9 Layout ─────────────────────────────────────────────────── */
+@media (min-width: 768px) {
+  .k9-desk-sidebar { display: flex !important; }
+  .k9-mob-bar { display: none !important; }
+  .k9-content { padding: 28px 40px !important; }
+}
+@media (max-width: 767px) {
+  .k9-desk-sidebar { display: none !important; }
+  .k9-mob-bar { display: flex !important; }
+  .k9-content { padding: 20px 16px !important; }
+}
+.k9-content::-webkit-scrollbar { width: 4px; }
+.k9-content::-webkit-scrollbar-track { background: transparent; }
+.k9-content::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.2); border-radius: 10px; }
+body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+@keyframes km-np { 0%,100% { opacity: 0.2; } 50% { opacity: 0.7; } }
+.km-np { animation: km-np 2s ease-in-out infinite; }

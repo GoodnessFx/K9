@@ -73,8 +73,8 @@ interface LayoutProps {
 } 
  
 export function Layout({ children, activeTab, onTabChange }: LayoutProps) { 
-  const [dark, setDark]           = useState(true); 
-  const [mobileOpen, setMobile]   = useState(false); 
+  const [dark, setDark]             = useState(true); 
+  const [mobileOpen, setMobile]     = useState(false); 
   const [settingsOpen, setSettings] = useState(false); 
  
   useEffect(() => { 
@@ -103,8 +103,6 @@ export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
       display: 'flex', flexDirection: 'column', 
       overflow: 'hidden', flexShrink: 0, 
     }}> 
- 
-      {/* Logo */} 
       <div style={{ padding: '18px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}> 
         <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}> 
           <K9Mark size={26} /> 
@@ -117,7 +115,6 @@ export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
         )} 
       </div> 
  
-      {/* Nav */} 
       <nav style={{ padding: '4px 8px', flex: 1, overflowY: 'auto' }}> 
         {NAV.map(({ id, label, Icon }) => { 
           const active = activeTab === id; 
@@ -144,20 +141,14 @@ export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
         })} 
       </nav> 
  
-      {/* Bottom */} 
       <div style={{ padding: '10px 8px', borderTop: `1px solid ${sbBorder}` }}> 
-        {/* Live dot */} 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', marginBottom: 2 }}> 
           <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 5px #22c55e', flexShrink: 0 }} /> 
           <span style={{ fontSize: 11, color: textMut }}>K9 is watching · sniffs every 90s</span> 
         </div> 
- 
-        {/* Notifications */} 
-        <div style={{ padding: '0 10px 6px' }}> 
+        <div style={{ padding: '0 10px 4px' }}> 
           <NotificationCenter /> 
         </div> 
- 
-        {/* Settings + dark toggle */} 
         <button 
           onClick={() => setSettings(true)} 
           style={{ 
@@ -174,7 +165,6 @@ export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
           <button 
             onClick={e => { e.stopPropagation(); setDark(d => !d); }} 
             style={{ marginLeft: 'auto', border: 'none', background: 'none', cursor: 'pointer', color: textMut, display: 'flex', alignItems: 'center', padding: 2 }} 
-            title={dark ? 'Switch to light' : 'Switch to dark'} 
           > 
             {dark ? <Sun style={{ width: 13, height: 13 }} /> : <Moon style={{ width: 13, height: 13 }} />} 
           </button> 
@@ -188,15 +178,11 @@ export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
       display: 'flex', height: '100vh', overflow: 'hidden', 
       background: bg, color: textMain, 
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', 
-      WebkitFontSmoothing: 'antialiased' as any, 
     }}> 
- 
-      {/* Desktop sidebar */} 
       <div className="k9-desk-sidebar"> 
         <Sidebar /> 
       </div> 
  
-      {/* Mobile sidebar */} 
       <AnimatePresence> 
         {mobileOpen && ( 
           <> 
@@ -214,15 +200,11 @@ export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
         )} 
       </AnimatePresence> 
  
-      {/* Right side */} 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}> 
- 
-        {/* Mobile top bar */} 
         <div className="k9-mob-bar" style={{ 
           display: 'none', alignItems: 'center', 
           padding: '11px 14px', gap: 10, flexShrink: 0, 
-          borderBottom: `1px solid ${sbBorder}`, 
-          background: bg, 
+          borderBottom: `1px solid ${sbBorder}`, background: bg, 
         }}> 
           <button onClick={() => setMobile(true)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: textMain, display: 'flex', alignItems: 'center', padding: 4 }}> 
             <Menu style={{ width: 19, height: 19 }} /> 
@@ -231,7 +213,6 @@ export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
           <span style={{ fontSize: 15, fontWeight: 700 }}>K9</span> 
         </div> 
  
-        {/* Content */} 
         <main className="k9-content" style={{ flex: 1, overflowY: 'auto', padding: '28px 40px' }}> 
           <div style={{ maxWidth: 820, margin: '0 auto', width: '100%' }}> 
             {children} 
