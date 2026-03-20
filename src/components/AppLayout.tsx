@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react'; 
 import { NotificationCenter } from './NotificationCenter'; 
 import { Settings } from './Settings'; 
-import { useLocation, useNavigate, NavLink } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { 
   Zap, TrendingUp, Shield, Archive, Code, Users, 
   Settings as SettingsIcon, Moon, Sun, Menu, X, 
