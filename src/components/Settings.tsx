@@ -269,11 +269,11 @@ export function Settings({ open, onOpenChange }: SettingsProps) {
                                   <MessageSquare className="h-5 w-5 text-blue-500" />
                                   <div>
                                     <p className="font-bold">Telegram Bot Connection</p>
-                                    <p className="text-xs text-muted-foreground">Connect to @TraceDogAlphaBot for real-time alerts</p>
+                                    <p className="text-xs text-muted-foreground">Connect to @K9AlphaBot for real-time alerts</p>
                                   </div>
                                 </div>
                                 <Button size="sm" className="font-bold" asChild>
-                                  <a href="https://t.me/TraceDogAlphaBot?start=connect" target="_blank" rel="noreferrer">
+                                  <a href="https://t.me/K9AlphaBot?start=connect" target="_blank" rel="noreferrer">
                                     CONNECT BOT
                                   </a>
                                 </Button>

@@ -161,11 +161,11 @@ export function AlphaVault() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Archive className="h-8 w-8 text-purple-600" />
-            Alpha Vault
+            <Archive className="h-8 w-8 text-blue-600" />
+            My Saves
           </h1>
           <p className="text-muted-foreground">
-            Your personal collection of saved insights, strategies, and alpha signals
+            Your saved opportunities and market insights
           </p>
         </div>
         

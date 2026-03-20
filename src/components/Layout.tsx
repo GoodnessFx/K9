@@ -5,15 +5,15 @@ import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { NotificationCenter } from './NotificationCenter';
 import { Settings } from './Settings';
-import { K9LogoMark } from './K9Dog';
+import { K9Logo } from './K9Logo';
 import { 
   Settings as SettingsIcon, 
   Zap,
   Shield,
   Users,
-  Terminal,
-  Crosshair,
-  Bookmark
+  Archive,
+  TrendingUp,
+  Code
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -23,12 +23,12 @@ interface LayoutProps {
 }
 
 const navigationItems = [ 
-  { id: 'dashboard', label: 'Dispatch',  icon: Zap }, 
-  { id: 'radar',     label: 'Hunt',      icon: Crosshair }, 
-  { id: 'security',  label: 'Verify',    icon: Shield }, 
-  { id: 'vault',     label: 'Saved',     icon: Bookmark }, 
-  { id: 'dev',       label: 'Dev Intel', icon: Terminal }, 
-  { id: 'community', label: 'Community', icon: Users }, 
+  { id: 'dashboard', label: 'Dispatch',    icon: Zap }, 
+  { id: 'radar',     label: 'Hunt',        icon: TrendingUp }, 
+  { id: 'security',  label: 'Is It Safe?', icon: Shield }, 
+  { id: 'vault',     label: 'Saved',       icon: Archive }, 
+  { id: 'dev',       label: 'Tech News',   icon: Code }, 
+  { id: 'community', label: 'Community',   icon: Users }, 
 ]; 
 
 export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
@@ -53,9 +53,9 @@ export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
             whileHover={{ scale: 1.02 }}
             onClick={() => onTabChange('dashboard')}
           >
-            <div className="flex items-center gap-2"> 
-              <K9LogoMark size={28} animated={true} glowColor="#8B5CF6" /> 
-              <span className="font-bold text-xl tracking-tight">K9</span> 
+            <div className="flex items-center gap-2.5"> 
+              <K9Logo size={30} animated={true} /> 
+              <span className="font-bold text-base tracking-tight">K9</span> 
             </div> 
           </motion.div>
 
@@ -98,14 +98,12 @@ export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
               ))}
             </div>
 
-            <div className="p-3 bg-accent rounded-lg"> 
+            <div className="p-3 rounded-lg bg-muted/50"> 
               <div className="flex items-center gap-2 mb-1"> 
-                <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" /> 
-                <span className="text-sm font-medium">Live</span> 
+                <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" /> 
+                <span className="text-xs font-medium">K9 is watching</span> 
               </div> 
-              <p className="text-xs text-muted-foreground"> 
-                Scanning 8 sources · Updates every 90s 
-              </p> 
+              <p className="text-xs text-muted-foreground">Sniffing every 90 seconds</p> 
             </div>
           </aside>
         )}

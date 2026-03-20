@@ -377,7 +377,7 @@ export default function TelegramPage() {
                       </div>
                       <div className="flex-1">
                          <p className="text-[10px] font-mono font-medium text-s-low uppercase tracking-widest mb-1">Active Bot</p>
-                         <h4 className="text-lg font-sans font-medium tracking-tight text-text-1 uppercase">@{status?.botUsername || 'TraceDogBot'}</h4>
+                         <h4 className="text-lg font-sans font-medium tracking-tight text-text-1 uppercase">@{status?.botUsername || 'K9Bot'}</h4>
                       </div>
                       <button 
                         onClick={() => testMutation.mutate()}

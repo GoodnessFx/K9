@@ -1,42 +1,10 @@
-# Dependencies — never commit these 
-node_modules/ 
-backend/node_modules/ 
- 
-# Build output 
-dist/ 
-build/ 
- 
-# Environment files — NEVER commit — contain your API keys 
-.env 
-.env.local 
-.env.development 
-.env.production 
-backend/.env 
-**/.env 
- 
-# OS files 
-.DS_Store 
-.DS_Store? 
-._* 
-Thumbs.db 
- 
-# Editor 
-.vscode/settings.json 
-.idea/ 
-*.swp 
-*.swo 
- 
-# Logs 
-logs/ 
-*.log 
-npm-debug.log* 
- 
-# Testing 
-coverage/ 
-.nyc_output/ 
- 
-# TypeScript 
-*.tsbuildinfo 
- 
-# Misc 
-.cache/ 
+node_modules/
+dist/
+.env
+.env.local
+.env.production
+backend/.env
+.DS_Store
+*.log
+coverage/
+*.tsbuildinfo

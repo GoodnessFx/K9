@@ -1,262 +1,590 @@
-import { motion, AnimatePresence } from 'motion/react';
-import { useAlphaFeed } from '../hooks/useAlphaFeed';
-import { Card } from './ui/card';
-import { Badge } from './ui/badge';
-import { Button } from './ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Slider } from './ui/slider';
-import { toast } from 'sonner';
-import { MarketPanel } from './MarketPanel';
-import { K9SignalCelebration } from './K9Dog';
-import { useSignalCelebration } from '../hooks/useSignalCelebration';
+import { useState } from 'react'; 
+import { motion, AnimatePresence } from 'motion/react'; 
+import { useAlphaFeed } from '../hooks/useAlphaFeed'; 
+import { toast } from 'sonner'; 
 import { 
-  Zap, 
-  RefreshCw, 
-  Target, 
-  Shield, 
-  ExternalLink, 
-  Bookmark, 
-  ThumbsUp,
-  ThumbsDown,
-  Share2,
-  Info,
-  Sparkles,
-  Activity,
-  Clock
-} from 'lucide-react';
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-function cn(...inputs: any[]) {
-  return twMerge(clsx(inputs));
-}
-
-function getRiskIcon(risk: string): string {
-  const icons: Record<string, string> = {
-    low:      '🟢',
-    medium:   '🟡',
-    high:     '🟠',
-    critical: '🔴',
-  };
-  return icons[risk] ?? '⚪';
-}
-
-export function Dashboard() {
-  const { signals, loading, filters, setFilters, refreshFeed, upvoteSignal, downvoteSignal } = useAlphaFeed();
-  const { celebrating, activeSignal, onCelebrationDone } = useSignalCelebration(signals);
-
-  const saveSignal = (signalId: string) => {
-    const signal = signals.find(s => s.id === signalId);
-    if (signal) {
-      toast.success('Alpha saved to vault!', {
-        description: (
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-white">
-              <Bookmark className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="font-bold text-sm">{signal.title}</p>
-              <p className="text-xs opacity-80">Added to your Alpha Vault</p>
-            </div>
-          </div>
-        ),
-        duration: 4000,
-      });
-    }
-  };
-
-  const getRiskColor = (risk: string) => {
-    switch (risk) {
-      case 'low': return 'text-green-500 bg-green-500/10 border-green-500/20';
-      case 'medium': return 'text-yellow-500 bg-yellow-500/10 border-yellow-500/20';
-      case 'high': return 'text-red-500 bg-red-500/10 border-red-500/20';
-      case 'critical': return 'text-purple-500 bg-purple-500/10 border-purple-500/20';
-      default: return 'text-gray-500 bg-gray-500/10 border-gray-500/20';
-    }
-  };
-
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'defi': return <Activity className="h-3 w-3" />;
-      case 'token_launch': return <Sparkles className="h-3 w-3" />;
-      case 'whale': return <Target className="h-3 w-3" />;
-      case 'security': return <Shield className="h-3 w-3" />;
-      case 'convergence': return <Zap className="h-3 w-3" />;
-      default: return <Info className="h-3 w-3" />;
-    }
-  };
-
-  const getTimeAgo = (timestamp: string | Date) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(minutes / 60);
-    
-    if (minutes < 1) return 'Just now';
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    return `${Math.floor(hours / 24)}d ago`;
-  };
-
-  return (
-    <div className="space-y-8 pb-20">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2 uppercase tracking-tight">
-            <Activity className="h-8 w-8 text-intel" />
-            Alpha Terminal
-          </h1>
-          <p className="text-muted-foreground">Real-time intelligence from the edge of the network.</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => refreshFeed()} disabled={loading} className="gap-2">
-            <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
-            Refresh Feed
-          </Button>
-          <Button size="sm" className="gap-2">
-            <Zap className="h-4 w-4 fill-white" />
-            Live Stream
-          </Button>
-        </div>
-      </div>
-
-      <MarketPanel />
-
-      <Card className="p-4 border-intel/20 bg-intel/5">
-        <div className="flex flex-col md:flex-row md:items-center gap-6">
-          <div className="flex-1 space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-xs font-mono font-bold uppercase tracking-widest text-muted-foreground">Minimum Alpha Score</span>
-              <span className="text-sm font-mono font-bold text-intel">{filters.minConfidence}</span>
-            </div>
-            <Slider 
-              value={[filters.minConfidence]} 
-              min={0} 
-              max={100} 
-              step={5} 
-              onValueChange={([v]) => setFilters(f => ({ ...f, minConfidence: v }))}
-            />
-          </div>
-          <div className="flex gap-4">
-            <div className="space-y-1.5 min-w-[140px]">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-muted-foreground ml-1">Category</span>
-              <Select value={filters.category} onValueChange={(v) => setFilters(f => ({ ...f, category: v }))}>
-                <SelectTrigger className="h-9 bg-background">
-                  <SelectValue placeholder="All Categories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="defi">DeFi Alpha</SelectItem>
-                  <SelectItem value="token_launch">Token Launches</SelectItem>
-                  <SelectItem value="airdrop">Free Money</SelectItem>
-                  <SelectItem value="security">Security Risks</SelectItem>
-                  <SelectItem value="convergence">Market Consensus</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5 min-w-[140px]">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-muted-foreground ml-1">Risk Level</span>
-              <Select value={filters.risk} onValueChange={(v) => setFilters(f => ({ ...f, risk: v }))}>
-                <SelectTrigger className="h-9 bg-background">
-                  <SelectValue placeholder="Any Risk" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Any Risk</SelectItem>
-                  <SelectItem value="low">Low Risk</SelectItem>
-                  <SelectItem value="medium">Medium Risk</SelectItem>
-                  <SelectItem value="high">High Risk</SelectItem>
-                  <SelectItem value="critical">Critical</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        <AnimatePresence mode="popLayout">
-          {signals.map((signal) => (
-            <motion.div
-              key={signal.id}
-              layout
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Card className="overflow-hidden flex flex-col h-full group hover:border-intel/40 transition-all">
-                <div className="p-6 space-y-4 flex-1">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="outline" className={cn("gap-1.5 font-bold uppercase text-[10px]", getRiskColor(signal.risk))}>
-                        {getRiskIcon(signal.risk)}
-                        {signal.risk} Risk
-                      </Badge>
-                      <Badge variant="secondary" className="gap-1.5 font-bold uppercase text-[10px]">
-                        {getCategoryIcon(signal.category)}
-                        {signal.category}
-                      </Badge>
-                    </div>
-                    <span className="text-[10px] font-mono text-muted-foreground uppercase flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {getTimeAgo(signal.timestamp)}
-                    </span>
-                  </div>
-
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-bold leading-tight group-hover:text-intel transition-colors">{signal.title}</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
-                      {signal.description}
-                    </p>
-                  </div>
-
-                  <div className="pt-2 flex items-center gap-4">
-                    <div className="flex flex-col">
-                      <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-muted-foreground">Confidence</span>
-                      <span className="text-xl font-black font-display">{signal.score}%</span>
-                    </div>
-                    <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full bg-intel" style={{ width: `${signal.score}%` }} />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-4 bg-muted/30 border-t flex items-center justify-between">
-                  <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-intel" onClick={() => upvoteSignal(signal.id)}>
-                      <ThumbsUp className="h-4 w-4" />
-                    </Button>
-                    <span className="text-xs font-mono font-bold">{signal.upvotes}</span>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-500" onClick={() => downvoteSignal(signal.id)}>
-                      <ThumbsDown className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => saveSignal(signal.id)}>
-                      <Bookmark className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <Share2 className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" className="h-8 gap-2" asChild>
-                      <a href={signal.url} target="_blank" rel="noopener noreferrer">
-                        Access <ExternalLink className="h-3 w-3" />
-                      </a>
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
-      {/* K9 Celebration — floats above everything */}
-      <K9SignalCelebration 
-        signal={activeSignal} 
-        active={celebrating} 
-        onDone={onCelebrationDone} 
-      />
-    </div>
-  );
-}
+  RefreshCw, Search, X, ChevronRight, 
+  ChevronLeft, Bookmark, ExternalLink, 
+  AlertTriangle, TrendingUp, 
+} from 'lucide-react'; 
+import { AlphaSignal } from '../types'; 
+import { K9Logo } from './K9Logo'; 
+ 
+// ─── Config ────────────────────────────────────────────────────── 
+ 
+const CAT: Record<string, { label: string; color: string }> = { 
+  defi:     { label: 'Crypto Finance',       color: '#F59E0B' }, 
+  airdrop:  { label: 'Free Money / Airdrop', color: '#00C87A' }, 
+  bounty:   { label: 'Free Money / Airdrop', color: '#00C87A' }, 
+  dev:      { label: 'Jobs / Tech News',     color: '#6366F1' }, 
+  tradfi:   { label: 'Market Signal',        color: '#EC4899' }, 
+  security: { label: 'Safety Alert',         color: '#EF4444' }, 
+  nft:      { label: 'NFT',                  color: '#06B6D4' }, 
+  insider:  { label: 'Insider Signal',       color: '#8B5CF6' }, 
+  whale:    { label: 'Big Money Move',       color: '#14B8A6' }, 
+}; 
+const RISK: Record<string, string> = { 
+  low: '#00C87A', medium: '#F59E0B', high: '#EF4444', critical: '#FF0040', 
+}; 
+const cat  = (c: string) => CAT[c]  ?? { label: 'Opportunity', color: '#8B5CF6' }; 
+const riskColor = (r: string) => RISK[r] ?? '#F59E0B'; 
+ 
+function ago(d: Date): string { 
+  const s = Math.floor((Date.now() - d.getTime()) / 1000); 
+  if (s < 60) return 'just now'; 
+  if (s < 3600) return `${Math.floor(s / 60)}m ago`; 
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`; 
+  return `${Math.floor(s / 86400)}d ago`; 
+} 
+ 
+const TABS = [ 
+  { id: 'all',     label: 'All'          }, 
+  { id: 'free',    label: 'Free Money'   }, 
+  { id: 'jobs',    label: 'Jobs'         }, 
+  { id: 'insider', label: 'Insider'      }, 
+  { id: 'market',  label: 'Market'       }, 
+  { id: 'safety',  label: 'Safety'       }, 
+]; 
+ 
+function filterByTab(s: AlphaSignal, tab: string): boolean { 
+  if (tab === 'free')    return ['airdrop','bounty','learn','grant'].includes(s.category); 
+  if (tab === 'jobs')    return ['dev'].includes(s.category); 
+  if (tab === 'insider') return ['insider','whale','polymarket'].includes(s.category); 
+  if (tab === 'market')  return ['defi','tradfi','nft'].includes(s.category); 
+  if (tab === 'safety')  return s.category === 'security'; 
+  return true; 
+} 
+ 
+// ─── Stat Card ──────────────────────────────────────────────────── 
+ 
+function Stat({ label, value, accent }: { label: string; value: string | number; accent?: string }) { 
+  return ( 
+    <div style={{ 
+      padding: '12px 14px', border: '1px solid var(--border)', 
+      borderRadius: 10, background: 'var(--card)', 
+    }}> 
+      <p style={{ fontSize: 10, color: 'var(--muted-foreground)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 4px' }}> 
+        {label} 
+      </p> 
+      <p style={{ fontSize: 24, fontWeight: 700, color: accent ?? 'var(--foreground)', margin: 0, lineHeight: 1 }}> 
+        {value} 
+      </p> 
+    </div> 
+  ); 
+} 
+ 
+// ─── Signal Row ─────────────────────────────────────────────────── 
+ 
+function Row({ s, onClick, saved, onSave }: { 
+  s: AlphaSignal; onClick: () => void; saved: boolean; onSave: (e: React.MouseEvent) => void; 
+}) { 
+  const c = cat(s.category); 
+  return ( 
+    <div 
+      onClick={onClick} 
+      style={{ 
+        display: 'grid', 
+        gridTemplateColumns: '10px 1fr 70px', 
+        gap: '0 14px', 
+        alignItems: 'center', 
+        padding: '13px 16px', 
+        borderBottom: '1px solid color-mix(in srgb, var(--border) 60%, transparent)', 
+        cursor: 'pointer', 
+        transition: 'background 0.1s', 
+      }} 
+      onMouseEnter={e => (e.currentTarget.style.background = 'color-mix(in srgb, var(--muted) 40%, transparent)')} 
+      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')} 
+      className="group" 
+    > 
+      {/* Category dot */} 
+      <div style={{ width: 8, height: 8, borderRadius: '50%', background: c.color, flexShrink: 0 }} /> 
+ 
+      {/* Text */} 
+      <div style={{ overflow: 'hidden' }}> 
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 2 }}> 
+          <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.05em', color: c.color, textTransform: 'uppercase' }}> 
+            {c.label} 
+          </span> 
+          <span style={{ fontSize: 10, color: 'var(--muted-foreground)' }}>· {ago(new Date(s.timestamp))}</span> 
+        </div> 
+        <p style={{ 
+          fontSize: 13, fontWeight: 500, margin: '0 0 2px', 
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', 
+        }}> 
+          {s.title} 
+        </p> 
+        <p style={{ 
+          fontSize: 12, color: 'var(--muted-foreground)', margin: 0, 
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', 
+        }}> 
+          {s.description} 
+        </p> 
+      </div> 
+ 
+      {/* Right side */} 
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}> 
+        <div style={{ textAlign: 'right' }} className="hidden sm:block"> 
+          <p style={{ 
+            fontSize: 14, fontWeight: 700, margin: 0, lineHeight: 1, 
+            color: s.confidence >= 85 ? '#00C87A' : 'var(--foreground)', 
+          }}> 
+            {s.confidence} 
+          </p> 
+          <p style={{ fontSize: 9, color: 'var(--muted-foreground)', margin: 0, letterSpacing: '0.06em' }}> 
+            CONF 
+          </p> 
+        </div> 
+        <button 
+          onClick={onSave} 
+          style={{ 
+            border: 'none', background: 'none', cursor: 'pointer', padding: 2, 
+            color: saved ? '#8B5CF6' : 'var(--muted-foreground)', 
+            opacity: 0.6, transition: 'opacity 0.1s', 
+          }} 
+          onMouseEnter={e => (e.currentTarget.style.opacity = '1')} 
+          onMouseLeave={e => (e.currentTarget.style.opacity = '0.6')} 
+        > 
+          <Bookmark style={{ width: 13, height: 13, fill: saved ? '#8B5CF6' : 'none' }} /> 
+        </button> 
+        <ChevronRight style={{ width: 13, height: 13, color: 'var(--muted-foreground)', opacity: 0.5 }} /> 
+      </div> 
+    </div> 
+  ); 
+} 
+ 
+// ─── Signal Detail Page ─────────────────────────────────────────── 
+ 
+function Detail({ s, onBack, saved, onSave }: { 
+  s: AlphaSignal; onBack: () => void; saved: boolean; onSave: () => void; 
+}) { 
+  const c = cat(s.category); 
+  const r = riskColor(s.risk); 
+ 
+  const actions = 
+    ['airdrop','bounty'].includes(s.category) 
+      ? ['Go to the source link below — check if your wallet is eligible', 'If eligible, claim before the deadline closes', 'Share with friends who use crypto — they may also qualify'] 
+      : s.category === 'security' 
+        ? ['Do NOT interact with this contract or project', 'If you hold this token, consider exiting your position now', 'Warn others in your community'] 
+        : s.category === 'dev' 
+          ? ['Read the full post at the source link', 'If this is a job posting, apply now — crypto roles fill fast', 'Bookmark for future reference'] 
+          : ['Research this before making any decision', 'Check the source link for the latest information', 'Set a reminder to follow up in 24 hours']; 
+ 
+  return ( 
+    <motion.div 
+      initial={{ x: '100%' }} 
+      animate={{ x: 0 }} 
+      exit={{ x: '100%' }} 
+      transition={{ type: 'spring', stiffness: 320, damping: 32 }} 
+      style={{ 
+        position: 'fixed', inset: 0, zIndex: 200, 
+        background: 'var(--background)', 
+        overflowY: 'auto', display: 'flex', flexDirection: 'column', 
+      }} 
+    > 
+      {/* Top bar */} 
+      <div style={{ 
+        display: 'flex', alignItems: 'center', gap: 12, 
+        padding: '14px 16px', 
+        borderBottom: '1px solid var(--border)', 
+        position: 'sticky', top: 0, background: 'var(--background)', zIndex: 1, 
+      }}> 
+        <button 
+          onClick={onBack} 
+          style={{ 
+            display: 'flex', alignItems: 'center', gap: 4, 
+            border: 'none', background: 'none', cursor: 'pointer', 
+            color: 'var(--muted-foreground)', fontSize: 13, padding: '6px 0', 
+          }} 
+        > 
+          <ChevronLeft style={{ width: 16, height: 16 }} /> 
+          Back 
+        </button> 
+        <div style={{ flex: 1 }} /> 
+        <button 
+          onClick={onSave} 
+          style={{ 
+            border: 'none', background: 'none', cursor: 'pointer', 
+            color: saved ? '#8B5CF6' : 'var(--muted-foreground)', padding: 6, 
+          }} 
+        > 
+          <Bookmark style={{ width: 16, height: 16, fill: saved ? '#8B5CF6' : 'none' }} /> 
+        </button> 
+      </div> 
+ 
+      {/* Content */} 
+      <div style={{ padding: '20px 16px', maxWidth: 640, margin: '0 auto', width: '100%' }}> 
+ 
+        {/* Category + time */} 
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}> 
+          <div style={{ width: 7, height: 7, borderRadius: '50%', background: c.color }} /> 
+          <span style={{ fontSize: 10, fontWeight: 600, color: c.color, textTransform: 'uppercase', letterSpacing: '0.06em' }}> 
+            {c.label} 
+          </span> 
+          <span style={{ fontSize: 11, color: 'var(--muted-foreground)' }}>· {ago(new Date(s.timestamp))}</span> 
+        </div> 
+ 
+        {/* Title */} 
+        <h1 style={{ fontSize: 20, fontWeight: 700, lineHeight: 1.3, margin: '0 0 16px' }}> 
+          {s.title} 
+        </h1> 
+ 
+        {/* Stats strip */} 
+        <div style={{ 
+          display: 'flex', gap: 0, 
+          border: '1px solid var(--border)', borderRadius: 10, 
+          overflow: 'hidden', marginBottom: 20, 
+        }}> 
+          {[ 
+            { label: 'Confidence', value: `${s.confidence}/100`, color: s.confidence >= 85 ? '#00C87A' : undefined }, 
+            { label: 'Risk level', value: s.risk.charAt(0).toUpperCase() + s.risk.slice(1), color: r }, 
+            ...(s.timeframe ? [{ label: 'Window', value: s.timeframe, color: undefined }] : []), 
+          ].map((item, i, arr) => ( 
+            <div key={i} style={{ 
+              flex: 1, padding: '12px 14px', 
+              borderRight: i < arr.length - 1 ? '1px solid var(--border)' : 'none', 
+              background: 'var(--card)', 
+            }}> 
+              <p style={{ fontSize: 9, color: 'var(--muted-foreground)', textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 4px' }}> 
+                {item.label} 
+              </p> 
+              <p style={{ fontSize: 15, fontWeight: 700, color: item.color ?? 'var(--foreground)', margin: 0 }}> 
+                {item.value} 
+              </p> 
+            </div> 
+          ))} 
+        </div> 
+ 
+        {/* Description */} 
+        <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--muted-foreground)', marginBottom: 24 }}> 
+          {s.description} 
+        </p> 
+ 
+        {/* What you can do */} 
+        <div style={{ marginBottom: 24 }}> 
+          <p style={{ 
+            fontSize: 10, fontWeight: 700, letterSpacing: '0.09em', 
+            color: 'var(--muted-foreground)', textTransform: 'uppercase', marginBottom: 12, 
+          }}> 
+            What you can do 
+          </p> 
+          {actions.map((a, i) => ( 
+            <div key={i} style={{ display: 'flex', gap: 12, marginBottom: 12, alignItems: 'flex-start' }}> 
+              <div style={{ 
+                width: 22, height: 22, borderRadius: '50%', 
+                background: 'var(--muted)', flexShrink: 0, 
+                display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                fontSize: 11, fontWeight: 700, marginTop: 1, 
+              }}> 
+                {i + 1} 
+              </div> 
+              <p style={{ fontSize: 14, lineHeight: 1.55, margin: 0 }}>{a}</p> 
+            </div> 
+          ))} 
+        </div> 
+ 
+        {/* Source */} 
+        <div style={{ 
+          padding: '12px 14px', borderRadius: 8, 
+          background: 'var(--muted)', marginBottom: 20, 
+        }}> 
+          <p style={{ fontSize: 10, color: 'var(--muted-foreground)', textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 3px' }}> 
+            Where K9 found this 
+          </p> 
+          <p style={{ fontSize: 13, fontWeight: 500, margin: 0 }}>{s.source}</p> 
+        </div> 
+ 
+        {/* Tags */} 
+        {s.tags && s.tags.filter(t => t !== 'x-verified').length > 0 && ( 
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 80 }}> 
+            {s.tags.filter(t => t !== 'x-verified').map(t => ( 
+              <span key={t} style={{ 
+                fontSize: 11, padding: '3px 9px', 
+                background: 'var(--muted)', borderRadius: 20, 
+                color: 'var(--muted-foreground)', 
+              }}> 
+                {t} 
+              </span> 
+            ))} 
+          </div> 
+        )} 
+      </div> 
+ 
+      {/* Sticky footer */} 
+      <div style={{ 
+        position: 'sticky', bottom: 0, 
+        padding: '12px 16px', display: 'flex', gap: 10, 
+        borderTop: '1px solid var(--border)', 
+        background: 'var(--background)', 
+      }}> 
+        <a 
+          href={ 
+            s.source?.startsWith('http') 
+              ? s.source 
+              : `https://www.google.com/search?q=${encodeURIComponent(s.title)}` 
+          } 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          style={{ 
+            flex: 1, padding: '11px 0', 
+            background: '#8B5CF6', color: '#fff', 
+            borderRadius: 9, fontSize: 14, fontWeight: 600, 
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, 
+            textDecoration: 'none', 
+          }} 
+        > 
+          <ExternalLink style={{ width: 14, height: 14 }} /> 
+          View source 
+        </a> 
+        <button 
+          onClick={onSave} 
+          style={{ 
+            padding: '11px 18px', 
+            background: saved ? 'rgba(139,92,246,0.15)' : 'var(--muted)', 
+            border: `1px solid ${saved ? '#8B5CF6' : 'var(--border)'}`, 
+            borderRadius: 9, fontSize: 14, fontWeight: 500, 
+            cursor: 'pointer', 
+            color: saved ? '#8B5CF6' : 'var(--foreground)', 
+          }} 
+        > 
+          {saved ? 'Saved ✓' : 'Save'} 
+        </button> 
+      </div> 
+    </motion.div> 
+  ); 
+} 
+ 
+// ─── Main Dashboard ─────────────────────────────────────────────── 
+ 
+export function Dashboard() { 
+  const { signals, loading, error, refreshFeed } = useAlphaFeed(); 
+  const [tab,    setTab]    = useState('all'); 
+  const [query,  setQuery]  = useState(''); 
+  const [detail, setDetail] = useState<AlphaSignal | null>(null); 
+  const [saved,  setSaved]  = useState<Set<string>>(() => { 
+    try { return new Set(JSON.parse(localStorage.getItem('k9_saved') ?? '[]')); } 
+    catch { return new Set(); } 
+  }); 
+ 
+  function toggleSave(id: string, e?: React.MouseEvent) { 
+    e?.stopPropagation(); 
+    setSaved(prev => { 
+      const n = new Set(prev); 
+      if (n.has(id)) { 
+        n.delete(id); 
+        toast('Removed from saves'); 
+      } else { 
+        n.add(id); 
+        toast.success('Saved', { 
+          description: ( 
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}> 
+              <K9Logo size={28} /> 
+              <span>K9 saved it for you</span> 
+            </div> 
+          ), 
+        }); 
+      } 
+      localStorage.setItem('k9_saved', JSON.stringify([...n])); 
+      return n; 
+    }); 
+  } 
+ 
+  const shown = signals.filter(s => { 
+    if (!filterByTab(s, tab)) return false; 
+    if (query) { 
+      const q = query.toLowerCase(); 
+      return s.title.toLowerCase().includes(q) || (s.description || '').toLowerCase().includes(q); 
+    } 
+    return true; 
+  }); 
+ 
+  const highConf = signals.filter(s => s.confidence >= 85).length; 
+  const avg      = signals.length 
+    ? Math.round(signals.reduce((a, s) => a + s.confidence, 0) / signals.length) 
+    : 0; 
+  const alerts   = signals.filter(s => ['high','critical'].includes(s.risk)).length; 
+ 
+  return ( 
+    <> 
+      <div style={{ maxWidth: 860, margin: '0 auto', padding: '0 0 32px' }}> 
+ 
+        {/* Header */} 
+        <div style={{ 
+          display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', 
+          padding: '18px 0 14px', gap: 12, 
+        }}> 
+          <div> 
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}> 
+              <div style={{ 
+                width: 6, height: 6, borderRadius: '50%', background: '#00C87A', 
+                boxShadow: '0 0 6px #00C87A', 
+                animation: 'pulse 2s ease-in-out infinite', 
+              }} /> 
+              <span style={{ fontSize: 10, fontWeight: 700, color: '#00C87A', letterSpacing: '0.1em', textTransform: 'uppercase' }}> 
+                Hunting live 
+              </span> 
+            </div> 
+            <h1 style={{ fontSize: 26, fontWeight: 800, margin: '0 0 2px', letterSpacing: '-0.5px' }}> 
+              Dispatch 
+            </h1> 
+            <p style={{ fontSize: 12, color: 'var(--muted-foreground)', margin: 0 }}> 
+              {signals.length} opportunities found · {loading ? 'Scanning…' : 'Updated just now'} 
+            </p> 
+          </div> 
+          <button 
+            onClick={refreshFeed} 
+            disabled={loading} 
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: 6, 
+              padding: '8px 14px', border: '1px solid var(--border)', 
+              borderRadius: 8, background: 'transparent', cursor: loading ? 'not-allowed' : 'pointer', 
+              fontSize: 13, color: 'var(--foreground)', opacity: loading ? 0.5 : 1, 
+              transition: 'opacity 0.15s', 
+            }} 
+          > 
+            <RefreshCw style={{ width: 13, height: 13 }} className={loading ? 'animate-spin' : ''} /> 
+            Scan now 
+          </button> 
+        </div> 
+ 
+        {/* Stats — 2 col mobile, 4 col desktop */} 
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(2, 1fr)', 
+          gap: 10, marginBottom: 16, 
+        }} className="sm:grid-cols-4"> 
+          <Stat label="Found today"     value={signals.length} /> 
+          <Stat label="High confidence" value={highConf} accent="#00C87A" /> 
+          <Stat label="Avg confidence"  value={avg} /> 
+          <Stat label="Safety alerts"   value={alerts} accent={alerts > 0 ? '#EF4444' : undefined} /> 
+        </div> 
+ 
+        {/* Search */} 
+        <div style={{ position: 'relative', marginBottom: 12 }}> 
+          <Search style={{ 
+            position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', 
+            width: 13, height: 13, color: 'var(--muted-foreground)', 
+          }} /> 
+          <input 
+            value={query} 
+            onChange={e => setQuery(e.target.value)} 
+            placeholder="Search opportunities, tokens, projects…" 
+            style={{ 
+              width: '100%', padding: '9px 36px 9px 32px', 
+              border: '1px solid var(--border)', borderRadius: 8, 
+              background: 'var(--background)', color: 'var(--foreground)', 
+              fontSize: 13, outline: 'none', boxSizing: 'border-box', 
+            }} 
+          /> 
+          {query && ( 
+            <button 
+              onClick={() => setQuery('')} 
+              style={{ 
+                position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', 
+                border: 'none', background: 'none', cursor: 'pointer', 
+                color: 'var(--muted-foreground)', padding: 2, 
+              }} 
+            > 
+              <X style={{ width: 13, height: 13 }} /> 
+            </button> 
+          )} 
+        </div> 
+ 
+        {/* Tabs — scroll on mobile */} 
+        <div style={{ 
+          display: 'flex', gap: 6, overflowX: 'auto', 
+          scrollbarWidth: 'none', paddingBottom: 2, marginBottom: 14, 
+        }} className="filter-scroll"> 
+          {TABS.map(t => ( 
+            <button 
+              key={t.id} 
+              onClick={() => setTab(t.id)} 
+              style={{ 
+                padding: '6px 14px', borderRadius: 20, fontSize: 12, 
+                cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, 
+                border: `1px solid ${tab === t.id ? '#8B5CF6' : 'var(--border)'}`, 
+                background: tab === t.id ? 'rgba(139,92,246,0.12)' : 'transparent', 
+                color: tab === t.id ? '#8B5CF6' : 'var(--muted-foreground)', 
+                fontWeight: tab === t.id ? 600 : 400, 
+                transition: 'all 0.12s', 
+              }} 
+            > 
+              {t.label} 
+            </button> 
+          ))} 
+        </div> 
+ 
+        {/* Count */} 
+        <p style={{ fontSize: 11, color: 'var(--muted-foreground)', margin: '0 0 8px' }}> 
+          Showing {shown.length} of {signals.length} 
+          {query && ` matching "${query}"`} 
+        </p> 
+ 
+        {/* Error */} 
+        {error && ( 
+          <div style={{ 
+            padding: '12px 16px', borderRadius: 8, marginBottom: 12, 
+            border: '1px solid #EF4444', background: 'rgba(239,68,68,0.08)', 
+            display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, 
+          }}> 
+            <AlertTriangle style={{ width: 13, height: 13, color: '#EF4444', flexShrink: 0 }} /> 
+            <span style={{ flex: 1 }}>{error}</span> 
+            <button 
+              onClick={refreshFeed} 
+              style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#8B5CF6', fontSize: 12 }} 
+            > 
+              Retry 
+            </button> 
+          </div> 
+        )} 
+ 
+        {/* List */} 
+        <div style={{ 
+          border: '1px solid var(--border)', borderRadius: 10, 
+          overflow: 'hidden', background: 'var(--card)', 
+        }}> 
+          {loading && ( 
+            <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--muted-foreground)', fontSize: 13 }}> 
+              K9 is sniffing… 
+            </div> 
+          )} 
+          {!loading && shown.length === 0 && ( 
+            <div style={{ padding: '48px 20px', textAlign: 'center' }}> 
+              <TrendingUp style={{ width: 28, height: 28, color: 'var(--muted-foreground)', margin: '0 auto 10px', display: 'block' }} /> 
+              <p style={{ fontSize: 13, color: 'var(--muted-foreground)', margin: 0 }}> 
+                {query ? `Nothing matches "${query}"` : 'K9 is scanning. Opportunities appear every 90 seconds.'} 
+              </p> 
+            </div> 
+          )} 
+          {shown.map(s => ( 
+            <Row 
+              key={s.id} 
+              s={s} 
+              onClick={() => setDetail(s)} 
+              saved={saved.has(s.id)} 
+              onSave={e => toggleSave(s.id, e)} 
+            /> 
+          ))} 
+        </div> 
+      </div> 
+ 
+      {/* Detail overlay */} 
+      <AnimatePresence> 
+        {detail && ( 
+          <> 
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
+              onClick={() => setDetail(null)} 
+              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 199 }} 
+            /> 
+            <Detail 
+              s={detail} 
+              onBack={() => setDetail(null)} 
+              saved={saved.has(detail.id)} 
+              onSave={() => toggleSave(detail.id)} 
+            /> 
+          </> 
+        )} 
+      </AnimatePresence> 
+    </> 
+  ); 
+} 

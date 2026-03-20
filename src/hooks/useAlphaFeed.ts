@@ -2,11 +2,23 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner'; 
 import { AlphaSignal } from '../types'; 
  
-const COINGECKO = 'https://api.coingecko.com/api/v3'; 
-const POLYMARKET = 'https://gamma-api.polymarket.com'; 
-const RSS_PROXY = 'https://api.rss2json.com/v1/api.json?rss_url='; 
- 
-async function safeFetch(url: string): Promise<any> { 
+// ── Free public APIs — no keys needed ───────────────────────────── 
+const CG   = 'https://api.coingecko.com/api/v3'; 
+const POLY  = 'https://gamma-api.polymarket.com'; 
+const RSS   = 'https://api.rss2json.com/v1/api.json?rss_url='; 
+
+const NITTER = ['https://nitter.net', 'https://nitter.privacydev.net', 'https://nitter.1d4.us']; 
+const X_ACCOUNTS = [ 
+  { handle: 'AirdropAlert',    type: 'airdrop',   score: 85 }, 
+  { handle: 'CryptoRank_io',   type: 'airdrop',   score: 83 }, 
+  { handle: 'lookonchain',     type: 'insider',   score: 85 }, 
+  { handle: 'WhaleAlert',      type: 'whale',     score: 80 }, 
+  { handle: 'PeckShieldAlert', type: 'security',  score: 87 }, 
+]; 
+const SIG_KW   = ['airdrop','free','claim','bounty','testnet','launched','job','hiring']; 
+const SCAM_KW  = ['send eth','send bnb','private key','seed phrase','dm me','10x guaranteed']; 
+
+async function get(url: string): Promise<any> { 
   try { 
     const ctrl = new AbortController(); 
     const id = setTimeout(() => ctrl.abort(), 8000); 
@@ -14,24 +26,22 @@ async function safeFetch(url: string): Promise<any> {
     clearTimeout(id); 
     if (!res.ok) return null; 
     return res.json(); 
-  } catch { 
-    return null; 
-  } 
+  } catch { return null; } 
 } 
  
 async function fetchTrending(): Promise<AlphaSignal[]> { 
-  const data = await safeFetch(`${COINGECKO}/search/trending`); 
+  const data = await get(`${CG}/search/trending`); 
   if (!data?.coins) return []; 
-  return data.coins.slice(0, 4).map(({ item }: any) => ({ 
-    id: `cg-${item.id}`, 
-    title: `Trending: ${item.name} ($${item.symbol?.toUpperCase()})`, 
-    description: `Rank #${item.market_cap_rank ?? '?'} — gaining attention across the market. High search volume indicates building momentum.`, 
+  return data.coins.slice(0, 5).map(({ item }: any, i: number): AlphaSignal => ({ 
+    id: `cg-trend-${item.id}`, 
+    title: `Everyone is looking at ${item.name} right now`, 
+    description: `$${item.symbol?.toUpperCase()} is trending across the whole market. Rank #${item.market_cap_rank ?? '?'}. When something trends this hard, price usually follows.`, 
     source: 'CoinGecko', 
-    category: 'defi' as const, 
-    risk: 'medium' as const, 
-    confidence: 72, 
+    category: 'defi', 
+    risk: 'medium', 
+    confidence: 70 + i, 
     timestamp: new Date(), 
-    tags: ['trending', item.symbol?.toLowerCase()], 
+    tags: ['trending', item.symbol?.toLowerCase() ?? ''], 
     verified: true, 
     upvotes: 0, 
     downvotes: 0, 
@@ -41,116 +51,205 @@ async function fetchTrending(): Promise<AlphaSignal[]> {
 } 
  
 async function fetchMovers(): Promise<AlphaSignal[]> { 
-  const data = await safeFetch( 
-    `${COINGECKO}/coins/markets?vs_currency=usd&order=price_change_percentage_24h_desc&per_page=8&price_change_percentage=24h` 
-  ); 
+  const data = await get(`${CG}/coins/markets?vs_currency=usd&order=price_change_percentage_24h_desc&per_page=10&price_change_percentage=24h`); 
   if (!Array.isArray(data)) return []; 
   return data 
-    .filter((c: any) => Math.abs(c.price_change_percentage_24h ?? 0) > 12) 
-    .map((c: any) => ({ 
-      id: `mover-${c.id}`, 
-      title: `${(c.price_change_percentage_24h ?? 0) > 0 ? '📈' : '📉'} ${c.name} ${(c.price_change_percentage_24h ?? 0).toFixed(1)}% today`, 
-      description: `Price: $${c.current_price?.toLocaleString()}. Volume: $${((c.total_volume ?? 0) / 1e6).toFixed(0)}M. Market cap: $${((c.market_cap ?? 0) / 1e6).toFixed(0)}M.`, 
-      source: 'CoinGecko', 
-      category: 'defi' as const, 
-      risk: Math.abs(c.price_change_percentage_24h ?? 0) > 30 ? 'high' as const : 'medium' as const, 
-      confidence: 75, 
-      timestamp: new Date(), 
-      tags: ['mover', c.symbol], 
-      verified: true, 
-      upvotes: 0, 
-      downvotes: 0, 
-      priceTarget: undefined, 
-      timeframe: '24h move', 
-      blockchain: 'multiple', 
-    })); 
+    .filter((c: any) => Math.abs(c.price_change_percentage_24h ?? 0) > 10) 
+    .slice(0, 4) 
+    .map((c: any): AlphaSignal => { 
+      const up = (c.price_change_percentage_24h ?? 0) > 0; 
+      return { 
+        id: `mover-${c.id}`, 
+        title: `${c.name} ${up ? 'jumped' : 'dropped'} ${Math.abs(c.price_change_percentage_24h ?? 0).toFixed(1)}% today`, 
+        description: `Price is $${c.current_price?.toLocaleString()}. $${((c.total_volume ?? 0) / 1e6).toFixed(0)}M traded today. ${up ? 'Money is flowing in fast.' : 'People are selling fast — could be a chance to buy low.'}`, 
+        source: 'CoinGecko', 
+        category: 'defi', 
+        risk: Math.abs(c.price_change_percentage_24h ?? 0) > 30 ? 'high' : 'medium', 
+        confidence: 75, 
+        timestamp: new Date(), 
+        tags: ['price-move', c.symbol ?? ''], 
+        verified: true, 
+        upvotes: 0, 
+        downvotes: 0, 
+        priceTarget: undefined, 
+        timeframe: 'Happening now', 
+        blockchain: 'multiple', 
+      }; 
+    }); 
 } 
  
-async function fetchAirdrops(): Promise<AlphaSignal[]> { 
-  // Verified, always-relevant airdrop opportunities 
+async function fetchFreeMoneyOpportunities(): Promise<AlphaSignal[]> { 
   return [ 
     { 
-      id: 'earnifi-checker', 
-      title: 'Free: Check all your unclaimed airdrops in 30 seconds', 
-      description: 'Earnifi scans your wallet against every known airdrop automatically. Many people have hundreds or thousands of dollars in unclaimed free tokens right now.', 
-      source: 'Verified Airdrop', 
-      category: 'airdrop' as const, 
-      risk: 'low' as const, 
-      confidence: 95, 
+      id: 'earnifi-free', 
+      title: 'Check if you have free money waiting — takes 30 seconds', 
+      description: 'Earnifi scans your wallet for every unclaimed airdrop automatically. Thousands of people have hundreds or thousands of dollars sitting unclaimed right now. Paste your wallet address and find out.', 
+      source: 'Free Money Check', 
+      category: 'airdrop', 
+      risk: 'low', 
+      confidence: 96, 
       timestamp: new Date(), 
-      tags: ['free', 'airdrop', 'checker'], 
+      tags: ['free', 'airdrop', 'check-now'], 
       verified: true, 
       upvotes: 0, 
       downvotes: 0, 
-      timeframe: 'Check now — takes 30 seconds', 
+      timeframe: 'Do it now — free', 
       blockchain: 'multiple', 
     }, 
     { 
-      id: 'layer3-quests', 
-      title: 'Earn crypto completing short tasks — Layer3 quests', 
-      description: 'Layer3 pays crypto for completing tasks like following projects, using apps, and answering questions. New quests added daily. No investment required.', 
+      id: 'layer3-earn', 
+      title: 'Get paid to try new crypto apps — Layer3', 
+      description: 'Layer3 pays you in crypto just for trying out apps, following projects, and answering quick questions. New tasks added every day. Zero investment needed.', 
       source: 'Learn & Earn', 
-      category: 'airdrop' as const, 
-      risk: 'low' as const, 
-      confidence: 90, 
+      category: 'airdrop', 
+      risk: 'low', 
+      confidence: 91, 
       timestamp: new Date(), 
-      tags: ['free', 'earn', 'tasks'], 
+      tags: ['free', 'earn', 'beginner-friendly'], 
       verified: true, 
       upvotes: 0, 
       downvotes: 0, 
-      timeframe: 'Ongoing', 
+      timeframe: 'New tasks daily', 
       blockchain: 'multiple', 
     }, 
   ]; 
 } 
  
-async function fetchPolymarket(): Promise<AlphaSignal[]> { 
-  const data = await safeFetch( 
-    `${POLYMARKET}/markets?active=true&closed=false&order=volume&ascending=false&limit=10` 
-  ); 
+async function fetchPredictionMarkets(): Promise<AlphaSignal[]> { 
+  const data = await get(`${POLY}/markets?active=true&closed=false&order=volume&ascending=false&limit=8`); 
   if (!Array.isArray(data)) return []; 
+   
   return data 
     .filter((m: any) => parseFloat(m.volume ?? '0') > 10000) 
     .slice(0, 3) 
-    .map((m: any) => { 
+    .map((m: any): AlphaSignal => { 
+      const volume = parseFloat(m.volume ?? '0'); 
       const outcomes = m.outcomes ? JSON.parse(m.outcomes) : []; 
       const prices = m.outcomePrices ? JSON.parse(m.outcomePrices) : []; 
-      const top = outcomes.map((o: string, i: number) => ({ 
-        title: o, 
-        prob: Math.round(parseFloat(prices[i] ?? '0') * 100), 
-      })).sort((a: any, b: any) => b.prob - a.prob)[0]; 
+      const top = outcomes 
+        .map((o: string, i: number) => ({ title: o, prob: Math.round(parseFloat(prices[i] ?? '0') * 100) })) 
+        .sort((a: any, b: any) => b.prob - a.prob)[0]; 
       return { 
-        id: `poly-${m.id}`, 
-        title: `Prediction: ${m.question ?? m.title}`, 
-        description: top ? `"${top.title}" has ${top.prob}% probability. Volume: $${(parseFloat(m.volume ?? '0') / 1000).toFixed(0)}K.` : 'Active prediction market.', 
-        source: 'Polymarket', 
-        category: 'defi' as const, 
-        risk: 'medium' as const, 
-        confidence: 80, 
+        id: `poly-${m.id ?? m.slug}`, 
+        title: `People are betting on: ${m.question ?? m.title}`, 
+        description: `${top ? `"${top.title}" has a ${top.prob}% chance right now.` : ''} $${(volume / 1000).toFixed(0)}K has been bet on this. If you think you know the outcome, a small bet could pay off big.`, 
+        source: 'Prediction Market', 
+        category: 'defi', 
+        risk: 'medium', 
+        confidence: 78, 
         timestamp: new Date(), 
-        tags: ['prediction', 'polymarket'], 
+        tags: ['prediction', 'bet', 'polymarket'], 
         verified: true, 
         upvotes: 0, 
         downvotes: 0, 
-        timeframe: m.endDate ? `Closes ${new Date(m.endDate).toLocaleDateString()}` : 'Active', 
+        timeframe: m.endDate ? `Closes ${new Date(m.endDate).toLocaleDateString()}` : 'Active now', 
         blockchain: 'polygon', 
       }; 
     }); 
 } 
  
-async function fetchJobs(): Promise<AlphaSignal[]> { 
-  const data = await safeFetch(`${RSS_PROXY}${encodeURIComponent('https://web3.career/rss')}&count=5`); 
-  const items = data?.items ?? []; 
+// ── New source: Verified X/Twitter accounts ───────────────────────── 
+async function fetchXSignals(): Promise<AlphaSignal[]> { 
+  const out: AlphaSignal[] = []; 
+  const seen = new Set<string>(); 
+  for (const acct of X_ACCOUNTS) { 
+    for (const ni of NITTER) { 
+      try { 
+        const res = await fetch( 
+          `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(`${ni}/${acct.handle}/rss`)}&count=5`, 
+          { signal: AbortSignal.timeout(5000) } 
+        ); 
+        if (!res.ok) continue; 
+        const d = await res.json(); 
+        if (!d?.items?.length) continue; 
+        for (const item of d.items) { 
+          const txt = `${item.title ?? ''} ${item.description ?? ''}`.toLowerCase(); 
+          if (SCAM_KW.some(k => txt.includes(k))) continue; 
+          const matched = SIG_KW.filter(k => txt.includes(k)); 
+          if (!matched.length) continue; 
+          const id = `x-${acct.handle}-${item.guid ?? item.pubDate}`; 
+          if (seen.has(id)) continue; 
+          seen.add(id); 
+          out.push({ 
+            id, title: (item.title ?? 'Opportunity on X').slice(0, 120), 
+            description: `🐕 K9 spotted this from @${acct.handle}. ${(item.description ?? '').replace(/<[^>]*>/g,'').slice(0,200)}`, 
+            source: `@${acct.handle} on X`, 
+            category: acct.type as any, 
+            risk: acct.type === 'security' ? 'high' : 'low', 
+            confidence: Math.min(94, acct.score + matched.length * 2), 
+            timestamp: new Date(item.pubDate ?? Date.now()), 
+            tags: [...matched.slice(0,2), 'x-verified'], 
+            verified: true, upvotes: 0, downvotes: 0, 
+            timeframe: 'Just spotted', blockchain: 'multiple', 
+          }); 
+        } 
+        break; 
+      } catch { continue; } 
+    } 
+  } 
+  return out.slice(0, 8); 
+} 
  
+// ── New source: Airdrops.io confirmed airdrops ────────────────────── 
+async function fetchAirdropsDotIo(): Promise<AlphaSignal[]> { 
+  const d = await get(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://airdrops.io/feed/')}&count=6`); 
+  if (!d?.items) return []; 
+  return d.items 
+    .filter((i: any) => !/potential|rumor/i.test(i.title ?? '')) 
+    .slice(0, 4) 
+    .map((i: any): AlphaSignal => ({ 
+      id: `adi-${i.guid ?? i.link}`, 
+      title: `Free to claim: ${i.title}`, 
+      description: (i.description ?? '').replace(/<[^>]*>/g,'').slice(0,220) || 'Verified free token claim.', 
+      source: 'Airdrops.io', category: 'airdrop', risk: 'low', confidence: 87, 
+      timestamp: new Date(i.pubDate ?? Date.now()), 
+      tags: ['airdrop','verified','free'], verified: true, upvotes: 0, downvotes: 0, 
+      timeframe: 'Claim now', blockchain: 'multiple', 
+    })); 
+} 
+ 
+// ── New source: CryptoRank verified opportunities ─────────────────── 
+async function fetchCryptoRank(): Promise<AlphaSignal[]> { 
+  const data = await get( 
+    `${RSS}${encodeURIComponent('https://cryptorank.io/news/feed')}&count=8` 
+  ); 
+  if (!data?.items) return []; 
+ 
+  return data.items 
+    .filter((item: any) => /airdrop|claim|free|bounty|opportunity/i.test(item.title ?? '')) 
+    .slice(0, 3) 
+    .map((item: any): AlphaSignal => ({ 
+      id: `cryptorank-${item.guid ?? item.link}`, 
+      title: item.title ?? 'Opportunity on CryptoRank', 
+      description: (item.description ?? '').replace(/<[^>]*>/g, '').slice(0, 220), 
+      source: 'CryptoRank', 
+      category: 'airdrop', 
+      risk: 'low', 
+      confidence: 84, 
+      score: 84,
+      timestamp: new Date(item.pubDate ?? Date.now()), 
+      tags: ['verified', 'cryptorank'], 
+      verified: true, 
+      upvotes: 0, 
+      downvotes: 0, 
+      timeframe: 'Check now', 
+      blockchain: 'multiple', 
+    })); 
+} 
+ 
+async function fetchJobs(): Promise<AlphaSignal[]> { 
+  const data = await get(`${RSS}${encodeURIComponent('https://web3.career/rss')}&count=5`); 
+  const items = data?.items ?? []; 
+   
   if (items.length === 0) { 
     return [{ 
-      id: 'jobs-web3career', 
-      title: 'Browse 500+ live remote crypto jobs — web3.career', 
-      description: 'Community managers ($3–8K/mo), Discord moderators, content writers, translators. Most remote. Many require no prior crypto experience.', 
+      id: 'jobs-board', 
+      title: '500+ remote crypto jobs open right now — no experience needed for many', 
+      description: 'Community managers ($3,000–$8,000/month), Discord helpers, content writers, translators, testers. Most are fully remote. Many have never required crypto experience before.', 
       source: 'web3.career', 
-      category: 'dev' as const, 
-      risk: 'low' as const, 
-      confidence: 88, 
+      category: 'dev', 
+      risk: 'low', 
+      confidence: 89, 
       timestamp: new Date(), 
       tags: ['job', 'remote', 'no-experience'], 
       verified: true, 
@@ -160,14 +259,14 @@ async function fetchJobs(): Promise<AlphaSignal[]> {
       blockchain: 'multiple', 
     }]; 
   } 
- 
-  return items.slice(0, 3).map((item: any) => ({ 
-    id: `job-${item.guid ?? item.link}`, 
-    title: `Job: ${item.title}`, 
-    description: item.description?.replace(/<[^>]*>/g, '').slice(0, 200) ?? 'Crypto industry opportunity.', 
+   
+  return items.slice(0, 3).map((item: any): AlphaSignal => ({ 
+    id: `job-${item.guid ?? item.link ?? Math.random()}`, 
+    title: `Job opening: ${item.title}`, 
+    description: (item.description ?? '').replace(/<[^>]*>/g, '').slice(0, 200) || 'Crypto industry job opportunity. Click to see details.', 
     source: 'web3.career', 
-    category: 'dev' as const, 
-    risk: 'low' as const, 
+    category: 'dev', 
+    risk: 'low', 
     confidence: 85, 
     timestamp: new Date(item.pubDate ?? Date.now()), 
     tags: ['job', 'remote'], 
@@ -179,39 +278,86 @@ async function fetchJobs(): Promise<AlphaSignal[]> {
   })); 
 } 
  
+async function fetchNewsSignals(): Promise<AlphaSignal[]> { 
+  const SIGNAL_WORDS = ['exploit', 'airdrop', 'launch', 'mainnet', 'raise', 'hack', 'upgrade', 'listing', 'partnership']; 
+  const data = await get(`${RSS}${encodeURIComponent('https://cointelegraph.com/rss')}&count=8`); 
+  if (!data?.items) return []; 
+   
+  return data.items 
+    .filter((item: any) => { 
+      const text = `${item.title} ${item.description ?? ''}`.toLowerCase(); 
+      return SIGNAL_WORDS.some(w => text.includes(w)); 
+    }) 
+    .slice(0, 3) 
+    .map((item: any): AlphaSignal => { 
+      const text = `${item.title} ${item.description ?? ''}`.toLowerCase(); 
+      const isSecurity = ['exploit', 'hack', 'rug', 'scam'].some(w => text.includes(w)); 
+      return { 
+        id: `news-${item.guid ?? item.link}`, 
+        title: item.title ?? 'Breaking news', 
+        description: (item.description ?? '').replace(/<[^>]*>/g, '').slice(0, 220), 
+        source: 'CoinTelegraph', 
+        category: isSecurity ? 'security' : 'defi', 
+        risk: isSecurity ? 'high' : 'low', 
+        confidence: 72, 
+        timestamp: new Date(item.pubDate ?? Date.now()), 
+        tags: ['news', isSecurity ? 'security' : 'market'], 
+        verified: true, 
+        upvotes: 0, 
+        downvotes: 0, 
+        timeframe: 'Just published', 
+        blockchain: 'multiple', 
+      }; 
+    }); 
+} 
+ 
+// ── Main hook ─────────────────────────────────────────────────────── 
+ 
 export function useAlphaFeed() { 
   const [signals, setSignals] = useState<AlphaSignal[]>([]); 
   const [loading, setLoading] = useState(true); 
   const [error, setError] = useState<string | null>(null); 
-  const [filters, setFilters] = useState({ category: 'all', risk: 'all', minConfidence: 0 }); 
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null); 
-  const prevIds = useRef<Set<string>>(new Set()); 
+  const [filters, setFilters] = useState({ category: 'all', risk: 'all', minConfidence: 0 }); 
+  const seenIds = useRef<Set<string>>(new Set()); 
  
-  const loadSignals = useCallback(async () => { 
+  const loadAll = useCallback(async () => { 
     try { 
       const results = await Promise.allSettled([ 
         fetchTrending(), 
         fetchMovers(), 
-        fetchAirdrops(), 
-        fetchPolymarket(), 
+        fetchFreeMoneyOpportunities(), 
+        fetchPredictionMarkets(), 
         fetchJobs(), 
+        fetchNewsSignals(), 
+        fetchXSignals(), 
+        fetchAirdropsDotIo(), 
+        fetchCryptoRank(), 
       ]); 
  
       const all: AlphaSignal[] = []; 
       results.forEach(r => { if (r.status === 'fulfilled') all.push(...r.value); }); 
  
-      // Deduplicate by id 
+      // Deduplicate 
       const seen = new Set<string>(); 
-      const unique = all.filter(s => { if (seen.has(s.id)) return false; seen.add(s.id); return true; }); 
+      const unique = all.filter(s => { 
+        if (seen.has(s.id)) return false; 
+        seen.add(s.id); 
+        return true; 
+      }); 
  
-      // Sort by confidence desc 
-      unique.sort((a, b) => b.confidence - a.confidence); 
+      // Sort: free money first, then by confidence 
+      unique.sort((a, b) => { 
+        if (a.category === 'airdrop' && b.category !== 'airdrop') return -1; 
+        if (b.category === 'airdrop' && a.category !== 'airdrop') return 1; 
+        return b.confidence - a.confidence; 
+      }); 
  
-      // Toast for new signals 
-      const newOnes = unique.filter(s => !prevIds.current.has(s.id)); 
-      newOnes.forEach(s => prevIds.current.add(s.id)); 
+      // Toast for brand new signals 
+      const newOnes = unique.filter(s => !seenIds.current.has(s.id)); 
+      newOnes.forEach(s => seenIds.current.add(s.id)); 
       if (newOnes.length > 0 && !loading) { 
-        toast.success(`${newOnes.length} new signal${newOnes.length > 1 ? 's' : ''} found`, { 
+        toast.success(`K9 sniffed out ${newOnes.length} new ${newOnes.length === 1 ? 'opportunity' : 'opportunities'}`, { 
           description: newOnes[0].title, 
           duration: 4000, 
         }); 
@@ -221,18 +367,17 @@ export function useAlphaFeed() {
       setLastUpdated(new Date()); 
       setError(null); 
     } catch { 
-      setError('Failed to load signals. Check your connection.'); 
+      setError('K9 lost the scent. Check your connection and try again.'); 
     } finally { 
       setLoading(false); 
     } 
   }, [loading]); 
  
-  useEffect(() => { loadSignals(); }, [loadSignals]); 
- 
+  useEffect(() => { loadAll(); }, [loadAll]); 
   useEffect(() => { 
-    const interval = setInterval(loadSignals, 90_000); 
+    const interval = setInterval(loadAll, 90_000); 
     return () => clearInterval(interval); 
-  }, [loadSignals]); 
+  }, [loadAll]); 
  
   const filteredSignals = signals.filter(s => { 
     if (filters.category !== 'all' && s.category !== filters.category) return false; 
@@ -241,13 +386,9 @@ export function useAlphaFeed() {
     return true; 
   }); 
  
-  const refreshFeed = () => { 
-    setLoading(true); 
-    loadSignals(); 
-  }; 
- 
-  const upvoteSignal = (id: string) => setSignals(prev => prev.map(s => s.id === id ? { ...s, upvotes: s.upvotes + 1 } : s)); 
-  const downvoteSignal = (id: string) => setSignals(prev => prev.map(s => s.id === id ? { ...s, downvotes: s.downvotes + 1 } : s)); 
+  const refreshFeed = () => { setLoading(true); loadAll(); }; 
+  const upvoteSignal = (id: string) => setSignals(p => p.map(s => s.id === id ? { ...s, upvotes: s.upvotes + 1 } : s)); 
+  const downvoteSignal = (id: string) => setSignals(p => p.map(s => s.id === id ? { ...s, downvotes: s.downvotes + 1 } : s)); 
  
   return { signals: filteredSignals, loading, error, lastUpdated, filters, setFilters, refreshFeed, upvoteSignal, downvoteSignal }; 
 } 

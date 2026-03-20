@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../services/api';
+import { useAlphaFeed } from '../hooks/useAlphaFeed';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
@@ -22,11 +23,11 @@ import {
   Sparkles,
   BarChart3
 } from 'lucide-react';
-import { ScoredSignal } from '../types';
+import { ScoredSignal, ChainRiskIndex } from '../types';
 
 // Chain Risk Index Widget Component
 const CRIWidget = () => {
-  const { data: criData = [] } = useQuery({
+  const { data: criData = [] } = useQuery<ChainRiskIndex[]>({
     queryKey: ['cri'],
     queryFn: apiClient.getCRI,
     refetchInterval: 900000, // 15 minutes
@@ -126,16 +127,7 @@ export function OpportunityRadar() {
   });
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const { data: signals = [], isLoading } = useQuery<ScoredSignal[]>({
-    queryKey: ['signals-radar', filters],
-    queryFn: () => apiClient.getSignals({
-      category: filters.category !== 'all' ? filters.category : undefined,
-      risk: filters.risk !== 'all' ? filters.risk : undefined,
-      minScore: filters.minScore,
-    }),
-    enabled: scanning,
-    refetchInterval: 30000,
-  });
+  const { signals, loading: isLoading } = useAlphaFeed();
 
   const getRiskColor = (risk: string) => {
     switch (risk) {
@@ -158,9 +150,9 @@ export function OpportunityRadar() {
             </div>
             <span className="text-xs font-black uppercase tracking-widest text-indigo-500">Spatial Intelligence</span>
           </div>
-          <h1 className="text-4xl font-black tracking-tighter uppercase">ALPHA RADAR</h1>
+          <h1 className="text-4xl font-black tracking-tighter uppercase">Hunt</h1>
           <p className="text-muted-foreground max-w-xl text-sm font-medium leading-relaxed">
-            Visualizing market convergence and multi-source signals on a spatial map for intuitive opportunity detection.
+            K9 visualizing market convergence and multi-source signals on a spatial map for intuitive opportunity detection.
           </p>
         </div>
         
@@ -407,7 +399,7 @@ export function OpportunityRadar() {
              {[
                { label: 'Total Signals (24h)', value: signals.length, icon: Activity, color: 'text-blue-500', bg: 'bg-blue-500/10' },
                { label: 'Avg Alpha Score', value: signals.length > 0 ? Math.round(signals.reduce((a, b) => a + (b.score ?? b.confidence ?? 0), 0) / signals.length) : 0, icon: Target, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
-                { label: 'High Confidence (>85)', value: signals.filter(s => (s.score ?? s.confidence ?? 0) >= 85).length, icon: Zap, color: 'text-amber-500', bg: 'bg-amber-500/10' }
+                { label: 'How sure K9 is (>85)', value: signals.filter(s => (s.score ?? s.confidence ?? 0) >= 85).length, icon: Zap, color: 'text-amber-500', bg: 'bg-amber-500/10' }
              ].map((stat, i) => (
                <Card key={i} className="p-8 rounded-[2.5rem] border-border/50 bg-background/50 backdrop-blur shadow-sm flex flex-col items-center justify-center text-center relative group overflow-hidden hover:-translate-y-1 transition-all">
                   <div className={`absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 transition-opacity ${stat.color}`}>

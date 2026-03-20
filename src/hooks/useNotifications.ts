@@ -16,19 +16,19 @@ export function useNotifications() {
 
   // Convert signals to alerts
   useEffect(() => {
-    if (signals.length === 0) return;
+    if (!signals || signals.length === 0) return;
 
-    const newAlerts: Alert[] = signals.map(s => {
+    const newAlerts: Alert[] = signals.map((s: AlphaSignal) => {
       const score = s.score ?? s.confidence ?? 0;
       return {
         id: s.id,
-        type: s.category === 'security' ? 'security' : s.category === 'developer' ? 'dev' : 'opportunity',
+        type: (s.category === 'security' ? 'security' : s.category === 'dev' ? 'dev' : 'opportunity') as Alert['type'],
         title: s.title,
         message: s.summary || s.description || '',
         priority: score >= 90 ? 'critical' : score >= 80 ? 'high' : score >= 60 ? 'medium' : 'low',
         read: false, // In a real app, we'd track this in a DB or localStorage
         createdAt: new Date(s.timestamp),
-        actionUrl: s.category === 'security' ? '/verify' : s.category === 'developer' ? '/feed' : '/feed'
+        actionUrl: s.category === 'security' ? '/verify' : s.category === 'dev' ? '/feed' : '/feed'
       };
     });
 

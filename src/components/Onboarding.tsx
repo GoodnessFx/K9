@@ -1,6 +1,5 @@
 import { useState } from 'react'; 
 import { motion } from 'framer-motion'; 
-import { K9DogScene } from './K9Dog/K9DogScene'; 
 import { K9LogoMark } from './K9Dog/K9LogoMark'; 
  
 interface OnboardingProps { 
@@ -11,7 +10,6 @@ export function Onboarding({ onComplete }: OnboardingProps) {
   const [step, setStep] = useState<'welcome' | 'phone' | 'interests' | 'done'>('welcome'); 
   const [phone, setPhone] = useState(''); 
   const [channel, setChannel] = useState<'whatsapp' | 'telegram'>('whatsapp'); 
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
  
   if (step === 'welcome') return ( 
     <div style={{ 
@@ -21,17 +19,14 @@ export function Onboarding({ onComplete }: OnboardingProps) {
       alignItems: 'center', justifyContent: 'center', 
       gap: 0, 
     }}> 
-      {/* 3D Dog — hero of the onboarding */} 
+      {/* K9 Logo — hero of the onboarding */} 
       <motion.div 
         initial={{ opacity: 0, scale: 0.8 }} 
         animate={{ opacity: 1, scale: 1 }} 
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }} 
-        style={{ width: 340, height: 260, flexShrink: 0 }} 
+        style={{ width: 340, height: 260, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }} 
       > 
-        {isMobile 
-          ? <div className="flex items-center justify-center h-full"><K9LogoMark size={120} animated glowColor="#8B5CF6" /></div>
-          : <K9DogScene state="idle" signalColor="#8B5CF6" /> 
-        }
+        <K9LogoMark size={160} animated glowColor="#8B5CF6" />
       </motion.div> 
  
       {/* Text below dog */} 
@@ -91,16 +86,13 @@ export function Onboarding({ onComplete }: OnboardingProps) {
       alignItems: 'center', justifyContent: 'center', 
       padding: 24, 
     }}> 
-      {/* Smaller dog, alert pose */} 
+      {/* Alert logo */} 
       <motion.div 
         initial={{ opacity: 0 }} 
         animate={{ opacity: 1 }} 
-        style={{ width: 180, height: 140, flexShrink: 0 }} 
+        style={{ width: 180, height: 140, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }} 
       > 
-        {isMobile 
-          ? <div className="flex items-center justify-center h-full"><K9LogoMark size={80} animated glowColor="#00C87A" /></div>
-          : <K9DogScene state="alert" signalColor="#00C87A" /> 
-        }
+        <K9LogoMark size={100} animated glowColor="#00C87A" />
       </motion.div> 
  
       <motion.div 
@@ -191,15 +183,12 @@ export function Onboarding({ onComplete }: OnboardingProps) {
       alignItems: 'center', justifyContent: 'center', 
     }}> 
       <motion.div 
-        style={{ width: 260, height: 200 }} 
+        style={{ width: 260, height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }} 
         initial={{ scale: 0.5, opacity: 0 }} 
         animate={{ scale: 1, opacity: 1 }} 
         transition={{ type: 'spring', stiffness: 200, damping: 15 }} 
       > 
-        {isMobile 
-          ? <div className="flex items-center justify-center h-full"><K9LogoMark size={100} animated glowColor="#00C87A" /></div>
-          : <K9DogScene state="celebrating" signalColor="#00C87A" /> 
-        }
+        <K9LogoMark size={140} animated glowColor="#00C87A" />
       </motion.div> 
       <motion.div 
         initial={{ opacity: 0, y: 12 }} 

@@ -173,12 +173,12 @@ export function CommunityHub() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Users className="h-8 w-8 text-purple-600" />
-            Community Hub
-          </h1>
-          <p className="text-muted-foreground">
-            Connect with fellow K9 hunters and share insights
-          </p>
+              <Users className="h-8 w-8 text-blue-600" />
+              Community
+            </h1>
+            <p className="text-muted-foreground">
+              Connect with fellow K9 hunters and share insights
+            </p>
         </div>
         
         <div className="flex items-center gap-2">

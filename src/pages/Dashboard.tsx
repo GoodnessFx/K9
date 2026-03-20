@@ -1,8 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useK9DataEngine, K9Signal } from '../hooks/useK9DataEngine';
-import { K9SignalCelebration } from '../components/K9Dog';
-import { useSignalCelebration } from '../hooks/useSignalCelebration';
 import { 
   Send, 
   Filter,
@@ -26,8 +24,8 @@ function cn(...inputs: any[]) {
 
 const FILTER_TABS = [
   { id: 'all',     label: 'All' },
-  { id: 'free',    label: 'Free Money / Airdrop' },
-  { id: 'jobs',    label: 'Jobs / Gigs / Bounty' },
+  { id: 'free',    label: 'Free Money' },
+  { id: 'jobs',    label: 'Crypto Jobs' },
   { id: 'insider', label: 'Insider Signals' },
   { id: 'market',  label: 'Market Moves' },
   { id: 'verify',  label: 'Safety Alerts' },
@@ -35,7 +33,6 @@ const FILTER_TABS = [
 
 export default function FeedPage() {
   const { signals, loading, lastUpdated, refreshNow, activeSources, totalSources } = useK9DataEngine();
-  const { celebrating, activeSignal, onCelebrationDone } = useSignalCelebration(signals as any);
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [minScore, setMinScore] = useState(65);
@@ -83,11 +80,11 @@ export default function FeedPage() {
         </div>
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
           <div className="space-y-2">
-            <h2 className="text-4xl font-display font-semibold tracking-tight text-t1 uppercase">On the Hunt</h2>
+            <h2 className="text-4xl font-display font-semibold tracking-tight text-t1 uppercase">Dispatch</h2>
             <div className="flex items-center gap-2 text-t3 text-[10px] font-mono uppercase tracking-widest">
               <span>{activeSources}/{totalSources} sources active</span>
               <span>·</span>
-              <span>{signals.length} signals found</span>
+              <span>K9 found {signals.length} opportunities. Freshest first.</span>
               {lastUpdated && (
                 <>
                   <span>·</span>
@@ -182,7 +179,7 @@ export default function FeedPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <label className="text-[10px] font-mono font-medium uppercase tracking-[0.08em] text-t3">Minimum Confidence Score</label>
+                    <label className="text-[10px] font-mono font-medium uppercase tracking-[0.08em] text-t3">How sure K9 is</label>
                     <span className="text-sm font-mono text-line-3 font-medium">{minScore}</span>
                   </div>
                   <input 
@@ -234,8 +231,8 @@ export default function FeedPage() {
                 <Zap className="h-10 w-10 text-t3" />
               </div>
               <div className="space-y-1">
-                <h3 className="text-xl font-sans font-medium text-t1">No opportunities matching filters</h3>
-                <p className="text-sm font-sans text-t2 max-w-xs mx-auto leading-relaxed">The engine is scanning 8 sources live. Try lowering the confidence score or check back shortly.</p>
+                <h3 className="text-xl font-sans font-medium text-t1">K9 is still sniffing. Opportunities load in a few seconds.</h3>
+                <p className="text-sm font-sans text-t2 max-w-xs mx-auto leading-relaxed">Check back shortly or try lowering the confidence score.</p>
               </div>
             </div>
           ) : (
@@ -249,12 +246,6 @@ export default function FeedPage() {
           )}
         </AnimatePresence>
       </section>
-      {/* K9 Celebration — floats above everything */}
-      <K9SignalCelebration 
-        signal={activeSignal as any} 
-        active={celebrating} 
-        onDone={onCelebrationDone} 
-      />
     </div>
   );
 }

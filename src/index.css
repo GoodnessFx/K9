@@ -354,3 +354,31 @@ button, a, [role="button"], input[type="checkbox"], input[type="radio"] {
     filter: brightness(1.1);
   }
 }
+
+/* Hide scrollbar on filter tabs row */ 
+.filter-scroll { scrollbar-width: none; -ms-overflow-style: none; } 
+.filter-scroll::-webkit-scrollbar { display: none; } 
+ 
+/* Stats grid — 2 col on mobile, 4 on sm+ */ 
+@media (min-width: 640px) { 
+  .sm\:grid-cols-4 { grid-template-columns: repeat(4, 1fr) !important; } 
+} 
+ 
+/* sm:block utility */ 
+@media (min-width: 640px) { 
+  .sm\:block { display: block !important; } 
+} 
+ 
+/* Pulse animation for live dot */ 
+@keyframes pulse { 
+  0%, 100% { opacity: 1; transform: scale(1); } 
+  50% { opacity: 0.6; transform: scale(1.1); } 
+} 
+ 
+/* Drawer full-width on mobile */ 
+@media (max-width: 520px) { 
+  /* The detail drawer maxWidth is 520px so it's naturally full on mobile */ 
+} 
+ 
+/* Touch targets — all interactive elements */ 
+button, a { min-height: 36px; } 
