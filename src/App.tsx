@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import AppLayout from './components/AppLayout';
-import { Dashboard } from './components/Dashboard';
+import Dashboard from './pages/Dashboard';
 import Radar from './pages/Radar';
 import ScannerPage from './pages/Scanner';
 import Telegram from './pages/Telegram';
