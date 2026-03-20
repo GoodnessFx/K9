@@ -1,8 +1,8 @@
-# 🐕 Tracedog - AI Alpha Hunter
+# 🐕 K9 - AI Alpha Hunter
 
-Tracedog is a production-ready AI-powered alpha tracking platform that hunts for trading opportunities, analyzes security risks, and aggregates insights from DeFi and TradFi markets while users sleep.
+K9 is a production-ready AI-powered alpha tracking platform that hunts for trading opportunities, analyzes security risks, and aggregates insights from DeFi and TradFi markets while users sleep.
 
-![Tracedog Dashboard](https://images.unsplash.com/photo-1634097537825-b446635b2f7f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0cmFkaW5nJTIwZGFzaGJvYXJkJTIwY3J5cHRvY3VycmVuY3klMjBkYXJrJTIwdGhlbWV8ZW58MXx8fHwxNzU4NTUyMTYzfDA&ixlib=rb-4.1.0&q=80&w=1200)
+![K9 Dashboard](https://images.unsplash.com/photo-1634097537825-b446635b2f7f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0cmFkaW5nJTIwZGFzaGJvYXJkJTIwY3J5cHRvY3VycmVuY3klMjBkYXJrJTIwdGhlbWV8ZW58MXx8fHwxNzU4NTUyMTYzfDA&ixlib=rb-4.1.0&q=80&w=1200)
 
 ## 🚀 Features
 
@@ -218,6 +218,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Tracedog** - Your loyal AI companion that never sleeps, always hunting for the next alpha opportunity. 🐕‍🦺
+**K9** - Your loyal AI companion that never sleeps, always hunting for the next alpha opportunity. 🐕‍🦺
 
-Built with ❤️ by the Tracedog team.
+Built with ❤️ by the K9 team.

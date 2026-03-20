@@ -1,0 +1,32 @@
+# Dependencies — NEVER push these 
+node_modules/ 
+backend/node_modules/ 
+  
+# Build output 
+dist/ 
+build/ 
+.next/ 
+  
+# Environment files — NEVER push these (contain your API keys) 
+.env 
+.env.local 
+.env.production 
+.env.development 
+backend/.env 
+  
+# System files 
+.DS_Store 
+Thumbs.db 
+*.log 
+logs/ 
+  
+# Editor 
+.vscode/ 
+.idea/ 
+*.swp 
+  
+# Testing 
+coverage/ 
+  
+# Misc 
+*.tsbuildinfo 

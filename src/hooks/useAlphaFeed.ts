@@ -1,227 +1,54 @@
-import { useState, useEffect } from 'react';
-import { toast } from 'sonner';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiClient } from '../services/api';
 import { AlphaSignal } from '../types';
 
-// Mock alpha signals for demonstration
-const mockAlphaSignals: AlphaSignal[] = [
-  {
-    id: '1',
-    title: 'PEPE Token Showing Strong Support at $0.00001',
-    description: 'Technical analysis shows PEPE has established strong support at current levels with increasing volume. RSI oversold.',
-    source: 'TradingView',
-    category: 'defi',
-    risk: 'medium',
-    confidence: 78,
-    timestamp: new Date(Date.now() - 1000 * 60 * 15),
-    tags: ['meme', 'support', 'oversold'],
-    verified: true,
-    upvotes: 24,
-    downvotes: 3,
-    tokenAddress: '0x6982508145454Ce325dDbE47a25d4ec3d2311933',
-    priceTarget: 0.000012,
-    timeframe: '1-2 weeks',
-    blockchain: 'ethereum'
-  },
-  {
-    id: '2',
-    title: 'ARB Airdrop Round 2 Hints Discovered',
-    description: 'On-chain analysis reveals potential ARB airdrop criteria being tracked. Early positioning may be beneficial.',
-    source: 'DefiLlama',
-    category: 'airdrop',
-    risk: 'low',
-    confidence: 85,
-    timestamp: new Date(Date.now() - 1000 * 60 * 45),
-    tags: ['airdrop', 'arbitrum', 'early'],
-    verified: true,
-    upvotes: 156,
-    downvotes: 8,
-    timeframe: '3-6 months',
-    blockchain: 'arbitrum'
-  },
-  {
-    id: '3',
-    title: 'NVIDIA Q4 Earnings Beat Expected',
-    description: 'NVIDIA reports 22% revenue growth QoQ. AI chip demand remains strong. Consider calls before market open.',
-    source: 'Bloomberg Terminal',
-    category: 'tradfi',
-    risk: 'medium',
-    confidence: 72,
-    timestamp: new Date(Date.now() - 1000 * 60 * 120),
-    tags: ['earnings', 'ai', 'semiconductor'],
-    verified: true,
-    upvotes: 89,
-    downvotes: 12,
-    priceTarget: 920,
-    timeframe: '1-2 days'
-  },
-  {
-    id: '4',
-    title: '⚠️ Suspicious Activity: SAFEMEME Token',
-    description: 'Large dev wallet movements detected. 15% of supply moved to unknown address. Recommend immediate exit.',
-    source: 'Rugcheck.xyz',
-    category: 'defi',
-    risk: 'high',
-    confidence: 95,
-    timestamp: new Date(Date.now() - 1000 * 60 * 30),
-    tags: ['rugpull', 'warning', 'exit'],
-    verified: true,
-    upvotes: 203,
-    downvotes: 5,
-    tokenAddress: '0x742d35Cc6a6C4532CF',
-    timeframe: 'immediate',
-    blockchain: 'bsc'
-  },
-  {
-    id: '5',
-    title: 'Uniswap V4 Hooks Beta Launch',
-    description: 'V4 testnet shows 40% gas savings. Early hook developers report successful implementations.',
-    source: 'Uniswap Labs',
-    category: 'dev',
-    risk: 'low',
-    confidence: 88,
-    timestamp: new Date(Date.now() - 1000 * 60 * 60),
-    tags: ['uniswap', 'v4', 'hooks', 'beta'],
-    verified: true,
-    upvotes: 67,
-    downvotes: 2,
-    timeframe: '1-2 months'
-  }
-];
-
 export function useAlphaFeed() {
-  const [signals, setSignals] = useState<AlphaSignal[]>(mockAlphaSignals);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
   const [filters, setFilters] = useState({
     category: 'all' as string,
     risk: 'all' as string,
-    minConfidence: 0
+    minScore: 0
   });
 
-  const filteredSignals = signals.filter(signal => {
-    if (filters.category !== 'all' && signal.category !== filters.category) return false;
-    if (filters.risk !== 'all' && signal.risk !== filters.risk) return false;
-    if (signal.confidence < filters.minConfidence) return false;
-    return true;
+  const { data: signals = [], isLoading, error, refetch } = useQuery<AlphaSignal[]>({
+    queryKey: ['signals', filters],
+    queryFn: () => apiClient.getSignals({
+      category: filters.category !== 'all' ? filters.category : undefined,
+      risk: filters.risk !== 'all' ? filters.risk : undefined,
+      minScore: filters.minScore > 0 ? filters.minScore : undefined
+    }),
+    refetchInterval: 30000, // Real-time refresh every 30s
   });
 
-  const refreshFeed = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Simulate API call with potential error
-      await new Promise((resolve, reject) => {
-        setTimeout(() => {
-          // Simulate occasional network errors
-          if (Math.random() < 0.1) {
-            reject(new Error('Network error: Failed to fetch latest signals'));
-          } else {
-            resolve(true);
-          }
-        }, 1000);
-      });
-      
-      // In a real app, this would fetch from multiple APIs
-      // CoinGecko, DefiLlama, TradingView, etc.
-      
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
-      console.error('Failed to refresh feed:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const upvoteMutation = useMutation({
+    mutationFn: async (signalId: string) => {
+      // In a real app, this would call an API
+      return signalId;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['signals'] });
+    },
+  });
 
-  const upvoteSignal = (signalId: string) => {
-    setSignals(prev => prev.map(signal => 
-      signal.id === signalId 
-        ? { ...signal, upvotes: signal.upvotes + 1 }
-        : signal
-    ));
-  };
-
-  const downvoteSignal = (signalId: string) => {
-    setSignals(prev => prev.map(signal => 
-      signal.id === signalId 
-        ? { ...signal, downvotes: signal.downvotes + 1 }
-        : signal
-    ));
-  };
-
-  const showAlphaFoundNotification = (signal: AlphaSignal) => {
-    if (signal.confidence >= 80) {
-      toast.success('🎯 High-Confidence Alpha Found!', {
-        description: `${signal.title} - Confidence: ${signal.confidence}% | ${signal.category.toUpperCase()}`,
-        duration: 8000,
-        action: {
-          label: 'View Signal',
-          onClick: () => {
-            // Scroll to the signal or highlight it
-            document.getElementById(signal.id)?.scrollIntoView({ behavior: 'smooth' });
-          }
-        }
-      });
-    }
-  };
-
-  useEffect(() => {
-    // Simulate real-time updates
-    const interval = setInterval(() => {
-      // Add new signal occasionally
-      if (Math.random() < 0.15) { // Increased chance for demo
-        const categories = ['defi', 'tradfi', 'nft', 'airdrop', 'dev'] as const;
-        const risks = ['low', 'medium', 'high'] as const;
-        const randomCategory = categories[Math.floor(Math.random() * categories.length)];
-        const randomRisk = risks[Math.floor(Math.random() * risks.length)];
-        const confidence = Math.floor(Math.random() * 40) + 60; // 60-100%
-        
-        const signalTitles = [
-          'ETH Layer 2 Arbitrage Opportunity',
-          'DeFi Yield Farming Strategy Detected',
-          'Memecoin Momentum Building',
-          'Institutional Accumulation Pattern',
-          'Cross-Chain Bridge Inefficiency',
-          'Governance Token Proposal Impact',
-          'Staking Rewards Rate Change',
-          'DEX Liquidity Pool Imbalance'
-        ];
-        
-        const newSignal: AlphaSignal = {
-          id: Date.now().toString(),
-          title: signalTitles[Math.floor(Math.random() * signalTitles.length)],
-          description: 'AI scanner identified potential trading opportunity based on on-chain data analysis and market sentiment indicators.',
-          source: 'Tracedog AI',
-          category: randomCategory,
-          risk: randomRisk,
-          confidence: confidence,
-          timestamp: new Date(),
-          tags: ['ai-detected', 'real-time', randomCategory],
-          verified: confidence > 85,
-          upvotes: Math.floor(Math.random() * 20),
-          downvotes: Math.floor(Math.random() * 5),
-          timeframe: ['1-2 hours', '4-8 hours', '1-3 days', '1-2 weeks'][Math.floor(Math.random() * 4)],
-          blockchain: ['ethereum', 'arbitrum', 'polygon', 'bsc'][Math.floor(Math.random() * 4)]
-        };
-        
-        setSignals(prev => [newSignal, ...prev].slice(0, 20));
-        
-        // Show dog notification for high-confidence signals
-        showAlphaFoundNotification(newSignal);
-      }
-    }, 12000); // Every 12 seconds for demo
-
-    return () => clearInterval(interval);
-  }, []);
+  const downvoteMutation = useMutation({
+    mutationFn: async (signalId: string) => {
+      // In a real app, this would call an API
+      return signalId;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['signals'] });
+    },
+  });
 
   return {
-    signals: filteredSignals,
-    loading,
-    error,
+    signals,
+    loading: isLoading,
+    error: error instanceof Error ? error.message : null,
     filters,
     setFilters,
-    refreshFeed,
-    upvoteSignal,
-    downvoteSignal
+    refreshFeed: refetch,
+    upvoteSignal: (id: string) => upvoteMutation.mutate(id),
+    downvoteSignal: (id: string) => downvoteMutation.mutate(id)
   };
 }

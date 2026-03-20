@@ -1,43 +1,49 @@
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '../services/api';
 import { toast } from 'sonner';
-import { Alert } from '../types';
-
-const mockAlerts: Alert[] = [
-  {
-    id: '1',
-    type: 'opportunity',
-    title: 'High Confidence Signal',
-    message: 'New trading opportunity detected with 89% confidence: PEPE breakout pattern',
-    priority: 'high',
-    read: false,
-    createdAt: new Date(Date.now() - 1000 * 60 * 5),
-    actionUrl: '/radar'
-  },
-  {
-    id: '2',
-    type: 'security',
-    title: 'Security Alert',
-    message: 'Suspicious activity detected in SAFEMEME token contract',
-    priority: 'critical',
-    read: false,
-    createdAt: new Date(Date.now() - 1000 * 60 * 15),
-    actionUrl: '/security'
-  },
-  {
-    id: '3',
-    type: 'dev',
-    title: 'New Framework Release',
-    message: 'Viem 2.0 has been released with improved TypeScript support',
-    priority: 'medium',
-    read: true,
-    createdAt: new Date(Date.now() - 1000 * 60 * 60),
-    actionUrl: '/dev'
-  }
-];
+import { Alert, AlphaSignal } from '../types';
 
 export function useNotifications() {
-  const [alerts, setAlerts] = useState<Alert[]>(mockAlerts);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  const { data: signals = [] } = useQuery<AlphaSignal[]>({
+    queryKey: ['notifications-signals'],
+    queryFn: () => apiClient.getSignals({ limit: 10 }),
+    refetchInterval: 30000, // Poll every 30s
+  });
+
+  // Convert signals to alerts
+  useEffect(() => {
+    if (signals.length === 0) return;
+
+    const newAlerts: Alert[] = signals.map(s => ({
+      id: s.id,
+      type: s.category === 'security' ? 'security' : s.category === 'developer' ? 'dev' : 'opportunity',
+      title: s.title,
+      message: s.summary,
+      priority: s.score >= 90 ? 'critical' : s.score >= 80 ? 'high' : s.score >= 60 ? 'medium' : 'low',
+      read: false, // In a real app, we'd track this in a DB or localStorage
+      createdAt: new Date(s.timestamp),
+      actionUrl: s.category === 'security' ? '/verify' : s.category === 'developer' ? '/feed' : '/feed'
+    }));
+
+    // Simple deduplication and state update
+    setAlerts(prev => {
+      const existingIds = new Set(prev.map(a => a.id));
+      const filteredNew = newAlerts.filter(a => !existingIds.has(a.id));
+      
+      // Show toast for new high-priority alerts
+      filteredNew.forEach(a => {
+        if (a.priority === 'critical' || a.priority === 'high') {
+          showToast(a);
+        }
+      });
+
+      return [...filteredNew, ...prev].slice(0, 50);
+    });
+  }, [signals]);
 
   useEffect(() => {
     const unread = alerts.filter(alert => !alert.read).length;
@@ -54,114 +60,23 @@ export function useNotifications() {
     setAlerts(prev => prev.map(alert => ({ ...alert, read: true })));
   };
 
-  const showToast = (alert: Alert, showDogImage = false) => {
+  const showToast = (alert: Alert) => {
     const toastFunction = alert.priority === 'critical' ? toast.error :
                          alert.priority === 'high' ? toast.warning :
                          toast.info;
 
-    // If it's a high-confidence alpha signal, show special notification
-    if (showDogImage && alert.type === 'opportunity' && alert.priority === 'high') {
-      toast.success(alert.title, {
-        description: `🎉 Alpha Found! ${alert.message}`,
-        duration: 6000, // Show longer for alpha signals
-        action: alert.actionUrl ? {
-          label: 'View Signal',
-          onClick: () => {
-            if (alert.actionUrl) {
-              window.location.hash = alert.actionUrl;
-            }
+    toastFunction(alert.title, {
+      description: alert.message,
+      action: alert.actionUrl ? {
+        label: 'View',
+        onClick: () => {
+          if (alert.actionUrl) {
+            window.location.hash = alert.actionUrl;
           }
-        } : undefined
-      });
-    } else {
-      toastFunction(alert.title, {
-        description: alert.message,
-        action: alert.actionUrl ? {
-          label: 'View',
-          onClick: () => {
-            if (alert.actionUrl) {
-              window.location.hash = alert.actionUrl;
-            }
-          }
-        } : undefined
-      });
-    }
+        }
+      } : undefined
+    });
   };
-
-  const simulateNewAlert = () => {
-    // Generate random alert types and priorities
-    const alertTypes = ['opportunity', 'security', 'dev', 'news'] as const;
-    const priorities = ['low', 'medium', 'high', 'critical'] as const;
-    
-    const randomType = alertTypes[Math.floor(Math.random() * alertTypes.length)];
-    const randomPriority = priorities[Math.floor(Math.random() * priorities.length)];
-    
-    // Higher chance for high-confidence alpha signals
-    const isAlphaSignal = randomType === 'opportunity' && Math.random() < 0.3;
-    
-    const messages = {
-      opportunity: [
-        'New high-confidence alpha signal detected by Tracedog AI',
-        'Strong trading opportunity identified with 85%+ confidence',
-        'AI scanner found potential breakout pattern',
-        'DeFi yield opportunity discovered',
-        'Arbitrage opportunity detected'
-      ],
-      security: [
-        'Suspicious activity detected in smart contract',
-        'Potential rug pull warning for trending token',
-        'Liquidity lock expiration alert',
-        'Dev wallet movement detected'
-      ],
-      dev: [
-        'New protocol upgrade announcement',
-        'Security vulnerability disclosed',
-        'Major framework update released',
-        'Bug bounty program launched'
-      ],
-      news: [
-        'Breaking: Major exchange listing announced',
-        'Regulatory news affecting crypto markets',
-        'Institutional adoption milestone reached',
-        'Market sentiment shift detected'
-      ]
-    };
-
-    const titles = {
-      opportunity: 'Alpha Signal Detected 🎯',
-      security: 'Security Alert ⚠️',
-      dev: 'Developer Update 👨‍💻',
-      news: 'Market News 📰'
-    };
-
-    const newAlert: Alert = {
-      id: Date.now().toString(),
-      type: randomType,
-      title: titles[randomType],
-      message: messages[randomType][Math.floor(Math.random() * messages[randomType].length)],
-      priority: isAlphaSignal ? 'high' : randomPriority,
-      read: false,
-      createdAt: new Date(),
-      actionUrl: randomType === 'opportunity' ? '/dashboard' : `/${randomType}`
-    };
-
-    setAlerts(prev => [newAlert, ...prev]);
-    
-    // Show dog image for high-confidence alpha signals
-    const showDog = isAlphaSignal || (randomType === 'opportunity' && randomPriority === 'high');
-    showToast(newAlert, showDog);
-  };
-
-  // Simulate real-time notifications
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (Math.random() < 0.1) { // 10% chance every interval
-        simulateNewAlert();
-      }
-    }, 30000); // Every 30 seconds
-
-    return () => clearInterval(interval);
-  }, []);
 
   return {
     alerts,

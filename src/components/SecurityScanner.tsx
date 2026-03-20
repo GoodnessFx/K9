@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
+import { apiClient } from '../services/api';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
@@ -17,149 +18,72 @@ import {
   Lock,
   Unlock,
   Zap,
-  Activity
+  Activity,
+  Loader2
 } from 'lucide-react';
-import { SecurityAnalysis } from '../types';
-
-const mockAnalyses: SecurityAnalysis[] = [
-  {
-    contractAddress: '0x6982508145454Ce325dDbE47a25d4ec3d2311933',
-    riskLevel: 'safe',
-    liquidityLocked: true,
-    rugPullRisk: 15,
-    devWalletMovement: false,
-    honeypotDetected: false,
-    auditStatus: 'verified',
-    lastUpdated: new Date(Date.now() - 1000 * 60 * 30),
-    findings: [
-      'Liquidity locked for 6 months',
-      'Contract verified on Etherscan',
-      'No suspicious functions detected',
-      'Ownership renounced',
-      'No hidden mint functions'
-    ]
-  },
-  {
-    contractAddress: '0x742d35Cc6a6C4532CFc66FFcE56e77842d1c5478',
-    riskLevel: 'danger',
-    liquidityLocked: false,
-    rugPullRisk: 85,
-    devWalletMovement: true,
-    honeypotDetected: true,
-    auditStatus: 'unaudited',
-    lastUpdated: new Date(Date.now() - 1000 * 60 * 5),
-    findings: [
-      '⚠️ Honeypot detected - selling disabled',
-      '🚨 Dev wallet moved 40% of tokens',
-      '❌ Liquidity not locked',
-      '❌ Contract not verified',
-      '❌ Suspicious transfer functions',
-      '❌ Owner can mint unlimited tokens'
-    ]
-  },
-  {
-    contractAddress: '0xA0b86a33E6B99d0b25dd72e26b55D89f6f3B3e31',
-    riskLevel: 'caution',
-    liquidityLocked: true,
-    rugPullRisk: 45,
-    devWalletMovement: false,
-    honeypotDetected: false,
-    auditStatus: 'pending',
-    lastUpdated: new Date(Date.now() - 1000 * 60 * 60 * 2),
-    findings: [
-      '⚠️ High trading fees (12%)',
-      '✅ Liquidity locked for 3 months',
-      '⚠️ Large dev wallet (15% supply)',
-      '✅ Contract partially verified',
-      '⚠️ Unusual token distribution'
-    ]
-  }
-];
 
 export function SecurityScanner() {
   const [scanning, setScanning] = useState(false);
   const [searchAddress, setSearchAddress] = useState('');
-  const [scanProgress, setScanProgress] = useState(0);
-  const [currentAnalysis, setCurrentAnalysis] = useState<SecurityAnalysis | null>(null);
+  const [scanStep, setScanStep] = useState(0);
+  const [currentAnalysis, setCurrentAnalysis] = useState<any | null>(null);
+
+  const scanSteps = [
+    { label: 'Fetching Source Code', icon: <Search className="h-4 w-4" /> },
+    { label: 'Static Analysis', icon: <Activity className="h-4 w-4" /> },
+    { label: 'AI Risk Assessment', icon: <Zap className="h-4 w-4" /> },
+  ];
 
   const handleScan = async () => {
     if (!searchAddress) return;
 
     setScanning(true);
-    setScanProgress(0);
+    setScanStep(0);
     setCurrentAnalysis(null);
 
-    // Simulate scanning process
-    const scanSteps = [
-      'Analyzing contract bytecode...',
-      'Checking liquidity locks...',
-      'Scanning for honeypot patterns...',
-      'Analyzing token distribution...',
-      'Checking dev wallet activity...',
-      'Verifying audit status...',
-      'Calculating risk score...',
-      'Generating report...'
-    ];
-
-    for (let i = 0; i < scanSteps.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setScanProgress(((i + 1) / scanSteps.length) * 100);
-    }
-
-    // Return mock result or random analysis
-    const existingAnalysis = mockAnalyses.find(a => 
-      a.contractAddress.toLowerCase() === searchAddress.toLowerCase()
-    );
-
-    if (existingAnalysis) {
-      setCurrentAnalysis(existingAnalysis);
-    } else {
-      // Generate random analysis for demo
-      const randomAnalysis: SecurityAnalysis = {
+    try {
+      // Step 1: Fetching
+      setScanStep(0);
+      await new Promise(r => setTimeout(r, 1500));
+      
+      // Step 2: Static
+      setScanStep(1);
+      await new Promise(r => setTimeout(r, 1500));
+      
+      // Step 3: AI
+      setScanStep(2);
+      const result = await apiClient.scanContract(searchAddress, 'ethereum');
+      await new Promise(r => setTimeout(r, 1000));
+      
+      setCurrentAnalysis({
+        ...result,
         contractAddress: searchAddress,
-        riskLevel: Math.random() > 0.7 ? 'danger' : Math.random() > 0.4 ? 'caution' : 'safe',
-        liquidityLocked: Math.random() > 0.3,
-        rugPullRisk: Math.floor(Math.random() * 100),
-        devWalletMovement: Math.random() > 0.7,
-        honeypotDetected: Math.random() > 0.8,
-        auditStatus: Math.random() > 0.5 ? 'verified' : 'unaudited',
-        lastUpdated: new Date(),
-        findings: [
-          'Contract analysis completed',
-          'Token distribution checked',
-          'Liquidity status verified'
-        ]
-      };
-      setCurrentAnalysis(randomAnalysis);
+        lastUpdated: new Date()
+      });
+    } catch (error) {
+      console.error('Scan failed:', error);
+    } finally {
+      setScanning(false);
     }
-
-    setScanning(false);
   };
 
   const getRiskColor = (risk: string) => {
     switch (risk) {
-      case 'safe': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 border-green-200 dark:border-green-800';
-      case 'caution': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800';
-      case 'danger': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 border-red-200 dark:border-red-800';
+      case 'low': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 border-green-200 dark:border-green-800';
+      case 'medium': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800';
+      case 'high': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300 border-orange-200 dark:border-orange-800';
+      case 'critical': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 border-red-200 dark:border-red-800';
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300 border-gray-200 dark:border-gray-800';
     }
   };
 
   const getRiskIcon = (risk: string) => {
     switch (risk) {
-      case 'safe': return <CheckCircle className="h-5 w-5" />;
-      case 'caution': return <AlertTriangle className="h-5 w-5" />;
-      case 'danger': return <XCircle className="h-5 w-5" />;
+      case 'low': return <CheckCircle className="h-5 w-5" />;
+      case 'medium': return <AlertTriangle className="h-5 w-5" />;
+      case 'high': return <AlertTriangle className="h-5 w-5" />;
+      case 'critical': return <XCircle className="h-5 w-5" />;
       default: return <Shield className="h-5 w-5" />;
-    }
-  };
-
-  const getAuditStatusColor = (status: string) => {
-    switch (status) {
-      case 'verified': return 'text-green-600';
-      case 'pending': return 'text-yellow-600';
-      case 'unaudited': return 'text-red-600';
-      default: return 'text-gray-600';
     }
   };
 
@@ -180,43 +104,45 @@ export function SecurityScanner() {
       <Card className="p-6">
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-medium mb-2 block">Contract Address</label>
+            <label className="text-sm font-medium mb-2 block uppercase tracking-tighter">Contract Address (EVM)</label>
             <div className="flex gap-2">
               <Input
                 placeholder="0x... (Enter contract address to scan)"
                 value={searchAddress}
                 onChange={(e) => setSearchAddress(e.target.value)}
-                className="flex-1"
+                className="flex-1 font-mono"
               />
               <Button 
                 onClick={handleScan}
                 disabled={scanning || !searchAddress}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 font-bold"
               >
-                {scanning ? (
-                  <>
-                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Scanning
-                  </>
-                ) : (
-                  <>
-                    <Search className="h-4 w-4" />
-                    Scan Contract
-                  </>
-                )}
+                {scanning ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                {scanning ? 'SCANNING...' : 'SCAN CONTRACT'}
               </Button>
             </div>
           </div>
 
-          {scanning && (
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">Analyzing contract security...</span>
-                <span className="text-sm text-muted-foreground">{Math.round(scanProgress)}%</span>
-              </div>
-              <Progress value={scanProgress} />
-            </div>
-          )}
+          <AnimatePresence>
+            {scanning && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="space-y-4 pt-4 border-t"
+              >
+                <div className="grid grid-cols-3 gap-4">
+                  {scanSteps.map((step, idx) => (
+                    <div key={idx} className={`flex flex-col items-center gap-2 p-3 rounded-lg border transition-colors ${scanStep >= idx ? 'bg-primary/5 border-primary text-primary' : 'bg-muted/50 text-muted-foreground'}`}>
+                      {scanStep > idx ? <CheckCircle className="h-5 w-5" /> : step.icon}
+                      <span className="text-[10px] font-black uppercase">{step.label}</span>
+                    </div>
+                  ))}
+                </div>
+                <Progress value={(scanStep + 1) * 33.3} className="h-1" />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </Card>
 
@@ -225,182 +151,104 @@ export function SecurityScanner() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
         >
-          <Card className="p-6">
+          <Card className="p-6 border-t-4 border-t-primary">
             <div className="space-y-6">
-              {/* Risk Level Header */}
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <Badge className={getRiskColor(currentAnalysis.riskLevel)} variant="outline">
-                      {getRiskIcon(currentAnalysis.riskLevel)}
-                      {currentAnalysis.riskLevel.toUpperCase()} 
+                    <Badge className={`${getRiskColor(currentAnalysis.overallRisk)} font-black`} variant="outline">
+                      {getRiskIcon(currentAnalysis.overallRisk)}
+                      {currentAnalysis.overallRisk.toUpperCase()} RISK
                     </Badge>
-                    <Badge variant="outline" className={getAuditStatusColor(currentAnalysis.auditStatus)}>
+                    <Badge variant="outline" className="font-bold">
                       {currentAnalysis.auditStatus.toUpperCase()}
                     </Badge>
                   </div>
-                  <p className="font-mono text-sm text-muted-foreground break-all">
+                  <p className="font-mono text-xs text-muted-foreground break-all">
                     {currentAnalysis.contractAddress}
                   </p>
                 </div>
-                <Button variant="ghost" size="icon">
-                  <ExternalLink className="h-4 w-4" />
+                <Button variant="ghost" size="sm" className="font-bold text-xs uppercase">
+                  <ExternalLink className="h-3 w-3 mr-1" />
+                  Explorer
                 </Button>
               </div>
 
               {/* Risk Metrics */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-4 border rounded-lg">
+                <Card className="p-4 bg-muted/30">
                   <div className="flex items-center gap-2 mb-2">
                     <Zap className="h-4 w-4 text-red-600" />
-                    <span className="text-sm font-medium">Rug Pull Risk</span>
+                    <span className="text-xs font-black uppercase">Rug Pull Risk</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Progress value={currentAnalysis.rugPullRisk} className="flex-1 h-2" />
-                    <span className="text-sm font-semibold">{currentAnalysis.rugPullRisk}%</span>
+                    <span className="text-sm font-black">{currentAnalysis.rugPullRisk}%</span>
                   </div>
-                </div>
+                </Card>
 
-                <div className="p-4 border rounded-lg">
+                <Card className="p-4 bg-muted/30">
                   <div className="flex items-center gap-2 mb-2">
-                    {currentAnalysis.liquidityLocked ? (
-                      <Lock className="h-4 w-4 text-green-600" />
-                    ) : (
-                      <Unlock className="h-4 w-4 text-red-600" />
-                    )}
-                    <span className="text-sm font-medium">Liquidity</span>
+                    {currentAnalysis.liquidityLocked ? <Lock className="h-4 w-4 text-green-600" /> : <Unlock className="h-4 w-4 text-red-600" />}
+                    <span className="text-xs font-black uppercase">Liquidity</span>
                   </div>
-                  <span className={`text-sm font-semibold ${
-                    currentAnalysis.liquidityLocked ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {currentAnalysis.liquidityLocked ? 'Locked' : 'Not Locked'}
+                  <span className={`text-sm font-black ${currentAnalysis.liquidityLocked ? 'text-green-600' : 'text-red-600'}`}>
+                    {currentAnalysis.liquidityLocked ? 'LOCKED' : 'UNLOCKED'}
                   </span>
-                </div>
+                </Card>
 
-                <div className="p-4 border rounded-lg">
+                <Card className="p-4 bg-muted/30">
                   <div className="flex items-center gap-2 mb-2">
                     <Activity className="h-4 w-4 text-blue-600" />
-                    <span className="text-sm font-medium">Dev Wallet</span>
+                    <span className="text-xs font-black uppercase">Dev Activity</span>
                   </div>
-                  <span className={`text-sm font-semibold ${
-                    currentAnalysis.devWalletMovement ? 'text-red-600' : 'text-green-600'
-                  }`}>
-                    {currentAnalysis.devWalletMovement ? 'Active' : 'Stable'}
-                  </span>
-                </div>
+                  <span className="text-sm font-black uppercase">{currentAnalysis.devWalletActivity}</span>
+                </Card>
 
-                <div className="p-4 border rounded-lg">
+                <Card className="p-4 bg-muted/30">
                   <div className="flex items-center gap-2 mb-2">
                     <Eye className="h-4 w-4 text-purple-600" />
-                    <span className="text-sm font-medium">Honeypot</span>
+                    <span className="text-xs font-black uppercase">Honeypot</span>
                   </div>
-                  <span className={`text-sm font-semibold ${
-                    currentAnalysis.honeypotDetected ? 'text-red-600' : 'text-green-600'
-                  }`}>
-                    {currentAnalysis.honeypotDetected ? 'Detected' : 'Clear'}
+                  <span className={`text-sm font-black ${currentAnalysis.honeypotDetected ? 'text-red-600' : 'text-green-600'}`}>
+                    {currentAnalysis.honeypotDetected ? 'DETECTED' : 'NOT DETECTED'}
                   </span>
-                </div>
+                </Card>
               </div>
 
               {/* Findings */}
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Security Analysis</h3>
+              <div className="space-y-3">
+                <h3 className="text-sm font-black uppercase tracking-widest border-b pb-2">Analysis Findings</h3>
                 <div className="space-y-2">
-                  {currentAnalysis.findings.map((finding, index) => (
-                    <div key={index} className="flex items-start gap-2 p-3 bg-accent/50 rounded-lg">
-                      {finding.includes('⚠️') || finding.includes('❌') ? (
-                        <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
-                      ) : finding.includes('🚨') ? (
-                        <XCircle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
-                      ) : (
-                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                      )}
-                      <span className="text-sm">{finding}</span>
+                  {currentAnalysis.findings.map((finding: any, index: number) => (
+                    <div key={index} className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg border-l-4 border-l-primary">
+                      <div className="mt-1">
+                        {finding.severity === 'critical' || finding.severity === 'high' ? (
+                          <AlertTriangle className="h-4 w-4 text-red-600" />
+                        ) : (
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold">{finding.message}</p>
+                        <p className="text-xs text-muted-foreground mt-1">Rec: {finding.recommendation}</p>
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Footer */}
-              <div className="flex items-center justify-between pt-4 border-t text-sm text-muted-foreground">
+              <div className="flex items-center justify-between pt-4 border-t text-[10px] font-bold text-muted-foreground uppercase">
                 <div className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
-                  Last updated: {currentAnalysis.lastUpdated.toLocaleString()}
+                  <Clock className="h-3 w-3" />
+                  Scanned: {currentAnalysis.lastUpdated.toLocaleString()}
                 </div>
-                <Button variant="ghost" size="sm" className="flex items-center gap-1">
-                  <ExternalLink className="h-3 w-3" />
-                  View on Explorer
-                </Button>
               </div>
             </div>
           </Card>
         </motion.div>
       )}
-
-      {/* Recent Scans */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4">Recent Security Scans</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {mockAnalyses.map((analysis, index) => (
-            <motion.div
-              key={analysis.contractAddress}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer"
-                    onClick={() => setCurrentAnalysis(analysis)}>
-                <div className="space-y-3">
-                  <div className="flex items-start justify-between">
-                    <Badge className={getRiskColor(analysis.riskLevel)} variant="outline">
-                      {getRiskIcon(analysis.riskLevel)}
-                      {analysis.riskLevel.toUpperCase()}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(analysis.lastUpdated).toLocaleDateString()}
-                    </span>
-                  </div>
-                  
-                  <p className="font-mono text-xs text-muted-foreground truncate">
-                    {analysis.contractAddress}
-                  </p>
-                  
-                  <div className="flex items-center justify-between text-sm">
-                    <span>Risk Score:</span>
-                    <span className={`font-semibold ${
-                      analysis.rugPullRisk > 70 ? 'text-red-600' :
-                      analysis.rugPullRisk > 40 ? 'text-yellow-600' : 'text-green-600'
-                    }`}>
-                      {analysis.rugPullRisk}%
-                    </span>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className="flex items-center gap-1">
-                      {analysis.liquidityLocked ? (
-                        <CheckCircle className="h-3 w-3 text-green-600" />
-                      ) : (
-                        <XCircle className="h-3 w-3 text-red-600" />
-                      )}
-                      Liquidity
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {analysis.honeypotDetected ? (
-                        <XCircle className="h-3 w-3 text-red-600" />
-                      ) : (
-                        <CheckCircle className="h-3 w-3 text-green-600" />
-                      )}
-                      Honeypot
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }

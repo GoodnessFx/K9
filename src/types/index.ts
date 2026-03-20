@@ -1,123 +1,91 @@
-// Core types for Tracedog application
-
-export interface AlphaSignal {
-  id: string;
-  title: string;
-  description: string;
-  source: string;
-  category: 'defi' | 'tradfi' | 'nft' | 'airdrop' | 'dev';
-  risk: 'low' | 'medium' | 'high';
-  confidence: number; // 0-100
-  timestamp: Date;
-  tags: string[];
-  verified: boolean;
-  upvotes: number;
-  downvotes: number;
-  tokenAddress?: string;
-  priceTarget?: number;
-  timeframe?: string;
-  blockchain?: string;
-}
-
-export interface SecurityAnalysis {
-  contractAddress: string;
-  riskLevel: 'safe' | 'caution' | 'danger';
-  liquidityLocked: boolean;
-  rugPullRisk: number; // 0-100
-  devWalletMovement: boolean;
-  honeypotDetected: boolean;
-  auditStatus: 'verified' | 'pending' | 'unaudited';
-  lastUpdated: Date;
-  findings: string[];
-}
-
-export interface TradingOpportunity {
-  id: string;
-  token: string;
-  symbol: string;
-  action: 'buy' | 'sell' | 'hold';
-  currentPrice: number;
-  targetPrice: number;
-  stopLoss?: number;
-  confidence: number;
-  reasoning: string[];
-  timeframe: string;
-  riskLevel: 'low' | 'medium' | 'high';
-  source: string;
-  createdAt: Date;
-}
-
-export interface DeveloperUpdate {
-  id: string;
-  title: string;
-  description: string;
-  category: 'sdk' | 'framework' | 'protocol' | 'tool' | 'security';
-  githubUrl?: string;
-  docsUrl?: string;
-  impact: 'low' | 'medium' | 'high';
-  tags: string[];
-  createdAt: Date;
-  upvotes: number;
-}
-
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-  avatar?: string;
-  alphaScore: number;
-  reputation: number;
-  watchlist: string[];
-  preferences: UserPreferences;
-  createdAt: Date;
-}
-
-export interface UserPreferences {
-  categories: string[];
-  riskTolerance: 'conservative' | 'moderate' | 'aggressive';
-  notifications: {
-    email: boolean;
-    push: boolean;
-    telegram: boolean;
-    discord: boolean;
-  };
-  filters: {
-    minConfidence: number;
-    maxRisk: 'low' | 'medium' | 'high';
-    sources: string[];
-  };
-}
-
-export interface NewsItem {
+export interface Signal {
   id: string;
   title: string;
   summary: string;
-  content: string;
-  source: string;
-  category: string;
-  sentiment: 'bullish' | 'bearish' | 'neutral';
-  impact: 'low' | 'medium' | 'high';
-  tokens: string[];
-  publishedAt: Date;
-  verified: boolean;
-}
-
-export interface MarketData {
-  symbol: string;
-  price: number;
-  change24h: number;
-  volume24h: number;
-  marketCap: number;
-  updatedAt: Date;
+  analysis: string;
+  score: number;
+  confidence: number;
+  risk: 'low' | 'medium' | 'high' | 'critical';
+  category: 'defi' | 'security' | 'market' | 'onchain' | 'geo' | 'convergence' | 'airdrop' | 'jobs' | 'insider' | 'prediction' | 'free' | 'nft' | 'developer';
+  sources: string[];
+  timestamp: string;
+  url?: string;
+  upvotes: number;
+  downvotes: number;
+  isConvergence?: boolean;
+  intelligenceBrief?: string;
+  description?: string;
+  timeframe?: string;
+  source?: string;
+  priceTarget?: string;
+  stopLoss?: string;
+  tokenSymbol?: string;
+  tags?: string[];
 }
 
 export interface Alert {
   id: string;
-  type: 'opportunity' | 'security' | 'news' | 'dev';
+  type: 'security' | 'dev' | 'opportunity';
   title: string;
   message: string;
   priority: 'low' | 'medium' | 'high' | 'critical';
   read: boolean;
   createdAt: Date;
   actionUrl?: string;
+}
+
+export interface SignalFilters {
+  category: string;
+  risk: string;
+  minScore: number;
+  chain?: string;
+  sortBy?: string;
+}
+
+export type AlphaSignal = Signal;
+export type ScoredSignal = Signal;
+
+export interface ChainRiskIndex {
+  chain: string;
+  score: number;
+  status: 'HEALTHY' | 'BULLISH' | 'MODERATE' | 'HIGH RISK';
+  components: {
+    tvlChange24h: number;
+    exploitNews: number;
+    devActivity: number;
+    networkCongestion: number;
+    bridgeActivity: number;
+  };
+}
+
+export interface SecurityScanResult {
+  contractAddress: string;
+  chain: string;
+  overallRisk: 'low' | 'medium' | 'high' | 'critical';
+  rugPullRisk: number;
+  honeypotDetected: boolean;
+  ownershipRenounced: boolean;
+  liquidityLocked: boolean;
+  aiSummary: string;
+  timestamp: string;
+}
+
+export interface TelegramStatus {
+  connected: boolean;
+  botUsername?: string;
+  chatId?: string;
+}
+
+export interface TelegramMessage {
+  id: string;
+  text: string;
+  timestamp: string;
+  status: 'sent' | 'failed';
+}
+
+export interface TelegramRules {
+  minScore: number;
+  categories: string[];
+  frequency: 'instant' | 'batched' | 'digest';
+  convergenceOnly: boolean;
 }

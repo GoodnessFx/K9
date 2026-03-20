@@ -18,9 +18,9 @@ import {
   Calendar,
   BarChart3
 } from 'lucide-react';
-import { AlphaSignal } from '../types';
+import { ScoredSignal } from '../types';
 
-const savedSignals: AlphaSignal[] = [
+const savedSignals: ScoredSignal[] = [
   {
     id: '1',
     title: 'LayerZero Airdrop Strategy Complete',
@@ -29,12 +29,15 @@ const savedSignals: AlphaSignal[] = [
     category: 'airdrop',
     risk: 'low',
     confidence: 92,
-    timestamp: new Date('2024-01-15'),
+    score: 92,
+    timestamp: '2024-01-15',
     tags: ['airdrop', 'layerzero', 'strategy', 'completed'],
-    verified: true,
     upvotes: 0,
     downvotes: 0,
-    timeframe: 'completed'
+    timeframe: 'completed',
+    summary: 'LayerZero airdrop strategy completed.',
+    analysis: 'Low risk strategy.',
+    sources: ['Personal']
   },
   {
     id: '2',
@@ -44,13 +47,16 @@ const savedSignals: AlphaSignal[] = [
     category: 'defi',
     risk: 'medium',
     confidence: 85,
-    timestamp: new Date('2024-01-10'),
+    score: 85,
+    timestamp: '2024-01-10',
     tags: ['arbitrum', 'gmx', 'perpetuals', 'real-yield'],
-    verified: true,
     upvotes: 23,
     downvotes: 2,
-    priceTarget: 85,
-    timeframe: '3-6 months'
+    priceTarget: '85',
+    timeframe: '3-6 months',
+    summary: 'GMX protocol analysis.',
+    analysis: 'Medium risk DeFi.',
+    sources: ['Research']
   },
   {
     id: '3',
@@ -60,12 +66,15 @@ const savedSignals: AlphaSignal[] = [
     category: 'nft',
     risk: 'high',
     confidence: 72,
-    timestamp: new Date('2024-01-08'),
+    score: 72,
+    timestamp: '2024-01-08',
     tags: ['solana', 'mobile', 'hardware', 'ecosystem'],
-    verified: false,
     upvotes: 156,
     downvotes: 34,
-    timeframe: '6-12 months'
+    timeframe: '6-12 months',
+    summary: 'Solana Saga analysis.',
+    analysis: 'High risk hardware/NFT.',
+    sources: ['Analysis']
   },
   {
     id: '4',
@@ -75,12 +84,15 @@ const savedSignals: AlphaSignal[] = [
     category: 'defi',
     risk: 'medium',
     confidence: 78,
-    timestamp: new Date('2024-01-05'),
+    score: 78,
+    timestamp: '2024-01-05',
     tags: ['ai', 'narrative', 'compute', 'infrastructure'],
-    verified: true,
     upvotes: 89,
     downvotes: 12,
-    timeframe: '6-18 months'
+    timeframe: '6-18 months',
+    summary: 'AI token thesis.',
+    analysis: 'Medium risk DeFi.',
+    sources: ['Analysis']
   },
   {
     id: '5',
@@ -90,12 +102,15 @@ const savedSignals: AlphaSignal[] = [
     category: 'nft',
     risk: 'high',
     confidence: 68,
-    timestamp: new Date('2024-01-03'),
+    score: 68,
+    timestamp: '2024-01-03',
     tags: ['bitcoin', 'ordinals', 'nft', 'cycles'],
-    verified: true,
     upvotes: 45,
     downvotes: 8,
-    timeframe: '2-4 months'
+    timeframe: '2-4 months',
+    summary: 'Bitcoin Ordinals analysis.',
+    analysis: 'High risk NFT.',
+    sources: ['Research']
   }
 ];
 
@@ -111,13 +126,13 @@ export function AlphaVault() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState('saved');
 
-  const allTags = Array.from(new Set(savedSignals.flatMap(signal => signal.tags)));
+  const allTags = Array.from(new Set(savedSignals.flatMap(signal => signal.tags || [])));
   
   const filteredSignals = savedSignals.filter(signal => {
     const matchesSearch = signal.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         signal.description.toLowerCase().includes(searchQuery.toLowerCase());
+                         (signal.description || '').toLowerCase().includes(searchQuery.toLowerCase());
     const matchesTags = selectedTags.length === 0 || 
-                       selectedTags.some(tag => signal.tags.includes(tag));
+                       selectedTags.some(tag => (signal.tags || []).includes(tag));
     return matchesSearch && matchesTags;
   });
 
@@ -281,7 +296,7 @@ export function AlphaVault() {
                         <div className="flex items-center gap-1 mb-1">
                           <Calendar className="h-4 w-4 text-muted-foreground" />
                           <span className="text-sm text-muted-foreground">
-                            {signal.timestamp.toLocaleDateString()}
+                            {new Date(signal.timestamp).toLocaleDateString()}
                           </span>
                         </div>
                         {signal.confidence && (
@@ -299,7 +314,7 @@ export function AlphaVault() {
                     {(signal.priceTarget || signal.timeframe) && (
                       <div className="flex flex-wrap gap-4 text-sm">
                         {signal.priceTarget && (
-                          <span>Target: ${signal.priceTarget.toLocaleString()}</span>
+                          <span>Target: {signal.priceTarget}</span>
                         )}
                         {signal.timeframe && signal.timeframe !== 'completed' && (
                           <span>Timeframe: {signal.timeframe}</span>
@@ -314,7 +329,7 @@ export function AlphaVault() {
 
                     {/* Tags */}
                     <div className="flex flex-wrap gap-2">
-                      {signal.tags.map((tag) => (
+                      {(signal.tags || []).map((tag) => (
                         <Badge 
                           key={tag} 
                           variant="secondary" 

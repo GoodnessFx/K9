@@ -24,7 +24,7 @@ export function NotificationCenter() {
       case 'opportunity': return <TrendingUp className="h-4 w-4" />;
       case 'security': return <Shield className="h-4 w-4" />;
       case 'dev': return <Code className="h-4 w-4" />;
-      case 'news': return <Zap className="h-4 w-4" />;
+      case 'opportunity': return <Zap className="h-4 w-4" />;
       default: return <Bell className="h-4 w-4" />;
     }
   };

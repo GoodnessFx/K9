@@ -1,4 +1,4 @@
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useAlphaFeed } from '../hooks/useAlphaFeed';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
@@ -6,23 +6,41 @@ import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Slider } from './ui/slider';
 import { toast } from 'sonner';
+import { MarketPanel } from './MarketPanel';
 import { 
+  Zap, 
   RefreshCw, 
-  TrendingUp, 
-  Clock,
-  Shield,
-  AlertTriangle,
-  CheckCircle,
+  Target, 
+  Shield, 
+  ExternalLink, 
+  Bookmark, 
   ThumbsUp,
   ThumbsDown,
-  ExternalLink,
-  Zap,
-  Target,
-  Bookmark
+  Share2,
+  Info,
+  Sparkles,
+  Activity,
+  Clock
 } from 'lucide-react';
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs: any[]) {
+  return twMerge(clsx(inputs));
+}
+
+function getRiskIcon(risk: string): string {
+  const icons: Record<string, string> = {
+    low:      '🟢',
+    medium:   '🟡',
+    high:     '🟠',
+    critical: '🔴',
+  };
+  return icons[risk] ?? '⚪';
+}
 
 export function Dashboard() {
-  const { signals, loading, error, filters, setFilters, refreshFeed, upvoteSignal, downvoteSignal } = useAlphaFeed();
+  const { signals, loading, filters, setFilters, refreshFeed, upvoteSignal, downvoteSignal } = useAlphaFeed();
 
   const saveSignal = (signalId: string) => {
     const signal = signals.find(s => s.id === signalId);
@@ -30,293 +48,206 @@ export function Dashboard() {
       toast.success('Alpha saved to vault!', {
         description: (
           <div className="flex items-center gap-3">
-            <img 
-              src="https://images.unsplash.com/photo-1693615775129-f2004d6e3e0b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoYXBweSUyMGdvbGRlbiUyMHJldHJpZXZlciUyMGRvZyUyMHNtaWxpbmd8ZW58MXx8fHwxNzU4NTUyODUyfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-              alt="Happy Tracedog"
-              className="w-10 h-10 rounded-full object-cover"
-            />
+            <div className="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-white">
+              <Bookmark className="h-5 w-5" />
+            </div>
             <div>
-              <p className="font-medium">{signal.title}</p>
-              <p className="text-sm opacity-80">Added to your Alpha Vault</p>
+              <p className="font-bold text-sm">{signal.title}</p>
+              <p className="text-xs opacity-80">Added to your Alpha Vault</p>
             </div>
           </div>
         ),
         duration: 4000,
-        action: {
-          label: 'View Vault',
-          onClick: () => {
-            // Navigate to vault - in a real app this would use router
-            window.location.hash = '/vault';
-          }
-        }
       });
     }
   };
 
   const getRiskColor = (risk: string) => {
     switch (risk) {
-      case 'low': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-      case 'high': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+      case 'low': return 'text-green-500 bg-green-500/10 border-green-500/20';
+      case 'medium': return 'text-yellow-500 bg-yellow-500/10 border-yellow-500/20';
+      case 'high': return 'text-red-500 bg-red-500/10 border-red-500/20';
+      case 'critical': return 'text-purple-500 bg-purple-500/10 border-purple-500/20';
+      default: return 'text-gray-500 bg-gray-500/10 border-gray-500/20';
     }
   };
 
-  const getRiskIcon = (risk: string) => {
-    switch (risk) {
-      case 'low': return <CheckCircle className="h-4 w-4" />;
-      case 'medium': return <Shield className="h-4 w-4" />;
-      case 'high': return <AlertTriangle className="h-4 w-4" />;
-      default: return <Shield className="h-4 w-4" />;
-    }
-  };
-
-  const getCategoryColor = (category: string) => {
+  const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'defi': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-      case 'tradfi': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
-      case 'nft': return 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300';
-      case 'airdrop': return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300';
-      case 'dev': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+      case 'defi': return <Activity className="h-3 w-3" />;
+      case 'token_launch': return <Sparkles className="h-3 w-3" />;
+      case 'whale': return <Target className="h-3 w-3" />;
+      case 'security': return <Shield className="h-3 w-3" />;
+      case 'convergence': return <Zap className="h-3 w-3" />;
+      default: return <Info className="h-3 w-3" />;
     }
   };
 
-  const getTimeAgo = (date: Date) => {
+  const getTimeAgo = (timestamp: string | Date) => {
+    const date = new Date(timestamp);
     const now = new Date();
     const diff = now.getTime() - date.getTime();
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(minutes / 60);
     
+    if (minutes < 1) return 'Just now';
     if (minutes < 60) return `${minutes}m ago`;
     if (hours < 24) return `${hours}h ago`;
     return `${Math.floor(hours / 24)}d ago`;
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-8 pb-20">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">AI Alpha Feed</h1>
-          <p className="text-muted-foreground">
-            Real-time trading opportunities and market insights from verified sources
-          </p>
+          <h1 className="text-3xl font-bold flex items-center gap-2 uppercase tracking-tight">
+            <Activity className="h-8 w-8 text-intel" />
+            Alpha Terminal
+          </h1>
+          <p className="text-muted-foreground">Real-time intelligence from the edge of the network.</p>
         </div>
-        
-        <Button 
-          onClick={refreshFeed} 
-          disabled={loading}
-          className="flex items-center gap-2"
-        >
-          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-          Refresh Feed
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => refreshFeed()} disabled={loading} className="gap-2">
+            <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
+            Refresh Feed
+          </Button>
+          <Button size="sm" className="gap-2">
+            <Zap className="h-4 w-4 fill-white" />
+            Live Stream
+          </Button>
+        </div>
       </div>
 
-      {/* Filters */}
-      <Card className="p-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <label className="text-sm font-medium mb-2 block">Category</label>
-            <Select value={filters.category} onValueChange={(value: string) => setFilters({...filters, category: value})}>
-              <SelectTrigger>
-                <SelectValue placeholder="All Categories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="defi">DeFi</SelectItem>
-                <SelectItem value="tradfi">TradFi</SelectItem>
-                <SelectItem value="nft">NFT</SelectItem>
-                <SelectItem value="airdrop">Airdrops</SelectItem>
-                <SelectItem value="dev">Developer</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+      <MarketPanel />
 
-          <div>
-            <label className="text-sm font-medium mb-2 block">Risk Level</label>
-            <Select value={filters.risk} onValueChange={(value: string) => setFilters({...filters, risk: value})}>
-              <SelectTrigger>
-                <SelectValue placeholder="All Risk Levels" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Risk Levels</SelectItem>
-                <SelectItem value="low">Low Risk</SelectItem>
-                <SelectItem value="medium">Medium Risk</SelectItem>
-                <SelectItem value="high">High Risk</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="col-span-2">
-            <label className="text-sm font-medium mb-2 block">
-              Min Confidence: {filters.minConfidence}%
-            </label>
-            <Slider
-              value={[filters.minConfidence]}
-              onValueChange={([value]: number[]) => setFilters({...filters, minConfidence: value})}
-              max={100}
-              min={0}
-              step={5}
-              className="mt-2"
+      <Card className="p-4 border-intel/20 bg-intel/5">
+        <div className="flex flex-col md:flex-row md:items-center gap-6">
+          <div className="flex-1 space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="text-xs font-mono font-bold uppercase tracking-widest text-muted-foreground">Minimum Alpha Score</span>
+              <span className="text-sm font-mono font-bold text-intel">{filters.minScore}</span>
+            </div>
+            <Slider 
+              value={[filters.minScore]} 
+              min={0} 
+              max={100} 
+              step={5} 
+              onValueChange={([v]) => setFilters(f => ({ ...f, minScore: v }))}
             />
+          </div>
+          <div className="flex gap-4">
+            <div className="space-y-1.5 min-w-[140px]">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-muted-foreground ml-1">Category</span>
+              <Select value={filters.category} onValueChange={(v) => setFilters(f => ({ ...f, category: v }))}>
+                <SelectTrigger className="h-9 bg-background">
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  <SelectItem value="defi">DeFi Alpha</SelectItem>
+                  <SelectItem value="token_launch">Token Launches</SelectItem>
+                  <SelectItem value="airdrop">Free Money</SelectItem>
+                  <SelectItem value="security">Security Risks</SelectItem>
+                  <SelectItem value="convergence">Market Consensus</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5 min-w-[140px]">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-muted-foreground ml-1">Risk Level</span>
+              <Select value={filters.risk} onValueChange={(v) => setFilters(f => ({ ...f, risk: v }))}>
+                <SelectTrigger className="h-9 bg-background">
+                  <SelectValue placeholder="Any Risk" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Any Risk</SelectItem>
+                  <SelectItem value="low">Low Risk</SelectItem>
+                  <SelectItem value="medium">Medium Risk</SelectItem>
+                  <SelectItem value="high">High Risk</SelectItem>
+                  <SelectItem value="critical">Critical</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
       </Card>
 
-      {/* Error Display */}
-      {error && (
-        <Card className="p-4 border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
-          <div className="flex items-center gap-2 text-red-800 dark:text-red-200">
-            <AlertTriangle className="h-5 w-5" />
-            <span className="font-medium">Error loading signals</span>
-          </div>
-          <p className="text-red-700 dark:text-red-300 text-sm mt-1">{error}</p>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={refreshFeed}
-            className="mt-2 border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900"
-          >
-            Try Again
-          </Button>
-        </Card>
-      )}
-
-      {/* Alpha Signals */}
-      <div className="space-y-4">
-        {signals.map((signal, index) => (
-          <motion.div
-            key={signal.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.1 }}
-          >
-            <Card id={signal.id} className="p-6 hover:shadow-lg transition-shadow">
-              <div className="space-y-4">
-                {/* Header */}
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge className={getCategoryColor(signal.category)}>
-                        {signal.category.toUpperCase()}
-                      </Badge>
-                      <Badge className={getRiskColor(signal.risk)}>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <AnimatePresence mode="popLayout">
+          {signals.map((signal) => (
+            <motion.div
+              key={signal.id}
+              layout
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Card className="overflow-hidden flex flex-col h-full group hover:border-intel/40 transition-all">
+                <div className="p-6 space-y-4 flex-1">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="outline" className={cn("gap-1.5 font-bold uppercase text-[10px]", getRiskColor(signal.risk))}>
                         {getRiskIcon(signal.risk)}
-                        {signal.risk.toUpperCase()}
+                        {signal.risk} Risk
                       </Badge>
-                      {signal.verified && (
-                        <Badge variant="outline" className="text-green-600 border-green-600">
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          VERIFIED
-                        </Badge>
-                      )}
+                      <Badge variant="secondary" className="gap-1.5 font-bold uppercase text-[10px]">
+                        {getCategoryIcon(signal.category)}
+                        {signal.category}
+                      </Badge>
                     </div>
-                    <h3 className="text-lg font-semibold">{signal.title}</h3>
-                  </div>
-                  
-                  <div className="text-right">
-                    <div className="flex items-center gap-1 mb-1">
-                      <Zap className="h-4 w-4 text-yellow-500" />
-                      <span className="font-medium">{signal.confidence}%</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <span className="text-[10px] font-mono text-muted-foreground uppercase flex items-center gap-1">
                       <Clock className="h-3 w-3" />
                       {getTimeAgo(signal.timestamp)}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-bold leading-tight group-hover:text-intel transition-colors">{signal.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
+                      {signal.description}
+                    </p>
+                  </div>
+
+                  <div className="pt-2 flex items-center gap-4">
+                    <div className="flex flex-col">
+                      <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-muted-foreground">Confidence</span>
+                      <span className="text-xl font-black font-display">{signal.score}%</span>
+                    </div>
+                    <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-intel" style={{ width: `${signal.score}%` }} />
                     </div>
                   </div>
                 </div>
 
-                {/* Content */}
-                <p className="text-muted-foreground">{signal.description}</p>
-
-                {/* Details */}
-                {(signal.priceTarget || signal.timeframe) && (
-                  <div className="flex flex-wrap gap-4 text-sm">
-                    {signal.priceTarget && (
-                      <div className="flex items-center gap-1">
-                        <Target className="h-4 w-4 text-green-600" />
-                        <span>Target: ${signal.priceTarget.toLocaleString()}</span>
-                      </div>
-                    )}
-                    {signal.timeframe && (
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4 text-blue-600" />
-                        <span>Timeframe: {signal.timeframe}</span>
-                      </div>
-                    )}
-                    {signal.blockchain && (
-                      <div className="flex items-center gap-1">
-                        <Badge variant="outline">{signal.blockchain}</Badge>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Tags */}
-                <div className="flex flex-wrap gap-2">
-                  {signal.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-
-                {/* Footer */}
-                <div className="flex items-center justify-between pt-2 border-t">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <span>Source: {signal.source}</span>
-                    <ExternalLink className="h-3 w-3" />
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => saveSignal(signal.id)}
-                      className="flex items-center gap-1"
-                    >
-                      <Bookmark className="h-4 w-4" />
-                      Save
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => upvoteSignal(signal.id)}
-                      className="flex items-center gap-1"
-                    >
+                <div className="p-4 bg-muted/30 border-t flex items-center justify-between">
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-intel" onClick={() => upvoteSignal(signal.id)}>
                       <ThumbsUp className="h-4 w-4" />
-                      {signal.upvotes}
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => downvoteSignal(signal.id)}
-                      className="flex items-center gap-1"
-                    >
+                    <span className="text-xs font-mono font-bold">{signal.upvotes}</span>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-500" onClick={() => downvoteSignal(signal.id)}>
                       <ThumbsDown className="h-4 w-4" />
-                      {signal.downvotes}
+                    </Button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => saveSignal(signal.id)}>
+                      <Bookmark className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Share2 className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" className="h-8 gap-2" asChild>
+                      <a href={signal.url} target="_blank" rel="noopener noreferrer">
+                        Access <ExternalLink className="h-3 w-3" />
+                      </a>
                     </Button>
                   </div>
                 </div>
-              </div>
-            </Card>
-          </motion.div>
-        ))}
+              </Card>
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
-
-      {signals.length === 0 && (
-        <Card className="p-8 text-center">
-          <div className="space-y-2">
-            <TrendingUp className="h-12 w-12 mx-auto text-muted-foreground" />
-            <h3 className="text-lg font-semibold">No signals match your filters</h3>
-            <p className="text-muted-foreground">
-              Try adjusting your filters or refresh the feed for new opportunities
-            </p>
-          </div>
-        </Card>
-      )}
     </div>
   );
 }

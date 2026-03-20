@@ -1,327 +1,233 @@
-# TraceDog 🐕‍🦺
-
-An AI-powered alpha hunting and market intelligence platform for cryptocurrency and traditional finance traders. Discover profitable opportunities across DeFi, TradFi, NFTs, and airdrops with real-time security analysis and risk assessment.
-
-![TraceDog Banner](https://img.shields.io/badge/TraceDog-Alpha%20Hunter-blue?style=for-the-badge&logo=dog)
-![React](https://img.shields.io/badge/React-18.2.0-61DAFB?style=flat-square&logo=react)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.2.2-3178C6?style=flat-square&logo=typescript)
-![Vite](https://img.shields.io/badge/Vite-5.0.8-646CFF?style=flat-square&logo=vite)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38B2AC?style=flat-square&logo=tailwind-css)
-
-## 🌟 What is TraceDog?
-
-TraceDog is a comprehensive trading intelligence platform that aggregates real-time trading signals, smart contract security analysis, and developer ecosystem updates. Built for serious traders who want to stay ahead of market opportunities while maintaining security awareness.
-
-### Core Mission
-Help traders discover profitable "alpha" opportunities across multiple financial markets while providing enterprise-grade security analysis and risk management tools.
-
-## 🚀 Key Features
-
-### 🤖 AI Alpha Feed (Dashboard)
-- **Real-time trading signals** with AI-generated confidence scoring (0-100%)
-- **Multi-category filtering**: DeFi, TradFi, NFT, Airdrops, Developer updates
-- **Risk-based filtering**: Low, Medium, High risk levels with visual indicators
-- **Signal voting system** for community-driven quality ranking
-- **One-click Alpha Vault** saving with instant notifications
-- **Manual refresh** with loading states and smooth animations
-
-### 🔍 Opportunity Radar
-- **Advanced multi-dimensional scanner** for trading opportunities
-- **Pause/resume functionality** for continuous market monitoring
-- **Granular filters**: Risk tolerance, confidence levels, timeframes, exchanges, token selection
-- **Actionable signals** with price targets, stop losses, and detailed reasoning
-- **Low-risk opportunity surfacing** based on whale activity and market metrics
-
-### 🛡️ Security Scanner
-- **Smart contract analysis** with progressive scanning workflow
-- **Comprehensive risk metrics**:
-  - Rug pull risk scoring (0-100)
-  - Liquidity lock detection and status
-  - Developer wallet movement tracking
-  - Honeypot pattern detection
-  - Audit status verification
-- **Visual findings display** with severity indicators
-- **Etherscan integration** for detailed contract exploration
-
-### 🏦 Alpha Vault (Personal Portfolio)
-- **Persistent storage** of high-conviction trades and strategies
-- **Organized tabs**: Strategies, Airdrops, Investment Thesis
-- **Performance analytics**: Success rate, ROI tracking by source
-- **Tagged insights** with category and blockchain context
-- **Full CRUD operations** with confirmation flows
-
-### 👨‍💻 Developer Feed
-- **Categorized ecosystem updates**: Frameworks, Tools, Protocols, Security, SDKs
-- **Trending topics tracker** with mention counts and trend indicators
-- **Impact assessment**: Low, Medium, High impact levels
-- **Direct links** to GitHub repositories and documentation
-- **AI-generated overnight digest** summaries
-- **Community submissions** and vulnerability reporting
-
-### 🌐 Community Hub
-- **Dynamic leaderboards**:
-  - Alpha score ranking system
-  - Reputation ratings and verification badges
-  - Success metrics and streak tracking
-  - Specialized achievements ("Alpha Legend", "Whale Status")
-- **Social feed** with posts, comments, and interactions
-- **Challenge system** with prizes and participation tracking
-- **Follow system** for curated content streams
-
-### 🔔 Notification Center
-- **Real-time alert aggregation** from all platform sources
-- **Priority-based triaging**: Critical, High, Medium, Low
-- **Alert categorization**: Opportunity, Security, Developer, News
-- **Read/unread management** with bulk operations
-- **Toast notifications** with actionable buttons
-- **Time-relative timestamps** for all alerts
-
-### ⚙️ Settings & Personalization
-- **Profile management**: Username, email, avatar, bio customization
-- **Notification preferences**: Email, push, sound, Telegram, Discord toggles
-- **Trading parameters**: Risk tolerance, confidence thresholds, auto-refresh
-- **Appearance settings**: Dark/light/system themes, accent colors, compact mode
-- **Data source toggles**: TradingView, DefiLlama, CoinGecko, Uniswap, Etherscan
-- **Advanced configuration**: API keys, webhooks, custom filters
-
-## 🛠️ Tech Stack
-
-### Frontend Framework
-- **React 18.2.0** - Modern UI library with hooks and concurrent features
-- **TypeScript 5.2.2** - Type-safe development with strict mode
-- **Vite 5.0.8** - Lightning-fast build tool and development server
-
-### UI & Styling
-- **Tailwind CSS 4** - Utility-first CSS framework with modern color system
-- **Radix UI** - Headless, accessible component primitives (30+ components)
-- **shadcn/ui** - Pre-built design system based on Radix UI
-- **Lucide React 0.400.0** - Consistent icon library (100+ icons used)
-- **Framer Motion 11.0.0** - Smooth animations and micro-interactions
-
-### Forms & Validation
-- **React Hook Form 7.55.0** - Performant form state management
-- **Zod 3.22.4** - TypeScript-first schema validation
-- **@hookform/resolvers** - Seamless RHF-Zod integration
-
-### Data & State Management
-- **TanStack React Query 5.90.5** - Server state management, caching, synchronization
-- **Axios 1.13.1** - HTTP client for API communications
-
-### Web3 & Blockchain
-- **Viem 2.38.5** - Type-safe Ethereum library for contract interactions
-- **@supabase/supabase-js 2.39.0** - Backend-as-a-service integration (ready)
-
-### Additional Libraries
-- **Recharts 2.8.0** - Composable charting library for analytics
-- **Sonner 2.0.3** - Modern toast notification system
-- **next-themes 0.4.6** - Theme switching with persistence
-- **React Resizable Panels 1.0.0** - Draggable panel resizing
-- **Embla Carousel 8.0.0** - Touch-enabled carousels
-
-### Development Tools
-- **ESLint** - Code quality and consistency enforcement
-- **Vitest** - Fast unit testing framework
-- **TypeScript Compiler** - Strict type checking
-
-## 🎯 Skills Demonstrated
-
-### React & Modern Frontend Development
-- ✅ Functional components with hooks (useState, useEffect, useCallback, useMemo)
-- ✅ Custom hooks for business logic abstraction
-- ✅ Error boundaries for graceful error handling
-- ✅ Component composition and reusability patterns
-- ✅ Conditional rendering and dynamic UI updates
-
-### TypeScript & Type Safety
-- ✅ Strong interface definitions for complex data structures
-- ✅ Union types and discriminated unions
-- ✅ Generic type patterns
-- ✅ Strict mode compilation with zero errors
-
-### State Management & Data Handling
-- ✅ Local component state management
-- ✅ Custom hook-based state logic
-- ✅ Mock data simulation for development
-- ✅ Complex filtering and data transformation
-- ✅ Real-time data synchronization patterns
-
-### UI/UX Development
-- ✅ Responsive design (mobile-first approach)
-- ✅ Dark mode implementation with theme persistence
-- ✅ Accessible components using Radix UI primitives
-- ✅ Loading states and skeleton screens
-- ✅ Toast notifications with actions and custom content
-- ✅ Modal dialogs, popovers, and interactive elements
-
-### Animation & Motion Design
-- ✅ Framer Motion for smooth transitions
-- ✅ Entrance and exit animations
-- ✅ Hover and tap interactions
-- ✅ Staggered animation sequences
-- ✅ Performance-optimized animations
-
-### Web3 & Blockchain Integration
-- ✅ Contract address validation and formatting
-- ✅ Token and price data handling
-- ✅ Multi-chain support (Ethereum, Arbitrum, BSC, Solana)
-- ✅ DeFi metrics and terminology
-- ✅ Security analysis concepts
-
-### Security & Best Practices
-- ✅ Input sanitization and validation
-- ✅ XSS prevention utilities
-- ✅ Content Security Policy headers
-- ✅ Rate limiting for API calls
-- ✅ Safe error boundary handling
-
-### Build & Development Workflow
-- ✅ Vite configuration and optimization
-- ✅ TypeScript path aliases
-- ✅ Manual chunk splitting
-- ✅ Source map generation
-- ✅ Production build optimization
-
-## 🏗️ Architecture Overview
-
-```
-src/
-├── App.tsx                    # Main app with tab-based navigation
-├── main.tsx                   # React application entry point
-├── index.html                 # HTML shell with meta tags
-├── index.css                  # Tailwind CSS with custom theme
-│
-├── components/                # Feature components
-│   ├── Dashboard.tsx          # AI Alpha Feed
-│   ├── OpportunityRadar.tsx   # Trading opportunity scanner
-│   ├── SecurityScanner.tsx    # Contract security analysis
-│   ├── AlphaVault.tsx         # Personal portfolio management
-│   ├── DeveloperFeed.tsx      # Ecosystem updates
-│   ├── CommunityHub.tsx       # Social features and leaderboards
-│   ├── NotificationCenter.tsx # Alert management
-│   ├── Settings.tsx           # User preferences
-│   ├── Layout.tsx             # Root layout structure
-│   └── ErrorBoundary.tsx      # Global error handling
-│
-├── hooks/                     # Custom React hooks
-│   ├── useAlphaFeed.ts        # Signal management logic
-│   └── useNotifications.ts    # Alert system logic
-│
-├── types/                     # TypeScript definitions
-│   └── index.ts               # Core type interfaces
-│
-├── lib/                       # Utility libraries
-│   └── utils.ts               # Helper functions
-│
-├── utils/                     # Application utilities
-│   ├── security.ts            # Security and validation
-│   └── supabase/              # Backend configuration
-│
-├── services/                  # Service layer (ready for backend)
-│   ├── alerts/                # Alert management
-│   ├── chain/                 # Blockchain interactions
-│   └── scanner/               # Security scanning
-│
-├── ui/                        # Reusable UI components (30+)
-│   ├── button.tsx, card.tsx, dialog.tsx
-│   ├── accordion.tsx, tabs.tsx, select.tsx
-│   └── ... (shadcn/ui components)
-│
-└── styles/
-    └── globals.css            # Global styles and themes
-```
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js 18+ and npm
-- Modern web browser with ES6 support
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd TraceDog
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Start development server**
-   ```bash
-   npm run dev
-   ```
-
-4. **Open your browser**
-   Navigate to `http://localhost:5173`
-
-### Build for Production
-
-```bash
-npm run build
-npm run preview  # Preview production build locally
-```
-
-### Available Scripts
-
-- `npm run dev` - Start development server with hot reload
-- `npm run build` - Create production build
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint for code quality
-- `npm run test` - Run unit tests with Vitest
-
-## 🎨 Design System
-
-TraceDog uses a modern, accessible design system built on:
-- **Color palette**: Professional blue-to-purple gradients with semantic colors
-- **Typography**: Clean, readable fonts with proper hierarchy
-- **Spacing**: Consistent 4px grid system
-- **Components**: 30+ reusable UI primitives from shadcn/ui
-- **Themes**: Full dark/light mode support with system preference detection
-
-## 🔒 Security Features
-
-- **Input validation** and sanitization utilities
-- **XSS prevention** with HTML escaping
-- **Content Security Policy** headers
-- **Rate limiting** for API interactions
-- **Error boundary** protection against runtime crashes
-- **Type-safe** data handling throughout
-
-## 📱 Responsive Design
-
-- **Mobile-first approach** with Tailwind CSS
-- **Breakpoint system**: sm (640px), md (768px), lg (1024px), xl (1280px)
-- **Touch-friendly** interactions and gestures
-- **Adaptive layouts** that work on all screen sizes
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
-
-### Development Guidelines
-- Follow the established [Component Guidelines](src/guidelines/Guidelines.md)
-- Maintain TypeScript strict mode compliance
-- Use the established design system and color palette
-- Write accessible, semantic HTML
-- Test components across different screen sizes
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- **Radix UI** for accessible component primitives
-- **shadcn** for the beautiful design system
-- **Tailwind CSS** for utility-first styling
-- **Framer Motion** for smooth animations
-- **Lucide** for consistent iconography
-
----
-
-**Built with ❤️ for the crypto trading community**
-
-*Stay ahead of the market with TraceDog - Your AI-powered alpha hunting companion.*
+# K9 
+  
+ Find opportunities before anyone else. Get them on your phone. In plain English. 
+  
+ K9 watches crypto markets, airdrops, prediction markets, whale wallets,  
+ and blockchain jobs 24/7. The moment it finds something worth your attention,  
+ it sends a plain-English message to your WhatsApp or Telegram. 
+  
+ No technical knowledge needed. Just your phone number. 
+  
+ --- 
+  
+ ## Live Feed: Dispatch 
+  
+ When K9 picks up a signal, it goes straight to **Dispatch** — the live feed  
+ where every opportunity appears the moment it's found, ranked by confidence. 
+  
+ Like a police dispatch that routes every call to the right unit — K9 Dispatch  
+ routes every signal straight to your phone. 
+  
+ --- 
+  
+ ## What K9 Finds 
+  
+ | Category | What It Is | 
+ |----------|-----------| 
+ | **Free Money / Airdrop** | Projects giving free tokens. Past examples: Uniswap ($16K/person), Arbitrum ($8K/person). Zero investment. | 
+ | **Jobs / Gigs / Bounty** | Remote crypto jobs, task-based bounties, community roles. Many need no experience. | 
+ | **Insider Signals** | New wallets placing large bets before major events. The pattern that predicted Maduro's capture. | 
+ | **Prediction Markets** | Odds spiking 15%+ in under 2 hours = informed money moving. | 
+ | **Big Money Moves** | Large wallet transfers with no public news = possible insider accumulation. | 
+ | **Market Moves** | New tokens early, stablecoin depegs, chain health drops. | 
+ | **Safety Alerts** | Exploits, scams, rug pulls — know before you lose money. | 
+  
+ --- 
+  
+ ## Architecture 
+  
+ ``` 
+ ┌─────────────────────────────────────────────────────────────────┐ 
+ │                         K9 System                               │ 
+ └─────────────────────────────────────────────────────────────────┘ 
+  
+ DATA SOURCES (scanned every 5 minutes) 
+ ├── Polymarket CLOB API      → Insider bets, probability spikes 
+ ├── DexScreener              → New token pairs, whale transactions 
+ ├── DefiLlama                → TVL changes, yield opportunities, airdrops 
+ ├── CoinGecko                → Market data, trending tokens 
+ ├── GitHub API               → Protocol activity, developer signals 
+ ├── Twitter/X (Nitter RSS)   → @WhaleAlert, @lookonchain, @AirdropAlert 
+ ├── Airdrops.io              → Verified upcoming airdrops 
+ ├── Immunefi                 → Bug bounties 
+ ├── web3.career              → Crypto job listings 
+ ├── Layer3 / Galxe           → Learn-to-earn campaigns 
+ └── 6 RSS news feeds         → CoinTelegraph, Decrypt, Rekt, TheBlock, Defiant, CoinDesk 
+       ↓ raw signals 
+ SIGNAL ENGINE (backend/src/services/signalEngine.ts) 
+ ├── Deduplication            → Remove duplicate signals 
+ ├── Keyword pre-filter       → Remove obvious noise before AI scoring 
+ ├── Velocity scoring         → How fast is this story spreading? 
+ ├── Convergence detection    → 3+ sources on same topic = priority 
+ └── Claude AI scoring        → Score 0–100, generate plain-English brief 
+       ↓ scored signals (65+) 
+ DELIVERY 
+ ├── Telegram Bot             → Instant to all Telegram users 
+ ├── WhatsApp (Green API)     → Instant to all WhatsApp users 
+ └── REST API → Frontend      → Updates Dispatch (live feed) in real-time 
+       ↓ 
+ USER EXPERIENCE 
+ ├── Dispatch (live feed)     → All signals, newest first, real-time 
+ ├── Hunt                     → Filter by category, chain, confidence 
+ ├── Verify                   → Paste any contract address, get safety report 
+ ├── Saved                    → Bookmarked signals with notes 
+ ├── Dev Intel                → GitHub activity, protocol updates 
+ └── Community                → Leaderboards, shared alpha 
+ FRONTEND ────────────────────────────────────────── 
+ ├── React 18 + TypeScript 
+ ├── Vite (build tool) 
+ ├── Tailwind CSS (styling) 
+ ├── shadcn/ui (components) 
+ ├── Framer Motion (animations) 
+ ├── TanStack React Query (data fetching + caching) 
+ └── Server-Sent Events (real-time signal updates) 
+ BACKEND ─────────────────────────────────────────── 
+ ├── Node.js + Express 
+ ├── TypeScript (strict mode) 
+ ├── Telegraf (Telegram bot) 
+ ├── node-cron (scheduled scanning) 
+ ├── Claude AI via @anthropic-ai/sdk 
+ ├── Zod (input validation) 
+ ├── Helmet + CORS + Rate limiting (security) 
+ └── In-memory store → Upstash Redis (when scaling) 
+ ``` 
+  
+ --- 
+  
+ ## Setup 
+  
+ ### Prerequisites 
+ - Node.js 18+ 
+ - Anthropic API key (for AI scoring) 
+ - Green API account (for WhatsApp — free tier) 
+ - Telegram bot token (for Telegram — free) 
+  
+ ### Clone and install 
+ ```bash 
+ git clone https://github.com/GoodnessFx/K9.git 
+ cd K9 
+  
+ # Frontend dependencies 
+ npm install 
+  
+ # Backend dependencies  
+ cd backend && npm install 
+ ``` 
+  
+ ### Environment variables 
+  
+ **Backend:** Copy `backend/.env.example` to `backend/.env` 
+ ```env 
+ # Required — AI signal scoring 
+ ANTHROPIC_API_KEY=sk-ant-... 
+  
+ # WhatsApp delivery — free at greenapi.com 
+ # greenapi.com → create account → create instance → scan QR → copy these 
+ GREEN_API_INSTANCE_ID=1101234567 
+ GREEN_API_TOKEN=your_token_here 
+ MY_WHATSAPP_NUMBER=2348012345678 
+ # Format: country code + number, no + or spaces 
+  
+ # Telegram delivery — free 
+ # Telegram → @BotFather → /newbot → copy token 
+ TELEGRAM_BOT_TOKEN=your_bot_token 
+  
+ # Server 
+ PORT=3001 
+ NODE_ENV=development 
+ FRONTEND_URL=http://localhost:5173 
+ ``` 
+  
+ **Frontend:** Copy `.env.example` to `.env.local` 
+ ```env 
+ VITE_API_URL=http://localhost:3001 
+ ``` 
+  
+ ### Run 
+ ```bash 
+ # Terminal 1 — Backend 
+ cd backend && npm run dev 
+  
+ # Terminal 2 — Frontend 
+ npm run dev 
+ ``` 
+  
+ - App: http://localhost:5173 
+ - API: http://localhost:3001 
+ - Health: http://localhost:3001/api/health 
+  
+ ### Deploy 
+  
+ Frontend: Deploy to Vercel (connect GitHub repo, auto-deploys on push) 
+ Backend: Deploy to Railway or Hetzner VPS ($5/month) 
+  
+ --- 
+  
+ ## WhatsApp Setup (3 minutes, free) 
+  
+ 1. Go to `https://greenapi.com`  → create free account 
+ 2. Click "Create Instance" 
+ 3. Scan the QR code with WhatsApp on your phone 
+    *(WhatsApp → Settings → Linked Devices → Link a Device)* 
+ 4. Copy **Instance ID** and **API Token** 
+ 5. Add to `backend/.env` 
+ 6. Set `MY_WHATSAPP_NUMBER` to your number (country code + number, no +) 
+    - Nigeria: `2348012345678` 
+    - UK: `447911123456` 
+    - US: `12025551234` 
+  
+ Free tier: 1,500 messages/day. No Meta approval needed. 
+  
+ --- 
+  
+ ## Telegram Setup (2 minutes, free, unlimited) 
+  
+ 1. Open Telegram → search **@BotFather** 
+ 2. Send `/newbot` 
+ 3. Choose a name (e.g. "K9 Alert Bot")  
+ 4. Choose a username (e.g. `k9alertbot`) 
+ 5. Copy the token → add to `backend/.env` as `TELEGRAM_BOT_TOKEN` 
+ 6. Restart backend 
+  
+ Users start the bot by opening Telegram and searching `@k9alertbot` → `/start` 
+  
+ --- 
+  
+ ## Sample Alert 
+ K9 found something 
+ ────────────────── 
+ FREE MONEY / AIRDROP 
+ Arbitrum is giving away free tokens to anyone who used 
+ their network before March 2024. Average claim worth $2,400. 
+ 8 days to claim. 
+ CONFIDENCE: 94/100 
+ TIME TO ACT: 8 days remaining 
+ WHAT YOU CAN DO 
+ ① Claim at arbitrum.foundation/airdrop → connect wallet → 
+ check eligibility → claim. 5 minutes. Zero cost. 
+ ② Check every wallet you own — each eligible address claims 
+ separately. 
+ ③ Tell friends who used Arbitrum — they can claim too. 
+ HOW RISKY? 
+ Zero risk — you are not spending any money. 
+ FIRST TO KNOW 
+ You're seeing this 45 minutes before major crypto news sites. 
+ SOURCE: DefiLlama airdrop tracker 
+ ────────────────── 
+ K9 · Find it first 
+  
+ --- 
+  
+ ## Security 
+  
+ - All API keys stored in `.env` — never committed to GitHub 
+ - Helmet.js security headers on all responses 
+ - Rate limiting: 100 req/15min general, 5 req/min for sensitive routes 
+ - CORS restricted to your frontend domain 
+ - All inputs validated with Zod before processing 
+ - No sensitive data in client-side code 
+  
+ --- 
+  
+ ## License 
+ MIT 

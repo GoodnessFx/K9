@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
+import { useMediaQuery } from '../hooks/useMediaQuery';
+import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { NotificationCenter } from './NotificationCenter';
@@ -13,10 +15,15 @@ import {
   X,
   Zap,
   Shield,
-  TrendingUp,
-  Code,
   Users,
-  Archive
+  MessageSquare,
+  LayoutDashboard,
+  Radar,
+  Database,
+  Terminal,
+  Globe,
+  Crosshair,
+  Bookmark
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -26,83 +33,57 @@ interface LayoutProps {
 }
 
 const navigationItems = [
-  { id: 'dashboard', label: 'Feed', icon: TrendingUp },
-  { id: 'radar', label: 'Radar', icon: Zap },
-  { id: 'security', label: 'Scanner', icon: Shield },
-  { id: 'vault', label: 'Vault', icon: Archive },
-  { id: 'dev', label: 'Dev Feed', icon: Code },
-  { id: 'community', label: 'Community', icon: Users }
+  { id: 'dashboard', label: 'Dispatch', icon: Zap, description: 'Real-time market signals' },
+  { id: 'radar', label: 'Hunt', icon: Crosshair, description: 'Visual opportunity map' },
+  { id: 'security', label: 'Verify', icon: Shield, description: 'Contract risk analysis' },
+  { id: 'vault', label: 'Saved', icon: Bookmark, description: 'Saved opportunities' },
+  { id: 'dev', label: 'Dev Intel', icon: Terminal, description: 'Technical alpha' },
+  { id: 'community', label: 'Community', icon: Users, description: 'Social sentiment' }
 ];
 
 export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
-  const [darkMode, setDarkMode] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    document.documentElement.classList.toggle('dark');
-  };
+  const isMobile = useMediaQuery('(max-width: 639px)');
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-bg-base text-t1 selection:bg-intel/30">
+      {/* Settings Modal */}
+      <Settings open={settingsOpen} onOpenChange={setSettingsOpen} />
+
       {/* Top Navigation */}
       <motion.nav 
-        className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-sm"
+        className="sticky top-0 z-50 border-b border-line-1 bg-bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-bg-surface/60"
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        transition={{ duration: 0.3 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
-        <div className="flex h-16 items-center justify-between px-4">
-          {/* Logo */}
-          <div className="flex items-center gap-3">
+        <div className="flex h-16 items-center justify-between px-4 md:px-6">
+          <motion.div 
+            className="flex items-center gap-2.5 cursor-pointer"
+            whileHover={{ scale: 1.02 }}
+            onClick={() => onTabChange('dashboard')}
+          >
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+              <Zap className="h-5 w-5 text-white fill-white/20" />
+            </div>
+            <div className="flex flex-col leading-none">
+              <span className="font-black text-xl tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                K9
+              </span>
+              <span className="text-[10px] font-bold text-t3 tracking-widest uppercase">
+                Alpha Hunter
+              </span>
+            </div>
+          </motion.div>
+
+          <div className="flex items-center gap-4">
+            <NotificationCenter />
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="hover:bg-bg-elevated"
+              onClick={() => setSettingsOpen(true)}
             >
-              {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
-            
-            <motion.div 
-              className="flex items-center gap-2"
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">T</span>
-              </div>
-              <span className="font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Tracedog
-              </span>
-              <Badge variant="secondary" className="ml-2 text-xs">
-                AI Alpha Hunter
-              </Badge>
-            </motion.div>
-          </div>
-
-          {/* Search Bar */}
-          <div className="hidden md:flex flex-1 max-w-md mx-8">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search tokens, projects, or alpha..."
-                className="w-full pl-10 pr-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center gap-2">
-            <NotificationCenter />
-            
-            <Button variant="ghost" size="icon" onClick={toggleDarkMode}>
-              {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </Button>
-            
-            <Button variant="ghost" size="icon" onClick={() => setSettingsOpen(true)}>
               <SettingsIcon className="h-5 w-5" />
             </Button>
           </div>
@@ -110,68 +91,57 @@ export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
       </motion.nav>
 
       <div className="flex">
-        {/* Sidebar */}
-        <motion.aside 
-          className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:sticky top-16 z-40 h-[calc(100vh-4rem)] w-64 border-r bg-background transition-transform duration-200 ease-in-out`}
-          initial={false}
-        >
-          <div className="p-4 space-y-2">
+        {/* Desktop Sidebar */}
+        {!isMobile && (
+          <aside className="w-64 border-r border-line-1 h-[calc(100vh-64px)] sticky top-16 p-4 space-y-2 bg-bg-surface/50">
             {navigationItems.map((item) => (
-              <motion.button
+              <button
                 key={item.id}
-                onClick={() => {
-                  onTabChange(item.id);
-                  setSidebarOpen(false);
-                }}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                onClick={() => onTabChange(item.id)}
+                className={cn(
+                  "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all group",
                   activeTab === item.id 
-                    ? 'bg-primary text-primary-foreground' 
-                    : 'hover:bg-accent hover:text-accent-foreground'
-                }`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <item.icon className="h-5 w-5" />
-                <span>{item.label}</span>
-                {item.id === 'radar' && (
-                  <Badge variant="destructive" className="ml-auto text-xs">
-                    LIVE
-                  </Badge>
+                    ? "bg-intel text-white shadow-lg shadow-intel/20" 
+                    : "text-t2 hover:bg-bg-elevated hover:text-t1"
                 )}
-              </motion.button>
+              >
+                <item.icon className={cn(
+                  "h-5 w-5",
+                  activeTab === item.id ? "text-white" : "text-t3 group-hover:text-intel"
+                )} />
+                <span className="font-medium text-sm">{item.label}</span>
+              </button>
             ))}
-          </div>
-
-          {/* AI Status */}
-          <div className="absolute bottom-4 left-4 right-4">
-            <div className="p-3 bg-accent rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium">AI Hunter Active</span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Scanning 15 sources for alpha signals...
-              </p>
-            </div>
-          </div>
-        </motion.aside>
-
-        {/* Overlay for mobile */}
-        {sidebarOpen && (
-          <div 
-            className="fixed inset-0 bg-black/50 z-30 md:hidden" 
-            onClick={() => setSidebarOpen(false)}
-          />
+          </aside>
         )}
 
         {/* Main Content */}
-        <main className="flex-1 p-4 md:p-6">
+        <main className={cn(
+          "flex-1 page-container min-h-[calc(100vh-64px)]",
+          isMobile ? "mobile" : "desktop"
+        )}>
           {children}
         </main>
       </div>
 
-      {/* Settings Modal */}
-      <Settings open={settingsOpen} onOpenChange={setSettingsOpen} />
+      {/* Mobile Bottom Navigation */}
+      {isMobile && (
+        <nav className="bottom-nav">
+          {navigationItems.map((item) => (
+            <button
+              key={item.id}
+              className={cn(
+                "bottom-nav-item",
+                activeTab === item.id && "active"
+              )}
+              onClick={() => onTabChange(item.id)}
+            >
+              <item.icon className="h-5 w-5" />
+              <span className="text-[10px] mt-1 font-medium">{item.label}</span>
+            </button>
+          ))}
+        </nav>
+      )}
     </div>
   );
 }

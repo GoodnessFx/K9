@@ -7,6 +7,8 @@ import { Slider } from './ui/slider';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Badge } from './ui/badge';
+import { Card } from './ui/card';
+import { Progress } from './ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Separator } from './ui/separator';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
@@ -44,7 +46,7 @@ export function Settings({ open, onOpenChange }: SettingsProps) {
   const [settings, setSettings] = useState({
     // Profile settings
     username: 'TraceHunter',
-    email: 'user@tracedog.app',
+    email: 'user@k9.app',
     avatarUrl: '',
     bio: 'AI-powered alpha hunter focused on DeFi opportunities',
     
@@ -118,7 +120,7 @@ export function Settings({ open, onOpenChange }: SettingsProps) {
     const url = URL.createObjectURL(settingsBlob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'tracedog-settings.json';
+    a.download = 'k9-settings.json';
     a.click();
     toast.success('Settings exported!');
   };
@@ -143,7 +145,7 @@ export function Settings({ open, onOpenChange }: SettingsProps) {
         <DialogHeader className="p-6 pb-0">
           <DialogTitle className="flex items-center gap-2">
             <SettingsIcon className="h-5 w-5" />
-            Tracedog Settings
+            K9 Settings
           </DialogTitle>
           <DialogDescription>
             Configure your preferences and customize your alpha hunting experience
@@ -254,6 +256,27 @@ export function Settings({ open, onOpenChange }: SettingsProps) {
                       <div>
                         <h3 className="text-lg font-medium mb-4">Notification Channels</h3>
                         <div className="space-y-4">
+                          <Card className="p-4 bg-primary/5 border-primary/20">
+                             <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-2">
+                                  <MessageSquare className="h-5 w-5 text-blue-500" />
+                                  <div>
+                                    <p className="font-bold">Telegram Bot Connection</p>
+                                    <p className="text-xs text-muted-foreground">Connect to @TraceDogAlphaBot for real-time alerts</p>
+                                  </div>
+                                </div>
+                                <Button size="sm" className="font-bold" asChild>
+                                  <a href="https://t.me/TraceDogAlphaBot?start=connect" target="_blank" rel="noreferrer">
+                                    CONNECT BOT
+                                  </a>
+                                </Button>
+                             </div>
+                             <div className="flex items-center justify-between text-sm pt-2 border-t border-primary/10">
+                                <span className="text-muted-foreground">Status:</span>
+                                <Badge variant="outline" className="text-red-500 border-red-500 font-bold uppercase text-[10px]">DISCONNECTED</Badge>
+                             </div>
+                          </Card>
+
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <Mail className="h-4 w-4" />
@@ -264,6 +287,7 @@ export function Settings({ open, onOpenChange }: SettingsProps) {
                               onCheckedChange={(checked: boolean) => handleSettingChange('emailNotifications', checked)}
                             />
                           </div>
+
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <Bell className="h-4 w-4" />
@@ -580,31 +604,54 @@ export function Settings({ open, onOpenChange }: SettingsProps) {
 
                     {/* Security Tab */}
                     <TabsContent value="security" className="mt-0 space-y-6">
-                      <div>
-                        <h3 className="text-lg font-medium mb-4">API Configuration</h3>
-                        <div className="space-y-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="apiKey">API Key (Optional)</Label>
-                            <Input
-                              id="apiKey"
-                              type="password"
-                              placeholder="Your API key for premium features"
-                              value={settings.apiKey}
-                              onChange={(e) => handleSettingChange('apiKey', e.target.value)}
-                            />
+                      <div className="space-y-6">
+                        <Card className="p-6 border-l-4 border-l-blue-500 bg-blue-50/50 dark:bg-blue-950/20">
+                          <h3 className="text-lg font-black uppercase mb-4 flex items-center gap-2">
+                            <Zap className="h-5 w-5 text-blue-600" />
+                            HUNTER PLAN
+                          </h3>
+                          <div className="space-y-3">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-muted-foreground">Alerts Today:</span>
+                              <span className="font-bold">12 / 100</span>
+                            </div>
+                            <Progress value={12} className="h-2" />
+                            <p className="text-[10px] text-muted-foreground uppercase font-bold">Resets in 14h 22m</p>
                           </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="webhookUrl">Webhook URL (Optional)</Label>
-                            <Input
-                              id="webhookUrl"
-                              placeholder="https://your-webhook-url.com"
-                              value={settings.webhookUrl}
-                              onChange={(e) => handleSettingChange('webhookUrl', e.target.value)}
-                            />
+                          <Button className="w-full mt-4 font-bold" variant="outline">UPGRADE TO ALPHA</Button>
+                        </Card>
+
+                        <div>
+                          <h3 className="text-lg font-medium mb-4">API Configuration</h3>
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <Label htmlFor="apiKey">API Key (Alpha Plan Only)</Label>
+                                <Badge variant="secondary" className="text-[10px]">LOCKED</Badge>
+                              </div>
+                              <Input
+                                id="apiKey"
+                                type="password"
+                                placeholder="Upgrade to Alpha for API access"
+                                value={settings.apiKey}
+                                disabled
+                                onChange={(e) => handleSettingChange('apiKey', e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="webhookUrl">Webhook URL (Optional)</Label>
+                              <Input
+                                id="webhookUrl"
+                                placeholder="https://your-webhook-url.com"
+                                value={settings.webhookUrl}
+                                onChange={(e) => handleSettingChange('webhookUrl', e.target.value)}
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>
                     </TabsContent>
+
                   </div>
                 </ScrollArea>
               </div>

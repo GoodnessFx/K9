@@ -1,0 +1,1 @@
+{"version":3,"file":"signalEngine.d.ts","sourceRoot":"","sources":["signalEngine.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAa,MAAM,EAAE,MAAM,mBAAmB,CAAC;AAkB3D,cAAM,YAAY;IAChB,OAAO,CAAC,UAAU,CAAS;IAErB,OAAO;IAmGP,mBAAmB,CAAC,OAAO,EAAE,MAAM,EAAE,KAAK,EAAE,MAAM;IAKlD,mBAAmB;IAMzB,OAAO,CAAC,WAAW;CAUpB;AAED,eAAO,MAAM,YAAY,cAAqB,CAAC"}

@@ -1,4 +1,4 @@
-# Tracedog — AI Alpha Hunter (Portfolio Showcase)
+# K9 — AI Alpha Hunter (Portfolio Showcase)
 
 An AI-powered, production-ready platform that hunts trading opportunities, analyzes smart contract risk, and aggregates market intelligence across DeFi and TradFi — all in an elegant, high-performance React app.
 
@@ -146,4 +146,4 @@ An AI-powered, production-ready platform that hunts trading opportunities, analy
 
 ---
 
-Tracedog — your loyal AI companion that never sleeps, always hunting for the next alpha opportunity.
+K9 — your loyal AI companion that never sleeps, always hunting for the next alpha opportunity.

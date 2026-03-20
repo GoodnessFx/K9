@@ -1,44 +1,57 @@
-import { useState } from 'react';
-import { Layout } from './components/Layout';
-import { Dashboard } from './components/Dashboard';
-import { OpportunityRadar } from './components/OpportunityRadar';
-import { SecurityScanner } from './components/SecurityScanner';
-import { AlphaVault } from './components/AlphaVault';
-import { DeveloperFeed } from './components/DeveloperFeed';
-import { CommunityHub } from './components/CommunityHub';
-import { Toaster } from './components/ui/sonner';
-import { ErrorBoundary } from './components/ErrorBoundary';
+import { useState, useEffect } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import AppLayout from './components/AppLayout';
+import Dashboard from './pages/Dashboard';
+import Radar from './pages/Radar';
+import ScannerPage from './pages/Scanner';
+import Telegram from './pages/Telegram';
+import Settings from './pages/Settings';
+import Saved from './pages/Saved';
+import Onboarding from './pages/Onboarding';
+import { Toaster } from 'sonner';
+import { useSignalStream } from './hooks/useSignalStream';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  useSignalStream();
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    return !localStorage.getItem('onboarding_complete');
+  });
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'dashboard':
-        return <Dashboard />;
-      case 'radar':
-        return <OpportunityRadar />;
-      case 'security':
-        return <SecurityScanner />;
-      case 'vault':
-        return <AlphaVault />;
-      case 'dev':
-        return <DeveloperFeed />;
-      case 'community':
-        return <CommunityHub />;
-      default:
-        return <Dashboard />;
+  useEffect(() => {
+    if (!showOnboarding) {
+      localStorage.setItem('onboarding_complete', 'true');
     }
-  };
+  }, [showOnboarding]);
 
   return (
-    <ErrorBoundary>
-      <div className="min-h-screen bg-background">
-        <Layout activeTab={activeTab} onTabChange={setActiveTab}>
-          {renderContent()}
-        </Layout>
-        <Toaster />
-      </div>
-    </ErrorBoundary>
+    <AppLayout>
+      {showOnboarding && <Onboarding onComplete={() => setShowOnboarding(false)} />}
+      <Routes>
+        <Route path="/" element={<Navigate to="/feed" replace />} />
+        <Route path="/feed" element={<Dashboard />} />
+        <Route path="/hunt" element={<Radar />} />
+        <Route path="/verify" element={<ScannerPage />} />
+        <Route path="/free-money" element={<Dashboard />} />
+        <Route path="/jobs" element={<Dashboard />} />
+        <Route path="/saved" element={<Saved />} />
+        <Route path="/alerts" element={<Telegram />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="*" element={<Navigate to="/feed" replace />} />
+      </Routes>
+      <Toaster 
+        theme="dark" 
+        richColors 
+        position="top-right"
+        toastOptions={{
+          className: 'glass-card border-border/10 font-sans',
+          style: {
+            background: 'rgba(15, 23, 33, 0.95)',
+            backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255, 255, 255, 0.06)',
+            color: '#fff',
+          },
+        }}
+      />
+    </AppLayout>
   );
 }
