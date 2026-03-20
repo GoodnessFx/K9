@@ -382,3 +382,31 @@ button, a, [role="button"], input[type="checkbox"], input[type="radio"] {
  
 /* Touch targets — all interactive elements */ 
 button, a { min-height: 36px; } 
+
+/* ── K9 Claude-style layout ──────────────────────────────────────── */ 
+  
+/* Desktop: show sidebar, hide mobile bar */ 
+@media (min-width: 768px) { 
+  .k9-sidebar-desktop { display: flex !important; } 
+  .k9-mobile-bar      { display: none !important; } 
+  .k9-content         { padding: 28px 40px !important; } 
+} 
+  
+/* Mobile: hide sidebar, show top bar */ 
+@media (max-width: 767px) { 
+  .k9-sidebar-desktop { display: none !important; } 
+  .k9-mobile-bar      { display: flex !important; } 
+  .k9-content         { padding: 20px 16px !important; } 
+} 
+  
+/* Thin scrollbar on content area */ 
+.k9-content::-webkit-scrollbar       { width: 4px; } 
+.k9-content::-webkit-scrollbar-track { background: transparent; } 
+.k9-content::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.2); border-radius: 10px; } 
+  
+/* Font smoothing */ 
+body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; } 
+  
+/* Nose pulse animation (defined here so it works if inline style doesn't cascade) */ 
+@keyframes km-np { 0%,100% { opacity: 0.2; } 50% { opacity: 0.7; } } 
+.km-np { animation: km-np 2s ease-in-out infinite; } 

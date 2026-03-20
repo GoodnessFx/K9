@@ -1,140 +1,380 @@
-import React, { useState } from 'react';
-import { motion } from 'motion/react';
-import { useMediaQuery } from '../hooks/useMediaQuery';
-import { cn } from '@/lib/utils';
-import { Button } from './ui/button';
-import { NotificationCenter } from './NotificationCenter';
-import { Settings } from './Settings';
-import { K9Logo } from './K9Logo';
+import React, { useState, useEffect } from 'react'; 
+import { AnimatePresence, motion } from 'motion/react'; 
+import { NotificationCenter } from './NotificationCenter'; 
+import { Settings } from './Settings'; 
 import { 
-  Settings as SettingsIcon, 
-  Zap,
-  Shield,
-  Users,
-  Archive,
-  TrendingUp,
-  Code
-} from 'lucide-react';
-
-interface LayoutProps {
-  children: React.ReactNode;
-  activeTab: string;
-  onTabChange: (tab: string) => void;
-}
-
-const navigationItems = [ 
-  { id: 'dashboard', label: 'Dispatch',    icon: Zap }, 
-  { id: 'radar',     label: 'Hunt',        icon: TrendingUp }, 
-  { id: 'security',  label: 'Is It Safe?', icon: Shield }, 
-  { id: 'vault',     label: 'Saved',       icon: Archive }, 
-  { id: 'dev',       label: 'Tech News',   icon: Code }, 
-  { id: 'community', label: 'Community',   icon: Users }, 
+  Zap, TrendingUp, Shield, Archive, Code, Users, 
+  Settings as SettingsIcon, Moon, Sun, Menu, X, 
+} from 'lucide-react'; 
+ 
+// ─── Inline K9 Dog Logo ────────────────────────────────────────── 
+// 3D-style Belgian Malinois SVG — warm tan coat, amber eyes, purple collar glow 
+ 
+function K9Mark({ size = 26 }: { size?: number }) { 
+  return ( 
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"> 
+      <defs> 
+        <radialGradient id="km-b" cx="45%" cy="35%" r="60%"> 
+          <stop offset="0%" stopColor="#D4A055"/> 
+          <stop offset="60%" stopColor="#A8732A"/> 
+          <stop offset="100%" stopColor="#6B4A18"/> 
+        </radialGradient> 
+        <radialGradient id="km-d" cx="50%" cy="40%" r="55%"> 
+          <stop offset="0%" stopColor="#3A2810"/> 
+          <stop offset="100%" stopColor="#1A1008"/> 
+        </radialGradient> 
+        <radialGradient id="km-n" cx="35%" cy="30%" r="60%"> 
+          <stop offset="0%" stopColor="#5A4A3A"/> 
+          <stop offset="100%" stopColor="#1A1008"/> 
+        </radialGradient> 
+        <radialGradient id="km-e" cx="35%" cy="30%" r="70%"> 
+          <stop offset="0%" stopColor="#8B5E2A"/> 
+          <stop offset="70%" stopColor="#3A2010"/> 
+          <stop offset="100%" stopColor="#0A0605"/> 
+        </radialGradient> 
+        <radialGradient id="km-c" cx="50%" cy="50%" r="50%"> 
+          <stop offset="0%" stopColor="#A78BFA"/> 
+          <stop offset="100%" stopColor="#6D28D9"/> 
+        </radialGradient> 
+        <filter id="km-s"> 
+          <feDropShadow dx="0" dy="1" stdDeviation="1.5" floodColor="#00000055"/> 
+        </filter> 
+        <style>{`@keyframes km-np{0%,100%{opacity:.2}50%{opacity:.7}}.km-np{animation:km-np 2s ease-in-out infinite}`}</style> 
+      </defs> 
+      <g filter="url(#km-s)"> 
+        <ellipse cx="26" cy="46" rx="10" ry="8" fill="url(#km-b)"/> 
+        <ellipse cx="20" cy="50" rx="14" ry="7" fill="url(#km-b)"/> 
+        <ellipse cx="20" cy="48" rx="10" ry="5" fill="url(#km-d)" opacity=".7"/> 
+        <ellipse cx="36" cy="30" rx="16" ry="14" fill="url(#km-b)"/> 
+        <ellipse cx="34" cy="22" rx="12" ry="8" fill="url(#km-d)" opacity=".85"/> 
+        <ellipse cx="42" cy="33" rx="5" ry="4" fill="#D4A055" opacity=".5"/> 
+        <ellipse cx="48" cy="36" rx="9" ry="7" fill="url(#km-b)"/> 
+        <ellipse cx="49" cy="39" rx="7" ry="4" fill="#C49045"/> 
+        <ellipse cx="55" cy="35" rx="4" ry="3" fill="url(#km-n)"/> 
+        <ellipse cx="53.5" cy="33.8" rx="1.2" ry=".8" fill="#6A5A4A" opacity=".7"/> 
+        <ellipse cx="54" cy="35.5" rx="1" ry=".6" fill="#0A0605"/> 
+        <ellipse cx="56.5" cy="35.5" rx="1" ry=".6" fill="#0A0605"/> 
+        <circle className="km-np" cx="55" cy="35" r="5" fill="#8B5CF6" opacity=".3"/> 
+        <ellipse cx="42" cy="28" rx="4" ry="3.5" fill="url(#km-e)"/> 
+        <ellipse cx="40.8" cy="26.8" rx="1.2" ry=".9" fill="white" opacity=".85"/> 
+        <path d="M38 24.5C40 23.5 44 23 46 24" stroke="#6B4A18" strokeWidth="1.2" strokeLinecap="round" fill="none"/> 
+        <path d="M26 20C25 14 29 10 32 12C30 15 28 18 27 22Z" fill="url(#km-d)"/> 
+        <path d="M34 18C33 11 38 7 42 10C39 13 37 17 36 22Z" fill="url(#km-b)"/> 
+        <path d="M36 19C35 14 38 10 40 12C38 15 37 18 36.5 21Z" fill="#C8703A" opacity=".6"/> 
+        <path d="M24 43Q36 46 46 41" stroke="url(#km-c)" strokeWidth="2.5" strokeLinecap="round" fill="none"/> 
+      </g> 
+    </svg> 
+  ); 
+} 
+ 
+// ─── Nav config ─────────────────────────────────────────────────── 
+ 
+const NAV_ITEMS = [ 
+  { id: 'dashboard', label: 'Dispatch',    Icon: Zap }, 
+  { id: 'radar',     label: 'Hunt',        Icon: TrendingUp }, 
+  { id: 'security',  label: 'Is It Safe?', Icon: Shield }, 
+  { id: 'vault',     label: 'Saved',       Icon: Archive }, 
+  { id: 'dev',       label: 'Tech News',   Icon: Code }, 
+  { id: 'community', label: 'Community',   Icon: Users }, 
 ]; 
-
-export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const isMobile = useMediaQuery('(max-width: 639px)');
-
-  return (
-    <div className="min-h-screen bg-bg-base text-t1 selection:bg-intel/30">
-      {/* Settings Modal */}
-      <Settings open={settingsOpen} onOpenChange={setSettingsOpen} />
-
-      {/* Top Navigation */}
-      <motion.nav 
-        className="sticky top-0 z-50 border-b border-line-1 bg-bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-bg-surface/60"
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      >
-        <div className="flex h-16 items-center justify-between px-4 md:px-6">
-          <motion.div 
-            className="flex items-center gap-2.5 cursor-pointer"
-            whileHover={{ scale: 1.02 }}
-            onClick={() => onTabChange('dashboard')}
-          >
-            <div className="flex items-center gap-2.5"> 
-              <K9Logo size={30} animated={true} /> 
-              <span className="font-bold text-base tracking-tight">K9</span> 
-            </div> 
-          </motion.div>
-
-          <div className="flex items-center gap-4">
-            <NotificationCenter />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="hover:bg-bg-elevated"
-              onClick={() => setSettingsOpen(true)}
-            >
-              <SettingsIcon className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-      </motion.nav>
-
-      <div className="flex">
-        {/* Desktop Sidebar */}
-        {!isMobile && (
-          <aside className="w-64 border-r border-line-1 h-[calc(100vh-64px)] sticky top-16 p-4 flex flex-col justify-between bg-bg-surface/50">
-            <div className="space-y-2">
-              {navigationItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => onTabChange(item.id)}
-                  className={cn(
-                    "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all group",
-                    activeTab === item.id 
-                      ? "bg-intel text-white shadow-lg shadow-intel/20" 
-                      : "text-t2 hover:bg-bg-elevated hover:text-t1"
-                  )}
-                >
-                  <item.icon className={cn(
-                    "h-5 w-5",
-                    activeTab === item.id ? "text-white" : "text-t3 group-hover:text-intel"
-                  )} />
-                  <span className="font-medium text-sm">{item.label}</span>
-                </button>
-              ))}
-            </div>
-
-            <div className="p-3 rounded-lg bg-muted/50"> 
-              <div className="flex items-center gap-2 mb-1"> 
-                <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" /> 
-                <span className="text-xs font-medium">K9 is watching</span> 
-              </div> 
-              <p className="text-xs text-muted-foreground">Sniffing every 90 seconds</p> 
-            </div>
-          </aside>
-        )}
-
-        {/* Main Content */}
-        <main className={cn(
-          "flex-1 page-container min-h-[calc(100vh-64px)]",
-          isMobile ? "mobile" : "desktop"
-        )}>
-          {children}
-        </main>
-      </div>
-
-      {/* Mobile Bottom Navigation */}
-      {isMobile && (
-        <nav className="bottom-nav">
-          {navigationItems.map((item) => (
-            <button
-              key={item.id}
-              className={cn(
-                "bottom-nav-item",
-                activeTab === item.id && "active"
-              )}
-              onClick={() => onTabChange(item.id)}
-            >
-              <item.icon className="h-5 w-5" />
-              <span className="text-[10px] mt-1 font-medium">{item.label}</span>
-            </button>
-          ))}
-        </nav>
-      )}
-    </div>
-  );
-}
+ 
+// ─── Layout ─────────────────────────────────────────────────────── 
+ 
+interface LayoutProps { 
+  children: React.ReactNode; 
+  activeTab: string; 
+  onTabChange: (tab: string) => void; 
+} 
+ 
+export function Layout({ children, activeTab, onTabChange }: LayoutProps) { 
+  const [dark, setDark]         = useState(true);   // dark by default 
+  const [mobileOpen, setMobile] = useState(false); 
+  const [settingsOpen, setSettings] = useState(false); 
+ 
+  // Apply dark class 
+  useEffect(() => { 
+    document.documentElement.classList.toggle('dark', dark); 
+  }, [dark]); 
+ 
+  // Close mobile sidebar on resize to desktop 
+  useEffect(() => { 
+    const fn = () => { if (window.innerWidth >= 768) setMobile(false); }; 
+    window.addEventListener('resize', fn); 
+    return () => window.removeEventListener('resize', fn); 
+  }, []); 
+ 
+  function navigate(id: string) { 
+    onTabChange(id); 
+    setMobile(false); 
+  } 
+ 
+  // ── Sidebar content (shared between desktop + mobile) ────────── 
+  const SidebarContent = () => ( 
+    <div style={{ 
+      width: 220, 
+      minWidth: 220, 
+      height: '100vh', 
+      background: dark ? '#171717' : '#F0EFE9', 
+      borderRight: `1px solid ${dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, 
+      display: 'flex', 
+      flexDirection: 'column', 
+      overflow: 'hidden', 
+      flexShrink: 0, 
+    }}> 
+      {/* Logo */} 
+      <div style={{ 
+        padding: '18px 14px 10px', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'space-between', 
+      }}> 
+        <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}> 
+          <K9Mark size={26} /> 
+          <span style={{ 
+            fontSize: 16, 
+            fontWeight: 700, 
+            letterSpacing: '-0.3px', 
+            color: dark ? '#ececec' : '#1a1a1a', 
+          }}> 
+            K9 
+          </span> 
+        </div> 
+        {/* Mobile close button */} 
+        <button 
+          onClick={() => setMobile(false)} 
+          style={{ 
+            border: 'none', background: 'none', cursor: 'pointer', 
+            color: dark ? '#666' : '#888', padding: 4, 
+            display: mobileOpen ? 'flex' : 'none', 
+            alignItems: 'center', 
+          }} 
+        > 
+          <X style={{ width: 16, height: 16 }} /> 
+        </button> 
+      </div> 
+ 
+      {/* Navigation */} 
+      <nav style={{ padding: '4px 8px', flex: 1, overflowY: 'auto' }}> 
+        {NAV_ITEMS.map(({ id, label, Icon }) => { 
+          const active = activeTab === id; 
+          return ( 
+            <button 
+              key={id} 
+              onClick={() => navigate(id)} 
+              style={{ 
+                width: '100%', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 9, 
+                padding: '7px 10px', 
+                borderRadius: 6, 
+                border: 'none', 
+                cursor: 'pointer', 
+                textAlign: 'left', 
+                marginBottom: 1, 
+                fontSize: 13, 
+                fontWeight: active ? 500 : 400, 
+                background: active 
+                  ? dark ? 'rgba(255,255,255,0.09)' : 'rgba(0,0,0,0.06)' 
+                  : 'transparent', 
+                color: active 
+                  ? dark ? '#ececec' : '#1a1a1a' 
+                  : dark ? '#8a8a8a' : '#666', 
+                transition: 'background 0.1s, color 0.1s', 
+              }} 
+              onMouseEnter={e => { 
+                if (!active) { 
+                  (e.currentTarget as HTMLButtonElement).style.background = dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.04)'; 
+                  (e.currentTarget as HTMLButtonElement).style.color = dark ? '#ececec' : '#1a1a1a'; 
+                } 
+              }} 
+              onMouseLeave={e => { 
+                if (!active) { 
+                  (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; 
+                  (e.currentTarget as HTMLButtonElement).style.color = dark ? '#8a8a8a' : '#666'; 
+                } 
+              }} 
+            > 
+              <Icon style={{ 
+                width: 15, height: 15, flexShrink: 0, 
+                opacity: active ? 1 : 0.65, 
+              }} /> 
+              <span style={{ 
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', 
+              }}> 
+                {label} 
+              </span> 
+            </button> 
+          ); 
+        })} 
+      </nav> 
+ 
+      {/* Bottom */} 
+      <div style={{ 
+        padding: '10px 8px', 
+        borderTop: `1px solid ${dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, 
+      }}> 
+        {/* Live status */} 
+        <div style={{ 
+          display: 'flex', alignItems: 'center', gap: 8, 
+          padding: '6px 10px', marginBottom: 2, 
+        }}> 
+          <div style={{ 
+            width: 5, height: 5, borderRadius: '50%', 
+            background: '#22c55e', 
+            boxShadow: '0 0 5px #22c55e', 
+            flexShrink: 0, 
+          }} /> 
+          <span style={{ fontSize: 11, color: dark ? '#555' : '#888' }}> 
+            K9 is watching · sniffs every 90s 
+          </span> 
+        </div> 
+ 
+        {/* Notifications */} 
+        <div style={{ 
+          padding: '2px 10px 4px', 
+          display: 'flex', alignItems: 'center', gap: 9, 
+        }}> 
+          <NotificationCenter /> 
+        </div> 
+ 
+        {/* Settings + dark toggle */} 
+        <button 
+          onClick={() => setSettings(true)} 
+          style={{ 
+            width: '100%', display: 'flex', alignItems: 'center', gap: 9, 
+            padding: '7px 10px', borderRadius: 6, 
+            border: 'none', background: 'transparent', cursor: 'pointer', 
+            color: dark ? '#8a8a8a' : '#666', fontSize: 13, 
+            transition: 'background 0.1s', 
+          }} 
+          onMouseEnter={e => { 
+            (e.currentTarget as HTMLButtonElement).style.background = dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.04)'; 
+          }} 
+          onMouseLeave={e => { 
+            (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; 
+          }} 
+        > 
+          <SettingsIcon style={{ width: 14, height: 14, flexShrink: 0, opacity: 0.65 }} /> 
+          <span>Settings</span> 
+          {/* Dark mode toggle inside settings row */} 
+          <button 
+            onClick={e => { e.stopPropagation(); setDark(d => !d); }} 
+            style={{ 
+              marginLeft: 'auto', border: 'none', background: 'none', 
+              cursor: 'pointer', color: dark ? '#666' : '#888', 
+              display: 'flex', alignItems: 'center', padding: 2, 
+            }} 
+            title="Toggle dark/light mode" 
+          > 
+            {dark 
+              ? <Sun style={{ width: 13, height: 13 }} /> 
+              : <Moon style={{ width: 13, height: 13 }} /> 
+            } 
+          </button> 
+        </button> 
+      </div> 
+    </div> 
+  ); 
+ 
+  return ( 
+    <div style={{ 
+      display: 'flex', 
+      height: '100vh', 
+      overflow: 'hidden', 
+      background: dark ? '#1c1c1c' : '#F7F7F5', 
+      color: dark ? '#ececec' : '#1a1a1a', 
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', 
+      WebkitFontSmoothing: 'antialiased', 
+    }}> 
+ 
+      {/* Desktop sidebar — always visible on md+ */} 
+      <div className="k9-sidebar-desktop"> 
+        <SidebarContent /> 
+      </div> 
+ 
+      {/* Mobile sidebar overlay */} 
+      <AnimatePresence> 
+        {mobileOpen && ( 
+          <> 
+            <motion.div 
+              key="mob-backdrop" 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              onClick={() => setMobile(false)} 
+              style={{ 
+                position: 'fixed', inset: 0, 
+                background: 'rgba(0,0,0,0.5)', 
+                zIndex: 40, 
+              }} 
+            /> 
+            <motion.div 
+              key="mob-sidebar" 
+              initial={{ x: -240 }} 
+              animate={{ x: 0 }} 
+              exit={{ x: -240 }} 
+              transition={{ type: 'spring', stiffness: 320, damping: 32 }} 
+              style={{ position: 'fixed', left: 0, top: 0, bottom: 0, zIndex: 50 }} 
+            > 
+              <SidebarContent /> 
+            </motion.div> 
+          </> 
+        )} 
+      </AnimatePresence> 
+ 
+      {/* Main content area */} 
+      <div style={{ 
+        flex: 1, 
+        display: 'flex', 
+        flexDirection: 'column', 
+        overflow: 'hidden', 
+        minWidth: 0, 
+      }}> 
+ 
+        {/* Mobile top bar */} 
+        <div className="k9-mobile-bar" style={{ 
+          display: 'none', 
+          alignItems: 'center', 
+          padding: '11px 14px', 
+          borderBottom: `1px solid ${dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, 
+          background: dark ? '#1c1c1c' : '#F7F7F5', 
+          gap: 10, 
+          flexShrink: 0, 
+        }}> 
+          <button 
+            onClick={() => setMobile(true)} 
+            style={{ 
+              border: 'none', background: 'none', cursor: 'pointer', 
+              color: dark ? '#ececec' : '#1a1a1a', 
+              display: 'flex', alignItems: 'center', padding: 4, 
+            }} 
+          > 
+            <Menu style={{ width: 19, height: 19 }} /> 
+          </button> 
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}> 
+            <K9Mark size={22} /> 
+            <span style={{ fontSize: 15, fontWeight: 700 }}>K9</span> 
+          </div> 
+        </div> 
+ 
+        {/* Scrollable content */} 
+        <main 
+          className="k9-content" 
+          style={{ 
+            flex: 1, 
+            overflowY: 'auto', 
+            padding: '28px 40px', 
+          }} 
+        > 
+          {/* Inner max-width container */} 
+          <div style={{ maxWidth: 820, margin: '0 auto', width: '100%' }}> 
+            {children} 
+          </div> 
+        </main> 
+      </div> 
+ 
+      <Settings open={settingsOpen} onOpenChange={setSettings} /> 
+    </div> 
+  ); 
+} 
