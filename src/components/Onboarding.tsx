@@ -1,6 +1,6 @@
 import { useState } from 'react'; 
 import { motion } from 'framer-motion'; 
-import { K9LogoMark } from './K9Dog/K9LogoMark'; 
+import { K9Logo } from './K9Logo'; 
  
 interface OnboardingProps { 
   onComplete: () => void; 
@@ -26,7 +26,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }} 
         style={{ width: 340, height: 260, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }} 
       > 
-        <K9LogoMark size={160} animated glowColor="#8B5CF6" />
+        <K9Logo size={160} animated={true} />
       </motion.div> 
  
       {/* Text below dog */} 
@@ -37,7 +37,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
         style={{ textAlign: 'center', padding: '0 32px', maxWidth: 400 }} 
       > 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 12 }}> 
-          <K9LogoMark size={24} animated glowColor="#8B5CF6" /> 
+          <K9Logo size={24} animated={true} /> 
           <span style={{ fontSize: 28, fontWeight: 700, color: '#EEF2F7', letterSpacing: '-0.5px' }}>K9</span> 
         </div> 
         <h1 style={{ fontSize: 22, fontWeight: 600, color: '#EEF2F7', margin: '0 0 10px', lineHeight: 1.3 }}> 
@@ -92,7 +92,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
         animate={{ opacity: 1 }} 
         style={{ width: 180, height: 140, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }} 
       > 
-        <K9LogoMark size={100} animated glowColor="#00C87A" />
+        <K9Logo size={100} animated={true} />
       </motion.div> 
  
       <motion.div 
@@ -188,7 +188,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
         animate={{ scale: 1, opacity: 1 }} 
         transition={{ type: 'spring', stiffness: 200, damping: 15 }} 
       > 
-        <K9LogoMark size={140} animated glowColor="#00C87A" />
+        <K9Logo size={140} animated={true} />
       </motion.div> 
       <motion.div 
         initial={{ opacity: 0, y: 12 }} 

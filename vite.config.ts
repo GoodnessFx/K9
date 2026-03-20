@@ -22,7 +22,6 @@ export default defineConfig({
       output: { 
         manualChunks: { 
           'react-vendor':  ['react', 'react-dom'], 
-          'three-vendor':  ['three', '@react-three/fiber', '@react-three/drei'], 
           'ui-vendor':     ['@radix-ui/react-dialog', '@radix-ui/react-popover', '@radix-ui/react-select'], 
           'motion-vendor': ['framer-motion'], 
           'chart-vendor':  ['recharts'], 
@@ -32,8 +31,7 @@ export default defineConfig({
   }, 
   optimizeDeps: { 
     include: [ 
-      'react', 'react-dom', 'three', 
-      '@react-three/fiber', '@react-three/drei', 
+      'react', 'react-dom', 
       'framer-motion', 'lucide-react', 'recharts', 'sonner', 
       '@supabase/supabase-js', 'canvas-confetti', 
     ] 

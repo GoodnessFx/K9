@@ -1,257 +1,223 @@
+import React, { useState, useEffect } from 'react'; 
+import { AnimatePresence, motion } from 'motion/react'; 
+import { NotificationCenter } from './NotificationCenter'; 
+import { Settings } from './Settings'; 
+import { useLocation, useNavigate } from 'react-router-dom';
 import { 
-  Search, 
-  Menu, 
-  Bell, 
-  Settings as SettingsIcon,
-  Zap,
-  Crosshair,
-  ShieldCheck,
-  Bookmark,
-  DollarSign,
-  Briefcase
-} from 'lucide-react';
-import { useState } from 'react';
-import { NavLink, Link, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-import { useSignalStream } from '../hooks/useSignalStream';
-import LogoMark from './LogoMark';
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
-
-const SIDEBAR_WIDTH_COLLAPSED = 64;
-const SIDEBAR_WIDTH_EXPANDED = 224;
-
-const NAV_ITEMS = [
-  { path: '/feed', label: 'On the Hunt', icon: Zap },
-  { path: '/free-money', label: 'Free Money', icon: DollarSign },
-  { path: '/jobs', label: 'Jobs', icon: Briefcase },
-  { path: '/hunt', label: 'Analysis', icon: Crosshair },
-  { path: '/verify', label: 'Verify', icon: ShieldCheck },
-  { path: '/saved', label: 'Saved', icon: Bookmark },
-];
-
-export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
-  const [isSidebarMobileOpen, setIsSidebarMobileOpen] = useState(false);
+  Zap, TrendingUp, Shield, Archive, Code, Users, 
+  Settings as SettingsIcon, Moon, Sun, Menu, X, 
+} from 'lucide-react'; 
+ 
+function K9Mark({ size = 26 }: { size?: number }) { 
+  return ( 
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"> 
+      <defs> 
+        <radialGradient id="km-b" cx="45%" cy="35%" r="60%"> 
+          <stop offset="0%" stopColor="#D4A055"/><stop offset="60%" stopColor="#A8732A"/><stop offset="100%" stopColor="#6B4A18"/> 
+        </radialGradient> 
+        <radialGradient id="km-d" cx="50%" cy="40%" r="55%"> 
+          <stop offset="0%" stopColor="#3A2810"/><stop offset="100%" stopColor="#1A1008"/> 
+        </radialGradient> 
+        <radialGradient id="km-n" cx="35%" cy="30%" r="60%"> 
+          <stop offset="0%" stopColor="#5A4A3A"/><stop offset="100%" stopColor="#1A1008"/> 
+        </radialGradient> 
+        <radialGradient id="km-e" cx="35%" cy="30%" r="70%"> 
+          <stop offset="0%" stopColor="#8B5E2A"/><stop offset="70%" stopColor="#3A2010"/><stop offset="100%" stopColor="#0A0605"/> 
+        </radialGradient> 
+        <radialGradient id="km-c" cx="50%" cy="50%" r="50%"> 
+          <stop offset="0%" stopColor="#A78BFA"/><stop offset="100%" stopColor="#6D28D9"/> 
+        </radialGradient> 
+        <filter id="km-s"> 
+          <feDropShadow dx="0" dy="1" stdDeviation="1.5" floodColor="#00000055"/> 
+        </filter> 
+        <style>{`@keyframes km-np{0%,100%{opacity:.2}50%{opacity:.7}}.km-np{animation:km-np 2s ease-in-out infinite}`}</style> 
+      </defs> 
+      <g filter="url(#km-s)"> 
+        <ellipse cx="26" cy="46" rx="10" ry="8" fill="url(#km-b)"/> 
+        <ellipse cx="20" cy="50" rx="14" ry="7" fill="url(#km-b)"/> 
+        <ellipse cx="20" cy="48" rx="10" ry="5" fill="url(#km-d)" opacity=".7"/> 
+        <ellipse cx="36" cy="30" rx="16" ry="14" fill="url(#km-b)"/> 
+        <ellipse cx="34" cy="22" rx="12" ry="8" fill="url(#km-d)" opacity=".85"/> 
+        <ellipse cx="42" cy="33" rx="5" ry="4" fill="#D4A055" opacity=".5"/> 
+        <ellipse cx="48" cy="36" rx="9" ry="7" fill="url(#km-b)"/> 
+        <ellipse cx="49" cy="39" rx="7" ry="4" fill="#C49045"/> 
+        <ellipse cx="55" cy="35" rx="4" ry="3" fill="url(#km-n)"/> 
+        <ellipse cx="53.5" cy="33.8" rx="1.2" ry=".8" fill="#6A5A4A" opacity=".7"/> 
+        <ellipse cx="54" cy="35.5" rx="1" ry=".6" fill="#0A0605"/> 
+        <ellipse cx="56.5" cy="35.5" rx="1" ry=".6" fill="#0A0605"/> 
+        <circle className="km-np" cx="55" cy="35" r="5" fill="#8B5CF6" opacity=".3"/> 
+        <ellipse cx="42" cy="28" rx="4" ry="3.5" fill="url(#km-e)"/> 
+        <ellipse cx="40.8" cy="26.8" rx="1.2" ry=".9" fill="white" opacity=".85"/> 
+        <path d="M38 24.5C40 23.5 44 23 46 24" stroke="#6B4A18" strokeWidth="1.2" strokeLinecap="round" fill="none"/> 
+        <path d="M26 20C25 14 29 10 32 12C30 15 28 18 27 22Z" fill="url(#km-d)"/> 
+        <path d="M34 18C33 11 38 7 42 10C39 13 37 17 36 22Z" fill="url(#km-b)"/> 
+        <path d="M36 19C35 14 38 10 40 12C38 15 37 18 36.5 21Z" fill="#C8703A" opacity=".6"/> 
+        <path d="M24 43Q36 46 46 41" stroke="url(#km-c)" strokeWidth="2.5" strokeLinecap="round" fill="none"/> 
+      </g> 
+    </svg> 
+  ); 
+} 
+ 
+const NAV = [ 
+  { id: 'dashboard', label: 'Dispatch',    Icon: Zap, path: '/feed' }, 
+  { id: 'radar',     label: 'Hunt',        Icon: TrendingUp, path: '/hunt' }, 
+  { id: 'security',  label: 'Is It Safe?', Icon: Shield, path: '/verify' }, 
+  { id: 'vault',     label: 'Saved',       Icon: Archive, path: '/saved' }, 
+  { id: 'dev',       label: 'Tech News',   Icon: Code, path: '/feed' }, 
+  { id: 'community', label: 'Community',   Icon: Users, path: '/feed' }, 
+]; 
+ 
+export default function AppLayout({ children }: { children: React.ReactNode }) { 
+  const [dark, setDark]             = useState(true); 
+  const [mobileOpen, setMobile]     = useState(false); 
+  const [settingsOpen, setSettings] = useState(false); 
   const location = useLocation();
-  const { status } = useSignalStream();
-
-  const toggleSidebarMobile = () => setIsSidebarMobileOpen(!isSidebarMobileOpen);
-
-  const currentPageTitle = NAV_ITEMS.find(item => item.path === location.pathname)?.label || 'Overview';
-
-  return (
-    <div className="flex min-h-screen bg-bg-base text-t1 font-sans overflow-hidden">
-      {/* Sidebar - Desktop */}
-      <motion.aside 
-        className="hidden lg:flex flex-col fixed inset-y-0 left-0 z-50 bg-bg-surface border-r border-line-1 overflow-hidden"
-        initial={false}
-        animate={{ width: isSidebarExpanded ? SIDEBAR_WIDTH_EXPANDED : SIDEBAR_WIDTH_COLLAPSED }}
-        onMouseEnter={() => setIsSidebarExpanded(true)}
-        onMouseLeave={() => setIsSidebarExpanded(false)}
-      >
-        <SidebarContent isExpanded={isSidebarExpanded} />
-      </motion.aside>
-
-      {/* Sidebar - Mobile Drawer */}
-      <AnimatePresence>
-        {isSidebarMobileOpen && (
-          <>
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsSidebarMobileOpen(false)}
-              className="fixed inset-0 bg-bg-overlay z-[60] backdrop-blur-sm"
-            />
-            <motion.aside 
-              initial={{ x: '-100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 left-0 w-full max-w-[280px] bg-bg-surface z-[70] border-r border-line-2"
-            >
-              <SidebarContent isExpanded={true} onNavClick={() => setIsSidebarMobileOpen(false)} />
-            </motion.aside>
-          </>
-        )}
-      </AnimatePresence>
-
-      {/* Main Content Area */}
-      <div 
-        className="flex flex-col flex-1 min-w-0 transition-all duration-300"
-        style={{ paddingLeft: typeof window !== 'undefined' && window.innerWidth >= 1024 ? (isSidebarExpanded ? SIDEBAR_WIDTH_EXPANDED : SIDEBAR_WIDTH_COLLAPSED) : 0 }}
-      >
-        {/* Topbar Header */}
-        <header className="sticky top-0 z-40 h-16 flex items-center justify-between px-4 lg:px-8 bg-bg-base/80 backdrop-blur-md border-b border-line-1 relative overflow-hidden">
-          {/* Scan Beam Animation */}
-          {status === 'live' && (
-            <div className="absolute bottom-0 left-0 h-[1px] w-full bg-intel/40 animate-scan-beam" />
-          )}
-          
-          <div className="flex items-center gap-4">
+  const navigate = useNavigate();
+ 
+  useEffect(() => { 
+    document.documentElement.classList.toggle('dark', dark); 
+  }, [dark]); 
+ 
+  useEffect(() => { 
+    const fn = () => { if (window.innerWidth >= 768) setMobile(false); }; 
+    window.addEventListener('resize', fn); 
+    return () => window.removeEventListener('resize', fn); 
+  }, []); 
+ 
+  const bg       = dark ? '#1c1c1c' : '#F7F7F5'; 
+  const sbBg     = dark ? '#171717' : '#F0EFE9'; 
+  const sbBorder = dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'; 
+  const textMain = dark ? '#ececec' : '#1a1a1a'; 
+  const textMut  = dark ? '#8a8a8a' : '#666'; 
+  const hoverBg  = dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.04)'; 
+  const activeBg = dark ? 'rgba(255,255,255,0.09)' : 'rgba(0,0,0,0.06)'; 
+ 
+  const Sidebar = () => ( 
+    <div style={{ 
+      width: 220, minWidth: 220, height: '100vh', 
+      background: sbBg, 
+      borderRight: `1px solid ${sbBorder}`, 
+      display: 'flex', flexDirection: 'column', 
+      overflow: 'hidden', flexShrink: 0, 
+    }}> 
+      <div style={{ padding: '18px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}> 
+        <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}> 
+          <K9Mark size={26} /> 
+          <span style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-0.3px', color: textMain }}>K9</span> 
+        </div> 
+        {mobileOpen && ( 
+          <button onClick={() => setMobile(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: textMut, padding: 4, display: 'flex', alignItems: 'center' }}> 
+            <X style={{ width: 16, height: 16 }} /> 
+          </button> 
+        )} 
+      </div> 
+ 
+      <nav style={{ padding: '4px 8px', flex: 1, overflowY: 'auto' }}> 
+        {NAV.map(({ id, label, Icon, path }) => { 
+          const active = location.pathname === path; 
+          return ( 
             <button 
-              onClick={toggleSidebarMobile}
-              className="lg:hidden p-2 text-t2 hover:text-t1 transition-colors"
-            >
-              <Menu className="h-6 w-6" />
-            </button>
-            <h1 className="text-xl font-display font-medium tracking-tight uppercase">
-              {currentPageTitle}
-            </h1>
-          </div>
-
-          <div className="flex-1 max-w-md mx-8 hidden md:block">
-            <div className="relative group">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-t3 group-focus-within:text-line-3 transition-colors" />
-              <input 
-                placeholder="Search signals, tokens, protocols..."
-                className="w-full bg-bg-inset border border-line-1 rounded-md pl-10 pr-4 py-2 text-sm outline-none focus:border-line-3 transition-all placeholder:text-t3"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4 lg:gap-6">
-            <div className="flex items-center gap-2 px-2.5 py-1 rounded bg-bg-inset border border-line-1">
-              <div className={cn(
-                "h-1.5 w-1.5 rounded-full transition-colors",
-                status === 'live' ? "bg-safe animate-pulse" : status === 'polling' ? "bg-medium" : "bg-critical"
-              )} />
-              <span className="text-[10px] font-mono font-medium uppercase tracking-[0.12em] text-t2">
-                {status?.toUpperCase() || 'OFFLINE'}
-              </span>
-            </div>
-
-            <div className="hidden sm:flex items-center gap-3">
-               <ChannelBadge type="WA" active={true} />
-               <ChannelBadge type="TG" active={true} />
-            </div>
-
-            <Link to="/alerts" className="relative p-2 text-t2 hover:text-t1 transition-colors">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-2 right-2 h-1.5 w-1.5 bg-critical rounded-full border border-bg-base" />
-            </Link>
-            
-            <Link to="/settings" className="flex items-center gap-2 group">
-              <div className="h-8 w-8 rounded-full bg-bg-elevated border border-line-1 flex items-center justify-center group-hover:border-line-3 transition-colors overflow-hidden">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=k9" alt="Profile" className="w-full h-full" />
-              </div>
-            </Link>
-          </div>
-        </header>
-
-        {/* Page Content */}
-        <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
-          {children}
-        </main>
-      </div>
-    </div>
-  );
-}
-
-function ChannelBadge({ type, active }: { type: string, active: boolean }) {
-  return (
-    <div className={cn(
-      "flex items-center gap-1.5 text-[10px] font-mono font-medium tracking-[0.12em]",
-      active ? "text-t2" : "text-t3"
-    )}>
-      {type}
-      <div className={cn("h-1 w-1 rounded-full", active ? "bg-safe" : "bg-t3")} />
-    </div>
-  );
-}
-
-function SidebarContent({ isExpanded, onNavClick }: { isExpanded: boolean, onNavClick?: () => void }) {
-  const { status } = useSignalStream();
-  const isLive = status === 'live';
-
-  return (
-    <div className="flex flex-col h-full p-4">
-      <div className="mb-10 flex items-center gap-4 px-1">
-        <div className="relative">
-          <LogoMark size={isExpanded ? 40 : 32} animated={true} />
-          <div className={cn(
-            "absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-bg-surface transition-colors",
-            isLive ? "bg-safe animate-pulse" : status === 'polling' ? "bg-medium" : "bg-critical"
-          )} />
-        </div>
-        <AnimatePresence>
-          {isExpanded && (
-            <motion.span 
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              className="text-lg font-mono font-medium tracking-[0.12em] text-t1"
-            >
-              K9
-            </motion.span>
-          )}
-        </AnimatePresence>
-      </div>
-
-      <div className="flex-1 space-y-1">
-        {NAV_ITEMS.map((item) => (
-          <SidebarNavItem key={item.path} item={item} isExpanded={isExpanded} onClick={onNavClick} />
-        ))}
-      </div>
-
-      <div className="pt-4 border-t border-line-1 space-y-1">
-        <SidebarNavItem 
-          item={{ path: '/alerts', label: 'Alerts', icon: Bell }} 
-          isExpanded={isExpanded} 
-          onClick={onNavClick}
-          badge={3}
-        />
-        <SidebarNavItem 
-          item={{ path: '/settings', label: 'Settings', icon: SettingsIcon }} 
-          isExpanded={isExpanded} 
-          onClick={onNavClick}
-        />
-      </div>
-    </div>
-  );
-}
-
-function SidebarNavItem({ item, isExpanded, onClick, badge }: { item: any, isExpanded: boolean, onClick?: () => void, badge?: number }) {
-  const location = useLocation();
-  const isActive = location.pathname === item.path;
-
-  return (
-    <NavLink 
-      to={item.path} 
-      onClick={onClick}
-      className={cn(
-        "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-120 group relative",
-        isActive 
-          ? "bg-bg-elevated text-line-3" 
-          : "text-t2 hover:bg-bg-inset hover:text-t1"
-      )}
-    >
-      <item.icon className={cn("h-5 w-5 shrink-0", isActive ? "stroke-[2.5px]" : "stroke-[2px]")} />
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -10 }}
-            className="flex-1 flex items-center justify-between overflow-hidden whitespace-nowrap text-[13px] font-medium"
-          >
-            <span>{item.label}</span>
-            {badge && (
-              <span className="bg-critical text-white text-[10px] px-1.5 py-0.5 rounded-full font-mono min-w-[18px] text-center">
-                {badge}
-              </span>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-      {!isExpanded && badge && (
-        <span className="absolute top-2 right-2 h-1.5 w-1.5 bg-critical rounded-full border border-bg-surface" />
-      )}
-    </NavLink>
-  );
-}
+              key={id} 
+              onClick={() => { navigate(path); setMobile(false); }} 
+              style={{ 
+                width: '100%', display: 'flex', alignItems: 'center', gap: 9, 
+                padding: '7px 10px', borderRadius: 6, border: 'none', cursor: 'pointer', 
+                textAlign: 'left', marginBottom: 1, fontSize: 13, 
+                fontWeight: active ? 500 : 400, 
+                background: active ? activeBg : 'transparent', 
+                color: active ? textMain : textMut, 
+                transition: 'background 0.1s, color 0.1s', 
+              }} 
+              onMouseEnter={e => { if (!active) { (e.currentTarget as HTMLButtonElement).style.background = hoverBg; (e.currentTarget as HTMLButtonElement).style.color = textMain; } }} 
+              onMouseLeave={e => { if (!active) { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = textMut; } }} 
+            > 
+              <Icon style={{ width: 15, height: 15, flexShrink: 0, opacity: active ? 1 : 0.65 }} /> 
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span> 
+            </button> 
+          ); 
+        })} 
+      </nav> 
+ 
+      <div style={{ padding: '10px 8px', borderTop: `1px solid ${sbBorder}` }}> 
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', marginBottom: 2 }}> 
+          <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 5px #22c55e', flexShrink: 0 }} /> 
+          <span style={{ fontSize: 11, color: textMut }}>K9 is watching · sniffs every 90s</span> 
+        </div> 
+        <div style={{ padding: '0 10px 4px' }}> 
+          <NotificationCenter /> 
+        </div> 
+        <button 
+          onClick={() => setSettings(true)} 
+          style={{ 
+            width: '100%', display: 'flex', alignItems: 'center', gap: 9, 
+            padding: '7px 10px', borderRadius: 6, border: 'none', 
+            background: 'transparent', cursor: 'pointer', 
+            color: textMut, fontSize: 13, transition: 'background 0.1s', 
+          }} 
+          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = hoverBg; }} 
+          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }} 
+        > 
+          <SettingsIcon style={{ width: 14, height: 14, flexShrink: 0, opacity: 0.65 }} /> 
+          <span>Settings</span> 
+          <button 
+            onClick={e => { e.stopPropagation(); setDark(d => !d); }} 
+            style={{ marginLeft: 'auto', border: 'none', background: 'none', cursor: 'pointer', color: textMut, display: 'flex', alignItems: 'center', padding: 2 }} 
+          > 
+            {dark ? <Sun style={{ width: 13, height: 13 }} /> : <Moon style={{ width: 13, height: 13 }} />} 
+          </button> 
+        </button> 
+      </div> 
+    </div> 
+  ); 
+ 
+  return ( 
+    <div style={{ 
+      display: 'flex', height: '100vh', overflow: 'hidden', 
+      background: bg, color: textMain, 
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', 
+    }}> 
+      <div className="k9-desk-sidebar"> 
+        <Sidebar /> 
+      </div> 
+ 
+      <AnimatePresence> 
+        {mobileOpen && ( 
+          <> 
+            <motion.div key="bd" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
+              onClick={() => setMobile(false)} 
+              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 40 }} 
+            /> 
+            <motion.div key="sb" initial={{ x: -240 }} animate={{ x: 0 }} exit={{ x: -240 }} 
+              transition={{ type: 'spring', stiffness: 320, damping: 32 }} 
+              style={{ position: 'fixed', left: 0, top: 0, bottom: 0, zIndex: 50 }} 
+            > 
+              <Sidebar /> 
+            </motion.div> 
+          </> 
+        )} 
+      </AnimatePresence> 
+ 
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}> 
+        <div className="k9-mob-bar" style={{ 
+          display: 'none', alignItems: 'center', 
+          padding: '11px 14px', gap: 10, flexShrink: 0, 
+          borderBottom: `1px solid ${sbBorder}`, background: bg, 
+        }}> 
+          <button onClick={() => setMobile(true)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: textMain, display: 'flex', alignItems: 'center', padding: 4 }}> 
+            <Menu style={{ width: 19, height: 19 }} /> 
+          </button> 
+          <K9Mark size={22} /> 
+          <span style={{ fontSize: 15, fontWeight: 700 }}>K9</span> 
+        </div> 
+ 
+        <main className="k9-content" style={{ flex: 1, overflowY: 'auto', padding: '28px 40px' }}> 
+          <div style={{ maxWidth: 820, margin: '0 auto', width: '100%' }}> 
+            {children} 
+          </div> 
+        </main> 
+      </div> 
+ 
+      <Settings open={settingsOpen} onOpenChange={setSettings} /> 
+    </div> 
+  ); 
+} 

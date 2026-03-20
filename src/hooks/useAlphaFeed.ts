@@ -5,18 +5,6 @@ import { AlphaSignal } from '../types';
 // ── Free public APIs — no keys needed ───────────────────────────── 
 const CG   = 'https://api.coingecko.com/api/v3'; 
 const POLY  = 'https://gamma-api.polymarket.com'; 
-const RSS   = 'https://api.rss2json.com/v1/api.json?rss_url='; 
-
-const NITTER = ['https://nitter.net', 'https://nitter.privacydev.net', 'https://nitter.1d4.us']; 
-const X_ACCOUNTS = [ 
-  { handle: 'AirdropAlert',    type: 'airdrop',   score: 85 }, 
-  { handle: 'CryptoRank_io',   type: 'airdrop',   score: 83 }, 
-  { handle: 'lookonchain',     type: 'insider',   score: 85 }, 
-  { handle: 'WhaleAlert',      type: 'whale',     score: 80 }, 
-  { handle: 'PeckShieldAlert', type: 'security',  score: 87 }, 
-]; 
-const SIG_KW   = ['airdrop','free','claim','bounty','testnet','launched','job','hiring']; 
-const SCAM_KW  = ['send eth','send bnb','private key','seed phrase','dm me','10x guaranteed']; 
 
 async function get(url: string): Promise<any> { 
   try { 
@@ -149,69 +137,112 @@ async function fetchPredictionMarkets(): Promise<AlphaSignal[]> {
 } 
  
 // ── New source: Verified X/Twitter accounts ───────────────────────── 
+const NITTER = [ 
+  'https://nitter.net', 
+  'https://nitter.privacydev.net', 
+  'https://nitter.1d4.us', 
+]; 
+ 
+// High-signal accounts with verified track records 
+const X_ACCOUNTS = [ 
+  { handle: 'AirdropAlert',   type: 'airdrop',   score: 85 }, 
+  { handle: 'CryptoRank_io',  type: 'airdrop',   score: 83 }, 
+  { handle: 'lookonchain',    type: 'insider',   score: 85 }, 
+  { handle: 'WhaleAlert',     type: 'whale',     score: 80 }, 
+  { handle: 'PeckShieldAlert',type: 'security',  score: 87 }, 
+  { handle: 'DefiLlama',      type: 'defi',      score: 88 }, 
+]; 
+ 
+const SIGNAL_KEYWORDS = ['airdrop', 'free', 'claim', 'bounty', 'points program', 'testnet', 'just launched', 'open source', 'job', 'hiring']; 
+const SCAM_KEYWORDS   = ['send eth', 'send bnb', 'private key', 'seed phrase', 'recovery phrase', 'dm me', '10x guaranteed', 'send and receive']; 
+ 
 async function fetchXSignals(): Promise<AlphaSignal[]> { 
-  const out: AlphaSignal[] = []; 
+  const results: AlphaSignal[] = []; 
   const seen = new Set<string>(); 
-  for (const acct of X_ACCOUNTS) { 
-    for (const ni of NITTER) { 
+ 
+  for (const account of X_ACCOUNTS) { 
+    for (const instance of NITTER) { 
       try { 
         const res = await fetch( 
-          `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(`${ni}/${acct.handle}/rss`)}&count=5`, 
-          { signal: AbortSignal.timeout(5000) } 
+          `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(`${instance}/${account.handle}/rss`)}&count=5`, 
+          { signal: AbortSignal.timeout(6000) } 
         ); 
         if (!res.ok) continue; 
-        const d = await res.json(); 
-        if (!d?.items?.length) continue; 
-        for (const item of d.items) { 
-          const txt = `${item.title ?? ''} ${item.description ?? ''}`.toLowerCase(); 
-          if (SCAM_KW.some(k => txt.includes(k))) continue; 
-          const matched = SIG_KW.filter(k => txt.includes(k)); 
-          if (!matched.length) continue; 
-          const id = `x-${acct.handle}-${item.guid ?? item.pubDate}`; 
+        const data = await res.json(); 
+        if (!data?.items?.length) continue; 
+ 
+        for (const item of data.items) { 
+          const text = `${item.title ?? ''} ${item.description ?? ''}`.toLowerCase(); 
+ 
+          // Drop anything that looks like a scam 
+          if (SCAM_KEYWORDS.some(kw => text.includes(kw))) continue; 
+ 
+          // Only keep if it matches a signal keyword 
+          const matched = SIGNAL_KEYWORDS.filter(kw => text.includes(kw)); 
+          if (matched.length === 0) continue; 
+ 
+          const id = `x-${account.handle}-${item.guid ?? item.pubDate}`; 
           if (seen.has(id)) continue; 
           seen.add(id); 
-          out.push({ 
-            id, title: (item.title ?? 'Opportunity on X').slice(0, 120), 
-            description: `🐕 K9 spotted this from @${acct.handle}. ${(item.description ?? '').replace(/<[^>]*>/g,'').slice(0,200)}`, 
-            source: `@${acct.handle} on X`, 
-            category: acct.type as any, 
-            risk: acct.type === 'security' ? 'high' : 'low', 
-            confidence: Math.min(94, acct.score + matched.length * 2), 
+ 
+          results.push({ 
+            id, 
+            title: (item.title ?? 'Opportunity spotted on X').slice(0, 120), 
+            description: `🐕 K9 spotted this from @${account.handle} on X. ${(item.description ?? '').replace(/<[^>]*>/g, '').slice(0, 220)}`, 
+            source: `@${account.handle} on X`, 
+            category: account.type as AlphaSignal['category'], 
+            risk: account.type === 'security' ? 'high' : account.type === 'airdrop' ? 'low' : 'medium', 
+            confidence: Math.min(95, account.score + matched.length * 2), 
             timestamp: new Date(item.pubDate ?? Date.now()), 
-            tags: [...matched.slice(0,2), 'x-verified'], 
-            verified: true, upvotes: 0, downvotes: 0, 
-            timeframe: 'Just spotted', blockchain: 'multiple', 
+            tags: [...matched.slice(0, 2), 'x-verified'], 
+            verified: true, 
+            upvotes: 0, 
+            downvotes: 0, 
+            timeframe: 'Just spotted', 
+            blockchain: 'multiple', 
           }); 
         } 
-        break; 
+        break; // Found working instance, move to next account 
       } catch { continue; } 
     } 
   } 
-  return out.slice(0, 8); 
+ 
+  return results.slice(0, 8); 
 } 
  
 // ── New source: Airdrops.io confirmed airdrops ────────────────────── 
 async function fetchAirdropsDotIo(): Promise<AlphaSignal[]> { 
-  const d = await get(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://airdrops.io/feed/')}&count=6`); 
-  if (!d?.items) return []; 
-  return d.items 
-    .filter((i: any) => !/potential|rumor/i.test(i.title ?? '')) 
+  const data = await get( 
+    `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://airdrops.io/feed/')}&count=6` 
+  ); 
+  if (!data?.items) return []; 
+ 
+  return data.items 
+    .filter((item: any) => !/potential|rumor|unconfirmed/i.test(item.title ?? '')) 
     .slice(0, 4) 
-    .map((i: any): AlphaSignal => ({ 
-      id: `adi-${i.guid ?? i.link}`, 
-      title: `Free to claim: ${i.title}`, 
-      description: (i.description ?? '').replace(/<[^>]*>/g,'').slice(0,220) || 'Verified free token claim.', 
-      source: 'Airdrops.io', category: 'airdrop', risk: 'low', confidence: 87, 
-      timestamp: new Date(i.pubDate ?? Date.now()), 
-      tags: ['airdrop','verified','free'], verified: true, upvotes: 0, downvotes: 0, 
-      timeframe: 'Claim now', blockchain: 'multiple', 
+    .map((item: any): AlphaSignal => ({ 
+      id: `airdropsdotio-${item.guid ?? item.link}`, 
+      title: `Free to claim: ${item.title}`, 
+      description: (item.description ?? '').replace(/<[^>]*>/g, '').slice(0, 230) 
+        || 'Verified free token claim. Check eligibility and claim before deadline.', 
+      source: 'Airdrops.io', 
+      category: 'airdrop', 
+      risk: 'low', 
+      confidence: 87, 
+      timestamp: new Date(item.pubDate ?? Date.now()), 
+      tags: ['airdrop', 'verified', 'free'], 
+      verified: true, 
+      upvotes: 0, 
+      downvotes: 0, 
+      timeframe: 'Claim now', 
+      blockchain: 'multiple', 
     })); 
 } 
  
 // ── New source: CryptoRank verified opportunities ─────────────────── 
 async function fetchCryptoRank(): Promise<AlphaSignal[]> { 
   const data = await get( 
-    `${RSS}${encodeURIComponent('https://cryptorank.io/news/feed')}&count=8` 
+    `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://cryptorank.io/news/feed')}&count=8` 
   ); 
   if (!data?.items) return []; 
  
@@ -226,7 +257,6 @@ async function fetchCryptoRank(): Promise<AlphaSignal[]> {
       category: 'airdrop', 
       risk: 'low', 
       confidence: 84, 
-      score: 84,
       timestamp: new Date(item.pubDate ?? Date.now()), 
       tags: ['verified', 'cryptorank'], 
       verified: true, 
@@ -238,7 +268,7 @@ async function fetchCryptoRank(): Promise<AlphaSignal[]> {
 } 
  
 async function fetchJobs(): Promise<AlphaSignal[]> { 
-  const data = await get(`${RSS}${encodeURIComponent('https://web3.career/rss')}&count=5`); 
+  const data = await get(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://web3.career/rss')}&count=5`); 
   const items = data?.items ?? []; 
    
   if (items.length === 0) { 
@@ -280,7 +310,7 @@ async function fetchJobs(): Promise<AlphaSignal[]> {
  
 async function fetchNewsSignals(): Promise<AlphaSignal[]> { 
   const SIGNAL_WORDS = ['exploit', 'airdrop', 'launch', 'mainnet', 'raise', 'hack', 'upgrade', 'listing', 'partnership']; 
-  const data = await get(`${RSS}${encodeURIComponent('https://cointelegraph.com/rss')}&count=8`); 
+  const data = await get(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://cointelegraph.com/rss')}&count=8`); 
   if (!data?.items) return []; 
    
   return data.items 
@@ -334,7 +364,7 @@ export function useAlphaFeed() {
         fetchAirdropsDotIo(), 
         fetchCryptoRank(), 
       ]); 
- 
+
       const all: AlphaSignal[] = []; 
       results.forEach(r => { if (r.status === 'fulfilled') all.push(...r.value); }); 
  

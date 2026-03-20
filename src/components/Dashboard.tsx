@@ -13,21 +13,21 @@ import { K9Logo } from './K9Logo';
 // ─── Config ────────────────────────────────────────────────────── 
  
 const CAT: Record<string, { label: string; color: string }> = { 
-  defi:     { label: 'Crypto Finance',       color: '#F59E0B' }, 
-  airdrop:  { label: 'Free Money / Airdrop', color: '#00C87A' }, 
-  bounty:   { label: 'Free Money / Airdrop', color: '#00C87A' }, 
-  dev:      { label: 'Jobs / Tech News',     color: '#6366F1' }, 
-  tradfi:   { label: 'Market Signal',        color: '#EC4899' }, 
-  security: { label: 'Safety Alert',         color: '#EF4444' }, 
+  defi:     { label: 'DeFi',                 color: '#F59E0B' }, 
+  airdrop:  { label: 'Airdrops',             color: '#00C87A' }, 
+  bounty:   { label: 'Bounty',               color: '#00C87A' }, 
+  dev:      { label: 'Jobs',                 color: '#6366F1' }, 
+  tradfi:   { label: 'Market',               color: '#EC4899' }, 
+  security: { label: 'Safety',               color: '#EF4444' }, 
   nft:      { label: 'NFT',                  color: '#06B6D4' }, 
-  insider:  { label: 'Insider Signal',       color: '#8B5CF6' }, 
-  whale:    { label: 'Big Money Move',       color: '#14B8A6' }, 
+  insider:  { label: 'Insider',              color: '#8B5CF6' }, 
+  whale:    { label: 'Whale',                color: '#14B8A6' }, 
 }; 
 const RISK: Record<string, string> = { 
   low: '#00C87A', medium: '#F59E0B', high: '#EF4444', critical: '#FF0040', 
 }; 
 const cat  = (c: string) => CAT[c]  ?? { label: 'Opportunity', color: '#8B5CF6' }; 
-const riskColor = (r: string) => RISK[r] ?? '#F59E0B'; 
+const risk = (r: string) => RISK[r] ?? '#F59E0B'; 
  
 function ago(d: Date): string { 
   const s = Math.floor((Date.now() - d.getTime()) / 1000); 
@@ -121,9 +121,9 @@ function Row({ s, onClick, saved, onSave }: {
         </p> 
       </div> 
  
-      {/* Right side */} 
+      {/* Right side */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}> 
-        <div style={{ textAlign: 'right' }} className="hidden sm:block"> 
+        <div style={{ textAlign: 'right' }}> 
           <p style={{ 
             fontSize: 14, fontWeight: 700, margin: 0, lineHeight: 1, 
             color: s.confidence >= 85 ? '#00C87A' : 'var(--foreground)', 
@@ -152,22 +152,20 @@ function Row({ s, onClick, saved, onSave }: {
   ); 
 } 
  
-// ─── Signal Detail Page ─────────────────────────────────────────── 
+// ─── Signal Detail ─────────────────────────── 
  
 function Detail({ s, onBack, saved, onSave }: { 
   s: AlphaSignal; onBack: () => void; saved: boolean; onSave: () => void; 
 }) { 
   const c = cat(s.category); 
-  const r = riskColor(s.risk); 
+  const r = risk(s.risk); 
  
   const actions = 
     ['airdrop','bounty'].includes(s.category) 
       ? ['Go to the source link below — check if your wallet is eligible', 'If eligible, claim before the deadline closes', 'Share with friends who use crypto — they may also qualify'] 
       : s.category === 'security' 
         ? ['Do NOT interact with this contract or project', 'If you hold this token, consider exiting your position now', 'Warn others in your community'] 
-        : s.category === 'dev' 
-          ? ['Read the full post at the source link', 'If this is a job posting, apply now — crypto roles fill fast', 'Bookmark for future reference'] 
-          : ['Research this before making any decision', 'Check the source link for the latest information', 'Set a reminder to follow up in 24 hours']; 
+        : ['Research this before making any decision', 'Check the source link for the latest information', 'Set a reminder to follow up in 24 hours']; 
  
   return ( 
     <motion.div 
@@ -290,23 +288,10 @@ function Detail({ s, onBack, saved, onSave }: {
           <p style={{ fontSize: 10, color: 'var(--muted-foreground)', textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 3px' }}> 
             Where K9 found this 
           </p> 
-          <p style={{ fontSize: 13, fontWeight: 500, margin: 0 }}>{s.source}</p> 
+          <p style={{ fontSize: 13, fontWeight: 500, margin: 0 }}>
+            {s.source?.includes('on X') ? '🐕 ' : ''}{s.source}
+          </p> 
         </div> 
- 
-        {/* Tags */} 
-        {s.tags && s.tags.filter(t => t !== 'x-verified').length > 0 && ( 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 80 }}> 
-            {s.tags.filter(t => t !== 'x-verified').map(t => ( 
-              <span key={t} style={{ 
-                fontSize: 11, padding: '3px 9px', 
-                background: 'var(--muted)', borderRadius: 20, 
-                color: 'var(--muted-foreground)', 
-              }}> 
-                {t} 
-              </span> 
-            ))} 
-          </div> 
-        )} 
       </div> 
  
       {/* Sticky footer */} 
@@ -392,7 +377,7 @@ export function Dashboard() {
     if (!filterByTab(s, tab)) return false; 
     if (query) { 
       const q = query.toLowerCase(); 
-      return s.title.toLowerCase().includes(q) || (s.description || '').toLowerCase().includes(q); 
+      return s.title.toLowerCase().includes(q) || (s.description?.toLowerCase().includes(q) ?? false); 
     } 
     return true; 
   }); 
@@ -458,7 +443,7 @@ export function Dashboard() {
           <Stat label="Safety alerts"   value={alerts} accent={alerts > 0 ? '#EF4444' : undefined} /> 
         </div> 
  
-        {/* Search */} 
+        {/* Search */}
         <div style={{ position: 'relative', marginBottom: 12 }}> 
           <Search style={{ 
             position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', 
@@ -489,7 +474,7 @@ export function Dashboard() {
           )} 
         </div> 
  
-        {/* Tabs — scroll on mobile */} 
+        {/* Tabs — scroll on mobile */}
         <div style={{ 
           display: 'flex', gap: 6, overflowX: 'auto', 
           scrollbarWidth: 'none', paddingBottom: 2, marginBottom: 14, 
@@ -513,13 +498,13 @@ export function Dashboard() {
           ))} 
         </div> 
  
-        {/* Count */} 
+        {/* Count */}
         <p style={{ fontSize: 11, color: 'var(--muted-foreground)', margin: '0 0 8px' }}> 
           Showing {shown.length} of {signals.length} 
           {query && ` matching "${query}"`} 
         </p> 
  
-        {/* Error */} 
+        {/* Error */}
         {error && ( 
           <div style={{ 
             padding: '12px 16px', borderRadius: 8, marginBottom: 12, 
@@ -537,7 +522,7 @@ export function Dashboard() {
           </div> 
         )} 
  
-        {/* List */} 
+        {/* List */}
         <div style={{ 
           border: '1px solid var(--border)', borderRadius: 10, 
           overflow: 'hidden', background: 'var(--card)', 
@@ -567,7 +552,7 @@ export function Dashboard() {
         </div> 
       </div> 
  
-      {/* Detail overlay */} 
+      {/* Detail overlay */}
       <AnimatePresence> 
         {detail && ( 
           <> 
@@ -588,3 +573,4 @@ export function Dashboard() {
     </> 
   ); 
 } 
+ 
