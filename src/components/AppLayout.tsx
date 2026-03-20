@@ -1,313 +1,377 @@
-import { useState, useEffect } from 'react'; 
-import { NavLink, useLocation } from 'react-router-dom'; 
-import { motion, AnimatePresence } from 'framer-motion'; 
+import React, { useState, useEffect } from 'react'; 
+import { AnimatePresence, motion } from 'motion/react'; 
+import { NotificationCenter } from './NotificationCenter'; 
+import { Settings } from './Settings'; 
+import { useLocation, useNavigate, NavLink } from 'react-router-dom';
 import { 
-  Zap, DollarSign, Briefcase, Crosshair, 
-  ShieldCheck, Bookmark, Bell, Settings as SettingsIcon, 
-  Menu, X, Sun, Moon, 
+  Zap, TrendingUp, Shield, Archive, Code, Users, 
+  Settings as SettingsIcon, Moon, Sun, Menu, X, 
 } from 'lucide-react'; 
-import { useSignalStream } from '../hooks/useSignalStream'; 
-import LogoMark from './LogoMark'; 
  
-const NAV = [ 
-  { path: '/feed',       label: 'Dispatch',    icon: Zap }, 
-  { path: '/free-money', label: 'Free Money',  icon: DollarSign }, 
-  { path: '/jobs',       label: 'Jobs',        icon: Briefcase }, 
-  { path: '/hunt',       label: 'Hunt',        icon: Crosshair }, 
-  { path: '/verify',     label: 'Is It Safe?', icon: ShieldCheck }, 
-  { path: '/saved',      label: 'Saved',       icon: Bookmark }, 
+// ─── Inline K9 Dog Logo ────────────────────────────────────────── 
+// 3D-style Belgian Malinois SVG — warm tan coat, amber eyes, purple collar glow 
+ 
+function K9Mark({ size = 26 }: { size?: number }) { 
+  return ( 
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"> 
+      <defs> 
+        <radialGradient id="km-b" cx="45%" cy="35%" r="60%"> 
+          <stop offset="0%" stopColor="#D4A055"/> 
+          <stop offset="60%" stopColor="#A8732A"/> 
+          <stop offset="100%" stopColor="#6B4A18"/> 
+        </radialGradient> 
+        <radialGradient id="km-d" cx="50%" cy="40%" r="55%"> 
+          <stop offset="0%" stopColor="#3A2810"/> 
+          <stop offset="100%" stopColor="#1A1008"/> 
+        </radialGradient> 
+        <radialGradient id="km-n" cx="35%" cy="30%" r="60%"> 
+          <stop offset="0%" stopColor="#5A4A3A"/> 
+          <stop offset="100%" stopColor="#1A1008"/> 
+        </radialGradient> 
+        <radialGradient id="km-e" cx="35%" cy="30%" r="70%"> 
+          <stop offset="0%" stopColor="#8B5E2A"/> 
+          <stop offset="70%" stopColor="#3A2010"/> 
+          <stop offset="100%" stopColor="#0A0605"/> 
+        </radialGradient> 
+        <radialGradient id="km-c" cx="50%" cy="50%" r="50%"> 
+          <stop offset="0%" stopColor="#A78BFA"/> 
+          <stop offset="100%" stopColor="#6D28D9"/> 
+        </radialGradient> 
+        <filter id="km-s"> 
+          <feDropShadow dx="0" dy="1" stdDeviation="1.5" floodColor="#00000055"/> 
+        </filter> 
+        <style>{`@keyframes km-np{0%,100%{opacity:.2}50%{opacity:.7}}.km-np{animation:km-np 2s ease-in-out infinite}`}</style> 
+      </defs> 
+      <g filter="url(#km-s)"> 
+        <ellipse cx="26" cy="46" rx="10" ry="8" fill="url(#km-b)"/> 
+        <ellipse cx="20" cy="50" rx="14" ry="7" fill="url(#km-b)"/> 
+        <ellipse cx="20" cy="48" rx="10" ry="5" fill="url(#km-d)" opacity=".7"/> 
+        <ellipse cx="36" cy="30" rx="16" ry="14" fill="url(#km-b)"/> 
+        <ellipse cx="34" cy="22" rx="12" ry="8" fill="url(#km-d)" opacity=".85"/> 
+        <ellipse cx="42" cy="33" rx="5" ry="4" fill="#D4A055" opacity=".5"/> 
+        <ellipse cx="48" cy="36" rx="9" ry="7" fill="url(#km-b)"/> 
+        <ellipse cx="49" cy="39" rx="7" ry="4" fill="#C49045"/> 
+        <ellipse cx="55" cy="35" rx="4" ry="3" fill="url(#km-n)"/> 
+        <ellipse cx="53.5" cy="33.8" rx="1.2" ry=".8" fill="#6A5A4A" opacity=".7"/> 
+        <ellipse cx="54" cy="35.5" rx="1" ry=".6" fill="#0A0605"/> 
+        <ellipse cx="56.5" cy="35.5" rx="1" ry=".6" fill="#0A0605"/> 
+        <circle className="km-np" cx="55" cy="35" r="5" fill="#8B5CF6" opacity=".3"/> 
+        <ellipse cx="42" cy="28" rx="4" ry="3.5" fill="url(#km-e)"/> 
+        <ellipse cx="40.8" cy="26.8" rx="1.2" ry=".9" fill="white" opacity=".85"/> 
+        <path d="M38 24.5C40 23.5 44 23 46 24" stroke="#6B4A18" strokeWidth="1.2" strokeLinecap="round" fill="none"/> 
+        <path d="M26 20C25 14 29 10 32 12C30 15 28 18 27 22Z" fill="url(#km-d)"/> 
+        <path d="M34 18C33 11 38 7 42 10C39 13 37 17 36 22Z" fill="url(#km-b)"/> 
+        <path d="M36 19C35 14 38 10 40 12C38 15 37 18 36.5 21Z" fill="#C8703A" opacity=".6"/> 
+        <path d="M24 43Q36 46 46 41" stroke="url(#km-c)" strokeWidth="2.5" strokeLinecap="round" fill="none"/> 
+      </g> 
+    </svg> 
+  ); 
+} 
+ 
+// ─── Nav config ─────────────────────────────────────────────────── 
+ 
+const NAV_ITEMS = [ 
+  { id: 'dashboard', label: 'Dispatch',    Icon: Zap, path: '/feed' }, 
+  { id: 'radar',     label: 'Hunt',        Icon: TrendingUp, path: '/hunt' }, 
+  { id: 'security',  label: 'Is It Safe?', Icon: Shield, path: '/verify' }, 
+  { id: 'vault',     label: 'Saved',       Icon: Archive, path: '/saved' }, 
+  { id: 'dev',       label: 'Tech News',   Icon: Code, path: '/feed' }, 
+  { id: 'community', label: 'Community',   Icon: Users, path: '/feed' }, 
 ]; 
  
-export default function AppLayout({ children }: { children: React.ReactNode }) { 
-  const [mobileOpen, setMobileOpen] = useState(false); 
-  const [dark, setDark] = useState(true); 
-  const { status } = useSignalStream(); 
-  const location = useLocation(); 
+// ─── Layout ─────────────────────────────────────────────────────── 
  
+export default function AppLayout({ children }: { children: React.ReactNode }) { 
+  const [dark, setDark]         = useState(true);   // dark by default 
+  const [mobileOpen, setMobile] = useState(false); 
+  const [settingsOpen, setSettings] = useState(false); 
+  const location = useLocation();
+  const navigate = useNavigate();
+ 
+  // Apply dark class 
   useEffect(() => { 
     document.documentElement.classList.toggle('dark', dark); 
   }, [dark]); 
  
+  // Close mobile sidebar on resize to desktop 
   useEffect(() => { 
-    setMobileOpen(false); 
-  }, [location.pathname]); 
+    const fn = () => { if (window.innerWidth >= 768) setMobile(false); }; 
+    window.addEventListener('resize', fn); 
+    return () => window.removeEventListener('resize', fn); 
+  }, []); 
  
-  const sbBg     = '#0C1119'; 
-  const sbBorder = '1px solid #1C2B3A'; 
-  const bg       = '#070A0F'; 
+  function handleNavigate(path: string) { 
+    navigate(path); 
+    setMobile(false); 
+  } 
  
-  const Sidebar = ({ onClose }: { onClose?: () => void }) => ( 
+  // ── Sidebar content (shared between desktop + mobile) ────────── 
+  const SidebarContent = () => ( 
     <div style={{ 
-      width: 220, minWidth: 220, height: '100vh', 
-      background: sbBg, 
-      borderRight: sbBorder, 
-      display: 'flex', flexDirection: 'column', 
-      overflow: 'hidden', flexShrink: 0, 
+      width: 220, 
+      minWidth: 220, 
+      height: '100vh', 
+      background: dark ? '#171717' : '#F0EFE9', 
+      borderRight: `1px solid ${dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, 
+      display: 'flex', 
+      flexDirection: 'column', 
+      overflow: 'hidden', 
+      flexShrink: 0, 
     }}> 
       {/* Logo */} 
       <div style={{ 
-        padding: '18px 16px 12px', 
-        display: 'flex', alignItems: 'center', 
+        padding: '18px 14px 10px', 
+        display: 'flex', 
+        alignItems: 'center', 
         justifyContent: 'space-between', 
-        borderBottom: '1px solid #1C2B3A', 
       }}> 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}> 
-          <div style={{ position: 'relative' }}> 
-            <LogoMark size={28} animated /> 
-            <div style={{ 
-              position: 'absolute', bottom: -1, right: -1, 
-              width: 8, height: 8, borderRadius: '50%', 
-              background: status === 'live' ? '#00BF72' : '#D4A843', 
-              border: `2px solid ${sbBg}`, 
-            }} /> 
-          </div> 
+        <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}> 
+          <K9Mark size={26} /> 
           <span style={{ 
-            fontSize: 15, fontWeight: 600, 
-            letterSpacing: '0.06em', color: '#ECF1F7', 
-            fontFamily: 'monospace', 
+            fontSize: 16, 
+            fontWeight: 700, 
+            letterSpacing: '-0.3px', 
+            color: dark ? '#ececec' : '#1a1a1a', 
           }}> 
             K9 
           </span> 
         </div> 
-        {onClose && ( 
-          <button onClick={onClose} style={{ 
+        {/* Mobile close button */} 
+        <button 
+          onClick={() => setMobile(false)} 
+          style={{ 
             border: 'none', background: 'none', cursor: 'pointer', 
-            color: '#435E75', display: 'flex', alignItems: 'center', padding: 4, 
-          }}> 
-            <X style={{ width: 16, height: 16 }} /> 
-          </button> 
-        )} 
+            color: dark ? '#666' : '#888', padding: 4, 
+            display: mobileOpen ? 'flex' : 'none', 
+            alignItems: 'center', 
+          }} 
+        > 
+          <X style={{ width: 16, height: 16 }} /> 
+        </button> 
       </div> 
  
-      {/* Nav items */} 
-      <nav style={{ flex: 1, padding: '8px', overflowY: 'auto' }}> 
-        {NAV.map(({ path, label, icon: Icon }) => { 
+      {/* Navigation */} 
+      <nav style={{ padding: '4px 8px', flex: 1, overflowY: 'auto' }}> 
+        {NAV_ITEMS.map(({ id, label, Icon, path }) => { 
           const active = location.pathname === path; 
           return ( 
-            <NavLink 
-              key={path} 
-              to={path} 
+            <button 
+              key={id} 
+              onClick={() => handleNavigate(path)} 
               style={{ 
-                display: 'flex', alignItems: 'center', gap: 10, 
-                padding: '8px 10px', borderRadius: 7, marginBottom: 2, 
-                textDecoration: 'none', fontSize: 13, 
+                width: '100%', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 9, 
+                padding: '7px 10px', 
+                borderRadius: 6, 
+                border: 'none', 
+                cursor: 'pointer', 
+                textAlign: 'left', 
+                marginBottom: 1, 
+                fontSize: 13, 
                 fontWeight: active ? 500 : 400, 
-                background: active ? '#111C27' : 'transparent', 
-                color: active ? '#ECF1F7' : '#87A0B8', 
+                background: active 
+                  ? dark ? 'rgba(255,255,255,0.09)' : 'rgba(0,0,0,0.06)' 
+                  : 'transparent', 
+                color: active 
+                  ? dark ? '#ececec' : '#1a1a1a' 
+                  : dark ? '#8a8a8a' : '#666', 
                 transition: 'background 0.1s, color 0.1s', 
-                border: active ? '1px solid #1C2B3A' : '1px solid transparent', 
               }} 
               onMouseEnter={e => { 
                 if (!active) { 
-                  (e.currentTarget as HTMLElement).style.background = '#111C27'; 
-                  (e.currentTarget as HTMLElement).style.color = '#ECF1F7'; 
+                  (e.currentTarget as HTMLButtonElement).style.background = dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.04)'; 
+                  (e.currentTarget as HTMLButtonElement).style.color = dark ? '#ececec' : '#1a1a1a'; 
                 } 
               }} 
               onMouseLeave={e => { 
                 if (!active) { 
-                  (e.currentTarget as HTMLElement).style.background = 'transparent'; 
-                  (e.currentTarget as HTMLElement).style.color = '#87A0B8'; 
+                  (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; 
+                  (e.currentTarget as HTMLButtonElement).style.color = dark ? '#8a8a8a' : '#666'; 
                 } 
               }} 
             > 
-              <Icon style={{ width: 15, height: 15, flexShrink: 0, opacity: active ? 1 : 0.6 }} /> 
-              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}> 
+              <Icon style={{ 
+                width: 15, height: 15, flexShrink: 0, 
+                opacity: active ? 1 : 0.65, 
+              }} /> 
+              <span style={{ 
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', 
+              }}> 
                 {label} 
               </span> 
-              {active && ( 
-                <div style={{ 
-                  marginLeft: 'auto', width: 5, height: 5, 
-                  borderRadius: '50%', background: '#3B82F6', flexShrink: 0, 
-                }} /> 
-              )} 
-            </NavLink> 
+            </button> 
           ); 
         })} 
       </nav> 
  
-      {/* Bottom section */} 
-      <div style={{ padding: '8px', borderTop: '1px solid #1C2B3A' }}> 
-        {/* Live status indicator */} 
+      {/* Bottom */} 
+      <div style={{ 
+        padding: '10px 8px', 
+        borderTop: `1px solid ${dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, 
+      }}> 
+        {/* Live status */} 
         <div style={{ 
           display: 'flex', alignItems: 'center', gap: 8, 
-          padding: '6px 10px', marginBottom: 4, 
+          padding: '6px 10px', marginBottom: 2, 
         }}> 
           <div style={{ 
-            width: 5, height: 5, borderRadius: '50%', flexShrink: 0, 
-            background: status === 'live' ? '#00BF72' : '#D4A843', 
-            boxShadow: status === 'live' ? '0 0 5px #00BF72' : 'none', 
+            width: 5, height: 5, borderRadius: '50%', 
+            background: '#22c55e', 
+            boxShadow: '0 0 5px #22c55e', 
+            flexShrink: 0, 
           }} /> 
-          <span style={{ fontSize: 11, color: '#435E75' }}> 
+          <span style={{ fontSize: 11, color: dark ? '#555' : '#888' }}> 
             K9 is watching · sniffs every 90s 
           </span> 
         </div> 
  
-        {/* Alerts link */} 
-        <NavLink 
-          to="/alerts" 
-          style={{ 
-            display: 'flex', alignItems: 'center', gap: 10, 
-            padding: '8px 10px', borderRadius: 7, marginBottom: 2, 
-            textDecoration: 'none', fontSize: 13, color: '#87A0B8', 
-            transition: 'background 0.1s, color 0.1s', 
-            border: '1px solid transparent', 
-          }} 
-          onMouseEnter={e => { 
-            (e.currentTarget as HTMLElement).style.background = '#111C27'; 
-            (e.currentTarget as HTMLElement).style.color = '#ECF1F7'; 
-          }} 
-          onMouseLeave={e => { 
-            (e.currentTarget as HTMLElement).style.background = 'transparent'; 
-            (e.currentTarget as HTMLElement).style.color = '#87A0B8'; 
-          }} 
-        > 
-          <Bell style={{ width: 15, height: 15, opacity: 0.6 }} /> 
-          <span>Alerts</span> 
-        </NavLink> 
+        {/* Notifications */} 
+        <div style={{ 
+          padding: '2px 10px 4px', 
+          display: 'flex', alignItems: 'center', gap: 9, 
+        }}> 
+          <NotificationCenter /> 
+        </div> 
  
-        {/* Settings + dark mode toggle */} 
-        <NavLink 
-          to="/settings" 
+        {/* Settings + dark toggle */} 
+        <button 
+          onClick={() => setSettings(true)} 
           style={{ 
-            display: 'flex', alignItems: 'center', gap: 10, 
-            padding: '8px 10px', borderRadius: 7, 
-            textDecoration: 'none', fontSize: 13, color: '#87A0B8', 
-            transition: 'background 0.1s, color 0.1s', 
-            border: '1px solid transparent', 
+            width: '100%', display: 'flex', alignItems: 'center', gap: 9, 
+            padding: '7px 10px', borderRadius: 6, 
+            border: 'none', background: 'transparent', cursor: 'pointer', 
+            color: dark ? '#8a8a8a' : '#666', fontSize: 13, 
+            transition: 'background 0.1s', 
           }} 
           onMouseEnter={e => { 
-            (e.currentTarget as HTMLElement).style.background = '#111C27'; 
-            (e.currentTarget as HTMLElement).style.color = '#ECF1F7'; 
+            (e.currentTarget as HTMLButtonElement).style.background = dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.04)'; 
           }} 
           onMouseLeave={e => { 
-            (e.currentTarget as HTMLElement).style.background = 'transparent'; 
-            (e.currentTarget as HTMLElement).style.color = '#87A0B8'; 
+            (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; 
           }} 
         > 
-          <SettingsIcon style={{ width: 15, height: 15, opacity: 0.6 }} /> 
+          <SettingsIcon style={{ width: 14, height: 14, flexShrink: 0, opacity: 0.65 }} /> 
           <span>Settings</span> 
+          {/* Dark mode toggle inside settings row */} 
           <button 
-            onClick={e => { e.preventDefault(); e.stopPropagation(); setDark(d => !d); }} 
+            onClick={e => { e.stopPropagation(); setDark(d => !d); }} 
             style={{ 
               marginLeft: 'auto', border: 'none', background: 'none', 
-              cursor: 'pointer', color: '#435E75', 
+              cursor: 'pointer', color: dark ? '#666' : '#888', 
               display: 'flex', alignItems: 'center', padding: 2, 
             }} 
+            title="Toggle dark/light mode" 
           > 
-            {dark ? <Sun style={{ width: 13, height: 13 }} /> : <Moon style={{ width: 13, height: 13 }} />} 
+            {dark 
+              ? <Sun style={{ width: 13, height: 13 }} /> 
+              : <Moon style={{ width: 13, height: 13 }} /> 
+            } 
           </button> 
-        </NavLink> 
+        </button> 
       </div> 
     </div> 
   ); 
  
   return ( 
     <div style={{ 
-      display: 'flex', height: '100vh', overflow: 'hidden', 
-      background: bg, color: '#ECF1F7', 
+      display: 'flex', 
+      height: '100vh', 
+      overflow: 'hidden', 
+      background: dark ? '#1c1c1c' : '#F7F7F5', 
+      color: dark ? '#ececec' : '#1a1a1a', 
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', 
       WebkitFontSmoothing: 'antialiased', 
     }}> 
  
-      {/* Desktop sidebar — always visible on screens 768px and wider */} 
+      {/* Desktop sidebar — always visible on md+ */} 
       <div className="k9-sidebar-desktop"> 
-        <Sidebar /> 
+        <SidebarContent /> 
       </div> 
  
-      {/* Mobile sidebar — slides in from left as overlay */} 
+      {/* Mobile sidebar overlay */} 
       <AnimatePresence> 
         {mobileOpen && ( 
           <> 
             <motion.div 
-              key="overlay" 
+              key="mob-backdrop" 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }} 
-              onClick={() => setMobileOpen(false)} 
+              onClick={() => setMobile(false)} 
               style={{ 
                 position: 'fixed', inset: 0, 
-                background: 'rgba(7,10,15,0.85)', 
-                zIndex: 60, 
+                background: 'rgba(0,0,0,0.5)', 
+                zIndex: 40, 
               }} 
             /> 
             <motion.div 
-              key="sidebar" 
+              key="mob-sidebar" 
               initial={{ x: -240 }} 
               animate={{ x: 0 }} 
               exit={{ x: -240 }} 
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }} 
-              style={{ position: 'fixed', left: 0, top: 0, bottom: 0, zIndex: 70 }} 
+              transition={{ type: 'spring', stiffness: 320, damping: 32 }} 
+              style={{ position: 'fixed', left: 0, top: 0, bottom: 0, zIndex: 50 }} 
             > 
-              <Sidebar onClose={() => setMobileOpen(false)} /> 
+              <SidebarContent /> 
             </motion.div> 
           </> 
         )} 
       </AnimatePresence> 
  
-      {/* Right side — top bar (mobile only) + page content */} 
+      {/* Main content area */} 
       <div style={{ 
-        flex: 1, display: 'flex', flexDirection: 'column', 
-        overflow: 'hidden', minWidth: 0, 
+        flex: 1, 
+        display: 'flex', 
+        flexDirection: 'column', 
+        overflow: 'hidden', 
+        minWidth: 0, 
       }}> 
  
-        {/* Mobile top bar — hidden on desktop, shown on mobile */} 
-        <div 
-          className="k9-topbar-mobile" 
-          style={{ 
-            display: 'none', alignItems: 'center', gap: 12, 
-            padding: '10px 16px', flexShrink: 0, 
-            borderBottom: '1px solid #1C2B3A', 
-            background: '#0C1119', 
-          }} 
-        > 
+        {/* Mobile top bar */} 
+        <div className="k9-mobile-bar" style={{ 
+          display: 'none', 
+          alignItems: 'center', 
+          padding: '11px 14px', 
+          borderBottom: `1px solid ${dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, 
+          background: dark ? '#1c1c1c' : '#F7F7F5', 
+          gap: 10, 
+          flexShrink: 0, 
+        }}> 
           <button 
-            onClick={() => setMobileOpen(true)} 
+            onClick={() => setMobile(true)} 
             style={{ 
               border: 'none', background: 'none', cursor: 'pointer', 
-              color: '#ECF1F7', display: 'flex', alignItems: 'center', padding: 4, 
+              color: dark ? '#ececec' : '#1a1a1a', 
+              display: 'flex', alignItems: 'center', padding: 4, 
             }} 
           > 
-            <Menu style={{ width: 20, height: 20 }} /> 
+            <Menu style={{ width: 19, height: 19 }} /> 
           </button> 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}> 
-            <LogoMark size={24} animated /> 
-            <span style={{ 
-              fontSize: 14, fontWeight: 600, 
-              letterSpacing: '0.06em', fontFamily: 'monospace', 
-            }}> 
-              K9 
-            </span> 
-          </div> 
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}> 
-            <div style={{ 
-              display: 'flex', alignItems: 'center', gap: 6, 
-              padding: '4px 8px', borderRadius: 5, 
-              background: '#111C27', border: '1px solid #1C2B3A', 
-            }}> 
-              <div style={{ 
-                width: 5, height: 5, borderRadius: '50%', 
-                background: status === 'live' ? '#00BF72' : '#D4A843', 
-              }} /> 
-              <span style={{ 
-                fontSize: 9, fontFamily: 'monospace', 
-                color: '#87A0B8', letterSpacing: '0.1em', 
-              }}> 
-                {(status || 'OFFLINE').toUpperCase()} 
-              </span> 
-            </div> 
+            <K9Mark size={22} /> 
+            <span style={{ fontSize: 15, fontWeight: 700 }}>K9</span> 
           </div> 
         </div> 
  
-        {/* Page content */} 
+        {/* Scrollable content */} 
         <main 
-          className="k9-main-content" 
-          style={{ flex: 1, overflowY: 'auto', padding: '32px 48px' }} 
+          className="k9-content" 
+          style={{ 
+            flex: 1, 
+            overflowY: 'auto', 
+            padding: '28px 40px', 
+          }} 
         > 
-          <div style={{ maxWidth: 900, margin: '0 auto', width: '100%' }}> 
+          {/* Inner max-width container */} 
+          <div style={{ maxWidth: 820, margin: '0 auto', width: '100%' }}> 
             {children} 
           </div> 
         </main> 
       </div> 
+ 
+      <Settings open={settingsOpen} onOpenChange={setSettings} /> 
     </div> 
   ); 
 } 
