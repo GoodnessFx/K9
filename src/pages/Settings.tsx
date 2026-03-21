@@ -1,593 +1,490 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
+import { useState, useRef } from 'react'; 
 import { 
-  User, 
-  Key, 
-  Bell, 
-  CreditCard, 
-  Eye, 
-  EyeOff, 
-  Zap,
-  ChevronRight,
-  LogOut,
-  Shield,
-  Send,
-  MessageSquare,
-  ExternalLink,
-  Trash2,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-import { api } from '../api';
-
-function cn(...inputs: any[]) {
-  return twMerge(clsx(inputs));
-}
-
-export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState('profile');
-  const [showApiKey, setShowApiKey] = useState(false);
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-
-  const defaultSettings = { 
-    username: '', 
-    email: '', 
-    avatarUrl: '', 
-    bio: '', 
-    emailNotifications: false, 
-    pushNotifications: true, 
-    soundNotifications: false, 
-    telegramNotifications: false, 
-    discordNotifications: false, 
-    criticalAlerts: true, 
-    highAlerts: true, 
-    mediumAlerts: true, 
-    lowAlerts: false, 
-    theme: 'system', 
-    accentColor: 'blue', 
-    compactMode: false, 
-    animationsEnabled: true, 
-    riskTolerance: 'moderate', 
-    minConfidence: 70, 
-    maxRiskLevel: 'medium', 
-    autoRefresh: true, 
-    refreshInterval: 90, 
-    enabledSources: ['DexScreener', 'DefiLlama', 'CoinGecko', 'Polymarket'], 
-    apiKey: '', 
-    webhookUrl: '', 
-    customFilters: [], 
-    aiEnabled: true, 
-    aiConfidenceThreshold: 75, 
-  }; 
-
-  const [settings, setSettings] = useState(() => { 
-    try { 
-      const saved = localStorage.getItem('k9_settings'); 
-      if (saved) return { ...defaultSettings, ...JSON.parse(saved) }; 
-    } catch { /* ignore */ } 
-    return defaultSettings; 
+  User, Bell, Key, CreditCard, 
+  ChevronRight, LogOut, Shield, Send, 
+  MessageSquare, 
+  Camera, Eye, EyeOff, 
+} from 'lucide-react'; 
+import { toast } from 'sonner'; 
+import { useMutation } from '@tanstack/react-query'; 
+import { api } from '../api'; 
+ 
+const C = { 
+  bg:    '#1a1a1a', 
+  card:  'rgba(255,255,255,0.03)', 
+  inset: 'rgba(0,0,0,0.2)', 
+  border:     'rgba(255,255,255,0.08)', 
+  borderHover: 'rgba(255,255,255,0.14)', 
+  t1: '#ececec', t2: '#8a8a8a', t3: '#555', 
+  blue:  '#5b8cf5', green: '#22c55e', red: '#ef4444', 
+  f: "'Inter', -apple-system, sans-serif", 
+  m: "'DM Mono', monospace", 
+}; 
+ 
+// ── Shared input style ────────────────────────────────────── 
+const INPUT: React.CSSProperties = { 
+  width: '100%', 
+  padding: '9px 13px', 
+  background: 'rgba(255,255,255,0.04)', 
+  border: `1px solid ${C.border}`, 
+  borderRadius: 7, 
+  color: C.t1, 
+  fontSize: 13, 
+  fontFamily: C.f, 
+  outline: 'none', 
+  boxSizing: 'border-box', 
+  transition: 'border-color 0.1s', 
+}; 
+ 
+const LABEL: React.CSSProperties = { 
+  fontSize: 10, 
+  fontFamily: C.m, 
+  color: C.t3, 
+  textTransform: 'uppercase', 
+  letterSpacing: '0.08em', 
+  display: 'block', 
+  marginBottom: 6, 
+}; 
+ 
+// ── localStorage helpers ──────────────────────────────────── 
+function load<T>(key: string, fallback: T): T { 
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } 
+  catch { return fallback; } 
+} 
+function save(key: string, value: any) { 
+  try { localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value)); } catch {} 
+} 
+ 
+// ── Card ──────────────────────────────────────────────────── 
+function Card({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) { 
+  return ( 
+    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 8, padding: '20px 22px', ...style }}> 
+      {children} 
+    </div> 
+  ); 
+} 
+ 
+// ── Section heading ───────────────────────────────────────── 
+function SectionHead({ label, Icon }: { label: string; Icon: any }) { 
+  return ( 
+    <div style={{ display: 'flex', alignItems: 'center', gap: 9, paddingBottom: 14, marginBottom: 16, borderBottom: `1px solid ${C.border}` }}> 
+      <Icon style={{ width: 15, height: 15, color: C.t2 }} /> 
+      <span style={{ fontSize: 14, fontWeight: 500, color: C.t1, fontFamily: C.f }}>{label}</span> 
+    </div> 
+  ); 
+} 
+ 
+// ══════════════════════════════════════════════════════════════ 
+export default function SettingsPage() { 
+  const [tab, setTab] = useState('profile'); 
+ 
+  const TABS = [ 
+    { id: 'profile',       label: 'My Profile',        Icon: User }, 
+    { id: 'notifications', label: 'Alert Preferences', Icon: Bell }, 
+    { id: 'security',      label: 'Security',          Icon: Key }, 
+    { id: 'billing',       label: 'Billing & Plans',   Icon: CreditCard }, 
+  ]; 
+ 
+  function handleLogout() { 
+    if (!confirm('Sign out of K9?')) return; 
+    ['k9_onboarding_done','k9_user_phone','k9_settings','k9_telegram_connected', 
+     'k9_saved','k9_user_interests','k9_user_channel','k9_profile','k9_profile_name','k9_profile_avatar','k9_profile_email'].forEach(k => localStorage.removeItem(k)); 
+    window.location.href = '/'; 
+  } 
+ 
+  const name = load<string>('k9_profile_name', '') || load<string>('k9_user_phone', ''); 
+ 
+  return ( 
+    <div style={{ paddingBottom: 80, fontFamily: C.f }}> 
+      {/* Header */} 
+      <section style={{ marginBottom: 20 }}> 
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '3px 10px', borderRadius: 20, background: 'rgba(91,140,245,0.1)', border: '1px solid rgba(91,140,245,0.2)', marginBottom: 10 }}> 
+          <div style={{ width: 5, height: 5, borderRadius: '50%', background: C.green }} /> 
+          <span style={{ fontSize: 10, fontFamily: C.m, color: C.blue, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Configuration</span> 
+        </div> 
+        <h1 style={{ fontSize: 22, fontWeight: 600, color: C.t1, margin: '0 0 6px', letterSpacing: '-0.3px' }}>Settings</h1> 
+        <p style={{ fontSize: 14, color: C.t2, margin: 0, lineHeight: 1.6 }}> 
+          {name ? `Hey ${name} — ` : ''}Manage your profile, alerts, and account preferences. 
+        </p> 
+      </section> 
+ 
+      {/* Tab bar — scrollable on mobile */} 
+      <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', marginBottom: 16, paddingBottom: 2 }}> 
+        {TABS.map(({ id, label, Icon }) => { 
+          const active = tab === id; 
+          return ( 
+            <button key={id} onClick={() => setTab(id)} 
+              style={{ 
+                display: 'flex', alignItems: 'center', gap: 6, 
+                padding: '7px 14px', borderRadius: 20, whiteSpace: 'nowrap', flexShrink: 0, 
+                border: `1px solid ${active ? 'rgba(91,140,245,0.4)' : C.border}`, 
+                background: active ? 'rgba(91,140,245,0.1)' : 'transparent', 
+                color: active ? C.blue : C.t2, 
+                fontSize: 13, fontFamily: C.f, fontWeight: active ? 500 : 400, 
+                cursor: 'pointer', transition: 'all 0.1s', 
+              }}> 
+              <Icon style={{ width: 13, height: 13 }} /> 
+              {label} 
+            </button> 
+          ); 
+        })} 
+      </div> 
+ 
+      {/* Content */} 
+      <div> 
+        {tab === 'profile'       && <ProfileTab />} 
+        {tab === 'notifications' && <NotificationsTab />} 
+        {tab === 'security'      && <SecurityTab />} 
+        {tab === 'billing'       && <BillingTab />} 
+      </div> 
+ 
+      {/* Sign out — always visible at bottom */} 
+      <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${C.border}` }}> 
+        <button onClick={handleLogout} 
+          style={{ 
+            display: 'flex', alignItems: 'center', gap: 9, 
+            padding: '9px 14px', borderRadius: 7, border: '1px solid transparent', 
+            background: 'transparent', color: C.red, fontSize: 13, fontFamily: C.f, 
+            cursor: 'pointer', transition: 'all 0.1s', 
+          }} 
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; }} 
+          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }} 
+        > 
+          <LogOut style={{ width: 14, height: 14 }} /> 
+          Sign out 
+        </button> 
+      </div> 
+    </div> 
+  ); 
+} 
+ 
+// ══════════════════════════════════════════════════════════════ 
+// PROFILE TAB 
+// ══════════════════════════════════════════════════════════════ 
+function ProfileTab() { 
+  const [name,   setName]   = useState(() => load('k9_profile_name',   '')); 
+  const [phone,  setPhone]  = useState(() => load('k9_user_phone',     '')); 
+  const [email,  setEmail]  = useState(() => load('k9_profile_email',  '')); 
+  const [channel, setChannel] = useState<'whatsapp'|'telegram'>(() => load('k9_user_channel', 'whatsapp')); 
+  const [avatar, setAvatar] = useState<string>(() => load('k9_profile_avatar', '')); 
+  const fileRef = useRef<HTMLInputElement>(null); 
+ 
+  function handleAvatarClick() { fileRef.current?.click(); } 
+ 
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) { 
+    const file = e.target.files?.[0]; 
+    if (!file) return; 
+    if (file.size > 2 * 1024 * 1024) { toast.error('Image too large — max 2MB'); return; } 
+    const reader = new FileReader(); 
+    reader.onload = ev => { 
+      const url = ev.target?.result as string; 
+      setAvatar(url); 
+      save('k9_profile_avatar', url); 
+      toast.success('Photo updated'); 
+    }; 
+    reader.readAsDataURL(file); 
+  } 
+ 
+  function handleSave() { 
+    save('k9_profile_name',   name); 
+    save('k9_user_phone',     phone); 
+    save('k9_profile_email',  email); 
+    save('k9_user_channel',   channel); 
+    toast.success('Profile saved'); 
+  } 
+ 
+  const displayName = name || 'K9 User'; 
+  const initials = displayName.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2); 
+ 
+  return ( 
+    <Card> 
+      <SectionHead label="My Profile" Icon={User} /> 
+ 
+      <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: 24 }}> 
+        {/* Avatar */} 
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}> 
+          <div 
+            onClick={handleAvatarClick} 
+            style={{ 
+              width: 88, height: 88, borderRadius: '50%', 
+              background: avatar ? 'transparent' : 'rgba(91,140,245,0.12)', 
+              border: `2px solid ${C.border}`, 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', 
+              cursor: 'pointer', overflow: 'hidden', position: 'relative', flexShrink: 0, 
+              transition: 'border-color 0.1s', 
+            }} 
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = C.borderHover; }} 
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = C.border; }} 
+          > 
+            {avatar 
+              ? <img src={avatar} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> 
+              : <span style={{ fontSize: 24, fontWeight: 600, color: C.blue }}>{initials}</span> 
+            } 
+            <div style={{ 
+              position: 'absolute', inset: 0, 
+              background: 'rgba(0,0,0,0.55)', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', 
+              opacity: 0, transition: 'opacity 0.15s', 
+            }} 
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '1'; }} 
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '0'; }} 
+            > 
+              <Camera style={{ width: 18, height: 18, color: '#fff' }} /> 
+            </div> 
+          </div> 
+          <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileChange} /> 
+          <span style={{ fontSize: 10, fontFamily: C.m, color: C.t3, textAlign: 'center', lineHeight: 1.4 }}>Click to upload photo</span> 
+          {avatar && ( 
+            <button onClick={() => { setAvatar(''); save('k9_profile_avatar', ''); }} 
+              style={{ fontSize: 11, color: C.red, background: 'none', border: 'none', cursor: 'pointer', fontFamily: C.f }}> 
+              Remove 
+            </button> 
+          )} 
+        </div> 
+ 
+        {/* Fields */} 
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}> 
+          <div> 
+            <label style={LABEL}>Name</label> 
+            <input value={name} onChange={e => setName(e.target.value)} placeholder="Your name" 
+              style={INPUT} 
+              onFocus={e => { e.currentTarget.style.borderColor = 'rgba(91,140,245,0.5)'; }} 
+              onBlur={e => { e.currentTarget.style.borderColor = C.border; }} 
+            /> 
+          </div> 
+          <div> 
+            <label style={LABEL}>Phone number</label> 
+            <input value={phone} onChange={e => setPhone(e.target.value)} type="tel" placeholder="+234 801 234 5678" 
+              style={INPUT} 
+              onFocus={e => { e.currentTarget.style.borderColor = 'rgba(91,140,245,0.5)'; }} 
+              onBlur={e => { e.currentTarget.style.borderColor = C.border; }} 
+            /> 
+          </div> 
+          <div> 
+            <label style={LABEL}>Email (optional)</label> 
+            <input value={email} onChange={e => setEmail(e.target.value)} type="email" placeholder="you@example.com" 
+              style={INPUT} 
+              onFocus={e => { e.currentTarget.style.borderColor = 'rgba(91,140,245,0.5)'; }} 
+              onBlur={e => { e.currentTarget.style.borderColor = C.border; }} 
+            /> 
+          </div> 
+          <div> 
+            <label style={LABEL}>Default alert channel</label> 
+            <div style={{ display: 'flex', gap: 8 }}> 
+              {(['whatsapp', 'telegram'] as const).map(ch => ( 
+                <button key={ch} onClick={() => setChannel(ch)} 
+                  style={{ 
+                    flex: 1, padding: '8px 0', borderRadius: 7, fontSize: 13, fontFamily: C.f, 
+                    border: `1px solid ${channel === ch ? 'rgba(91,140,245,0.4)' : C.border}`, 
+                    background: channel === ch ? 'rgba(91,140,245,0.1)' : 'transparent', 
+                    color: channel === ch ? C.blue : C.t2, cursor: 'pointer', transition: 'all 0.1s', 
+                  }}> 
+                  {ch === 'whatsapp' ? 'WhatsApp' : 'Telegram'} 
+                </button> 
+              ))} 
+            </div> 
+          </div> 
+          <button onClick={handleSave} 
+            style={{ padding: '10px 0', background: C.blue, color: '#fff', border: 'none', borderRadius: 7, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: C.f, marginTop: 4 }}> 
+            Save profile 
+          </button> 
+        </div> 
+      </div> 
+    </Card> 
+  ); 
+} 
+ 
+// ══════════════════════════════════════════════════════════════ 
+// NOTIFICATIONS TAB 
+// ══════════════════════════════════════════════════════════════ 
+function NotificationsTab() { 
+  return ( 
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}> 
+      <Card> 
+        <SectionHead label="Alert Preferences" Icon={Bell} /> 
+        <p style={{ fontSize: 13, color: C.t2, margin: '0 0 18px', lineHeight: 1.6 }}> 
+          Connect WhatsApp or Telegram so K9 can send you alerts the moment it finds something. 
+        </p> 
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}> 
+          <WhatsAppCard /> 
+          <TelegramCard /> 
+        </div> 
+      </Card> 
+    </div> 
+  ); 
+} 
+ 
+function WhatsAppCard() { 
+  const [instanceId, setInstanceId] = useState(''); 
+  const [token, setToken]           = useState(''); 
+  const [phone, setPhone]           = useState(() => load('k9_user_phone', '')); 
+  const [open, setOpen]             = useState(false); 
+ 
+  const connectMutation = useMutation({ 
+    mutationFn: api.connectWA, 
+    onSuccess: (data: any) => { 
+      if (data?.connected) { toast.success('WhatsApp connected!'); } 
+      else toast.error('Connection failed', { description: data?.error }); 
+    }, 
+    onError: () => toast.error('Could not connect — check your Instance ID and Token'), 
   }); 
-
-  const handleSave = () => { 
-    try { 
-      localStorage.setItem('k9_settings', JSON.stringify(settings)); 
-      toast.success('Settings saved'); 
-    } catch { 
-      toast.error('Could not save settings'); 
-    } 
-  };
-
-  // Unified Notification Status
-  const { data: status, refetch: refetchStatus } = useQuery({
-    queryKey: ['notificationStatus'],
-    queryFn: api.getNotificationStatus,
-    refetchInterval: 30000,
-  });
-
-  const apiKey = '••••••••••••••••••••••••••••••••';
-
-  const handleLogout = async () => {
-    if (!confirm('Log out of K9?')) return;
-    
-    // Clear all local state
-    localStorage.clear();
-    sessionStorage.clear();
-    queryClient.clear();
-    
-    // Call backend logout
-    try { 
-      await api.logout(); 
-    } catch (e) {
-      console.warn('Logout API failed, continuing with local cleanup');
-    }
-    
-    // Redirect and refresh
-    navigate('/');
-    window.location.reload();
-  };
-
-  const tabs = [
-    { id: 'profile', label: 'My Profile', icon: User },
-    { id: 'notifications', label: 'Alert Preferences', icon: Bell },
-    { id: 'security', label: 'Security Keys', icon: Key },
-    { id: 'preview', label: 'Notification Preview', icon: Eye },
-    { id: 'billing', label: 'Billing & Plans', icon: CreditCard },
-  ];
-
-  return (
-    <div className="space-y-6 pb-16">
-      {/* Page Header */}
-      <section className="flex flex-col gap-2"> 
-        <div className="flex items-center gap-3"> 
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-intel/10 border border-intel/20 rounded"> 
-            <div className="w-1.5 h-1.5 rounded-full bg-safe" /> 
-            <span className="text-[10px] font-mono text-intel tracking-[0.1em] uppercase">Configuration</span> 
+ 
+  return ( 
+    <div style={{ background: 'rgba(255,255,255,0.02)', border: `1px solid ${C.border}`, borderRadius: 8, overflow: 'hidden' }}> 
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', cursor: 'pointer' }} 
+        onClick={() => setOpen(o => !o)}> 
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}> 
+          <div style={{ width: 30, height: 30, borderRadius: 7, background: 'rgba(255,255,255,0.05)', border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}> 
+            <MessageSquare style={{ width: 14, height: 14, color: C.t2 }} /> 
+          </div> 
+          <div> 
+            <p style={{ fontSize: 13, fontWeight: 500, color: C.t1, margin: '0 0 1px' }}>WhatsApp</p> 
+            <p style={{ fontSize: 10, fontFamily: C.m, color: C.red, margin: 0, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Not connected</p> 
           </div> 
         </div> 
-        <h2 className="text-[28px] font-bold tracking-tight text-t1">Settings</h2> 
-        <p className="text-t2 max-w-xl text-sm leading-relaxed">
-          Manage your profile, security keys, and alert delivery preferences to ensure you never miss an opportunity.
-        </p>
-      </section>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        {/* Navigation Tabs - Desktop */}
-        <div className="hidden lg:flex flex-col gap-2">
-           {tabs.map((tab) => (
-             <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors border",
-                activeTab === tab.id 
-                  ? "bg-bg-elevated text-t1 border-line-1" 
-                  : "text-t2 border-transparent hover:text-t1 hover:bg-bg-elevated"
-              )}
-             >
-               <div className="flex items-center gap-3">
-                 <tab.icon className="h-4 w-4" />
-                 {tab.label}
-               </div>
-               <ChevronRight className={cn(
-                 "h-4 w-4 transition-transform",
-                 activeTab === tab.id ? "text-t1 translate-x-0.5" : "text-t3 opacity-50"
-               )} />
-             </button>
-           ))}
-
-           <button 
-            onClick={handleLogout}
-            className="flex items-center gap-3 p-4 rounded-lg font-sans font-medium text-sm text-critical hover:bg-critical/10 transition-all mt-10"
-           >
-             <LogOut className="h-4 w-4" />
-             Terminate Session
-           </button>
-        </div>
-
-        {/* Content Panels */}
-        <div className="lg:col-span-2 space-y-10">
-           {activeTab === 'profile' && <ProfileTab settings={settings} setSettings={setSettings} onSave={handleSave} />}
-           {activeTab === 'notifications' && <NotificationsTab status={status} onRefresh={refetchStatus} />}
-           {activeTab === 'security' && <SecurityTab showApiKey={showApiKey} setShowApiKey={setShowApiKey} apiKey={apiKey} />}
-           {activeTab === 'preview' && <PreviewTab />}
-           {activeTab === 'billing' && <BillingTab />}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ProfileTab({ settings, setSettings, onSave }: any) {
-  return (
-    <Card className="p-6 space-y-6">
-      <div className="flex items-center gap-2 border-b border-line-1 pb-4 mb-2">
-        <User className="h-6 w-6 text-t1" />
-        <h3 className="text-xl font-sans font-medium text-t1">My Profile</h3>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-         <div className="flex flex-col items-center justify-center p-6 bg-bg-surface border border-dashed border-line-1 rounded-xl">
-            <div className="h-24 w-24 rounded-full bg-bg-elevated border-2 border-line-2 flex items-center justify-center mb-4 relative group cursor-pointer overflow-hidden">
-               <img src={settings.avatarUrl || "https://api.dicebear.com/7.x/avataaars/svg?seed=k9"} alt="Avatar" className="w-full h-full" />
-               <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <span className="text-[10px] font-mono font-medium uppercase tracking-widest text-white">Change</span>
-               </div>
-            </div>
-            <span className="text-[10px] font-mono text-t3 uppercase tracking-widest">Master ID: K9-001</span>
-         </div>
-
-         <div className="space-y-6">
-            <div className="space-y-2">
-               <label className="text-[10px] font-mono font-medium uppercase tracking-widest text-t3">Username</label>
-               <input 
-                value={settings.username} 
-                onChange={e => setSettings({...settings, username: e.target.value})}
-                placeholder="K9_USER"
-                className="w-full bg-bg-surface border border-line-1 rounded px-4 py-2.5 text-sm font-sans focus:border-line-3 outline-none transition-colors" 
-               />
-            </div>
-            <div className="space-y-2">
-               <label className="text-[10px] font-mono font-medium uppercase tracking-widest text-t3">Email Address</label>
-               <input 
-                value={settings.email} 
-                onChange={e => setSettings({...settings, email: e.target.value})}
-                placeholder="user@k9.app"
-                className="w-full bg-bg-surface border border-line-1 rounded px-4 py-2.5 text-sm font-sans focus:border-line-3 outline-none transition-colors" 
-               />
-            </div>
-            <button onClick={onSave} className="w-full py-2.5 bg-intel text-white rounded font-sans font-medium text-sm hover:opacity-90 transition-opacity">Update Profile</button>
-         </div>
-      </div>
-    </Card>
-  );
-}
-
-function NotificationsTab({ status, onRefresh }: { status: any, onRefresh: () => void }) {
-  return (
-    <div className="space-y-6">
-      <Card className="p-6 space-y-6">
-        <div className="flex items-center gap-2 border-b border-line-1 pb-4 mb-2">
-          <Bell className="h-6 w-6 text-t1" />
-          <h3 className="text-xl font-sans font-medium text-t1 uppercase">Alert Preferences</h3>
-        </div>
-        <p className="text-sm text-t2 font-sans">Connect WhatsApp or Telegram to receive opportunities the moment K9 finds them.</p>
-
-        <div className="space-y-6">
-          <WhatsAppCard status={status?.whatsapp} onRefresh={onRefresh} />
-          <TelegramCard status={status?.telegram} onRefresh={onRefresh} />
-        </div>
-      </Card>
-    </div>
-  );
-}
-
-function WhatsAppCard({ status, onRefresh }: { status: any, onRefresh: () => void }) {
-  const [instanceId, setInstanceId] = useState('');
-  const [token, setToken] = useState('');
-  const [phone, setPhone] = useState('08072027335');
-
-  const connectMutation = useMutation({
-    mutationFn: api.connectWA,
-    onSuccess: (data) => {
-      if (data.connected) {
-        toast.success('WhatsApp Connected!');
-        onRefresh();
-      } else {
-        toast.error('Connection failed', { description: data.error });
-      }
-    },
-    onError: (e: any) => toast.error('Error', { description: e.message })
-  });
-
-  const testMutation = useMutation({
-    mutationFn: api.testWA,
-    onSuccess: (data) => {
-      if (data.sent) toast.success('Test message sent!');
-      else toast.error('Failed to send test message');
-    }
-  });
-
-  return (
-    <div className="bg-bg-surface border border-line-1 rounded-xl p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-intel/10 rounded-lg text-intel">
-            <MessageSquare className="h-5 w-5" />
-          </div>
-          <div>
-            <h4 className="font-sans font-bold text-t1 uppercase">WhatsApp</h4>
-            <span className={cn(
-              "text-[9px] font-mono font-bold uppercase tracking-widest",
-              status?.connected ? "text-safe" : "text-critical"
-            )}>
-              {status?.connected ? 'Connected' : 'Not Connected'}
-            </span>
-          </div>
-        </div>
-        {status?.connected && (
-          <span className="text-xs font-mono text-t2">+{status.phone || '08072027335'}</span>
-        )}
-      </div>
-
-      {status?.connected ? (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between text-[10px] font-mono uppercase text-t3">
-            <span>Messages today</span>
-            <span>{status.messagesUsed || 0} / 1,500</span>
-          </div>
-          <div className="flex gap-3">
-            <button 
-              onClick={() => testMutation.mutate()}
-              className="flex-1 py-2 bg-bg-elevated border border-line-1 rounded text-xs font-sans font-medium text-t1 hover:bg-bg-subtle transition-all flex items-center justify-center gap-2"
-            >
-              <Send className="h-3.5 w-3.5" />
-              Test Message
-            </button>
-            <button className="p-2 bg-critical/10 border border-critical/20 text-critical rounded hover:bg-critical/20 transition-all">
-              <Trash2 className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-6 pt-4 border-t border-line-1">
-          <div className="space-y-4 text-xs text-t2 bg-bg-base p-4 rounded-lg">
-            <p className="font-bold text-t1 uppercase">Setup Guide:</p>
-            <ol className="list-decimal list-inside space-y-1 opacity-80">
-              <li>Create account at greenapi.com</li>
-              <li>Scan QR with your WhatsApp app</li>
-              <li>Paste Instance ID and Token below</li>
-            </ol>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-mono font-medium uppercase tracking-widest text-t3">Instance ID</label>
-              <input value={instanceId} onChange={e => setInstanceId(e.target.value)} placeholder="e.g. 1101234567" className="w-full bg-bg-base border border-line-1 rounded px-3 py-2 text-sm font-mono text-t1 outline-none focus:border-intel transition-all" />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-mono font-medium uppercase tracking-widest text-t3">API Token</label>
-              <input type="password" value={token} onChange={e => setToken(e.target.value)} placeholder="your_token_here" className="w-full bg-bg-base border border-line-1 rounded px-3 py-2 text-sm font-mono text-t1 outline-none focus:border-intel transition-all" />
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-mono font-medium uppercase tracking-widest text-t3">Phone Number</label>
-            <input 
-              value={phone} 
-              onChange={e => setPhone(e.target.value)} 
-              placeholder="234..." 
-              inputMode="tel"
-              className="w-full bg-bg-base border border-line-1 rounded px-3 py-2 text-sm font-mono text-t1 outline-none focus:border-intel transition-all" 
-            />
-          </div>
+        <ChevronRight style={{ width: 14, height: 14, color: C.t3, transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }} /> 
+      </div> 
+      {open && ( 
+        <div style={{ padding: '0 16px 16px', borderTop: `1px solid ${C.border}` }}> 
+          <div style={{ background: C.inset, borderRadius: 7, padding: '11px 14px', margin: '14px 0', border: `1px solid ${C.border}` }}> 
+            <p style={{ fontSize: 12, fontWeight: 500, color: C.t1, margin: '0 0 6px' }}>Setup guide</p> 
+            <ol style={{ paddingLeft: 16, margin: 0 }}> 
+              {['Create an account at greenapi.com', 'Scan the QR code with your WhatsApp', 'Paste the Instance ID and Token below'].map((s, i) => ( 
+                <li key={i} style={{ fontSize: 12, color: C.t2, marginBottom: i < 2 ? 4 : 0, lineHeight: 1.5 }}>{s}</li> 
+              ))} 
+            </ol> 
+          </div> 
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}> 
+            <div> 
+              <label style={LABEL}>Instance ID</label> 
+              <input value={instanceId} onChange={e => setInstanceId(e.target.value)} placeholder="1101234567" style={INPUT} 
+                onFocus={e => { e.currentTarget.style.borderColor = 'rgba(91,140,245,0.5)'; }} 
+                onBlur={e => { e.currentTarget.style.borderColor = C.border; }}/> 
+            </div> 
+            <div> 
+              <label style={LABEL}>API Token</label> 
+              <input type="password" value={token} onChange={e => setToken(e.target.value)} placeholder="your_token" style={INPUT} 
+                onFocus={e => { e.currentTarget.style.borderColor = 'rgba(91,140,245,0.5)'; }} 
+                onBlur={e => { e.currentTarget.style.borderColor = C.border; }}/> 
+            </div> 
+          </div> 
+          <div style={{ marginBottom: 12 }}> 
+            <label style={LABEL}>Phone number</label> 
+            <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+234 801 234 5678" type="tel" style={INPUT} 
+              onFocus={e => { e.currentTarget.style.borderColor = 'rgba(91,140,245,0.5)'; }} 
+              onBlur={e => { e.currentTarget.style.borderColor = C.border; }}/> 
+          </div> 
           <button 
-            onClick={() => connectMutation.mutate({ instanceId, token, phoneNumber: phone })}
-            disabled={connectMutation.isPending || !instanceId || !token || !phone}
-            className="w-full py-2.5 bg-intel text-white rounded font-sans font-bold text-sm hover:opacity-90 transition-all disabled:opacity-50"
-          >
-            {connectMutation.isPending ? 'Connecting...' : 'Connect WhatsApp'}
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function TelegramCard({ status, onRefresh }: { status: any, onRefresh: () => void }) {
-  const testMutation = useMutation({
-    mutationFn: api.testTG,
-    onSuccess: (data) => {
-      if (data.sent) toast.success('Test message sent to Telegram!');
-      else toast.error('Failed to send test message');
-    }
-  });
-
-  return (
-    <div className="bg-bg-surface border border-line-1 rounded-xl p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-intel/10 rounded-lg text-intel">
-            <Send className="h-5 w-5" />
-          </div>
-          <div>
-            <h4 className="font-sans font-bold text-t1 uppercase">Telegram</h4>
-            <span className={cn(
-              "text-[9px] font-mono font-bold uppercase tracking-widest",
-              status?.connected ? "text-safe" : "text-critical"
-            )}>
-              {status?.connected ? 'Connected' : 'Not Connected'}
-            </span>
-          </div>
-        </div>
-        {status?.connected && (
-          <span className="text-xs font-mono text-t2">@{status.botName}</span>
-        )}
-      </div>
-
-      {status?.connected ? (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between text-[10px] font-mono uppercase text-t3">
-            <span>Status</span>
-            <span>{status.activeUsers} users connected</span>
-          </div>
-          <div className="flex gap-3">
-            <button 
-              onClick={() => testMutation.mutate()}
-              className="flex-1 py-2 bg-bg-elevated border border-line-1 rounded text-xs font-sans font-medium text-t1 hover:bg-bg-subtle transition-all flex items-center justify-center gap-2"
-            >
-              <Send className="h-3.5 w-3.5" />
-              Test Message
-            </button>
-            <a 
-              href={`https://t.me/${status.botName}`} 
-              target="_blank" 
-              className="flex-1 py-2 bg-intel/10 border border-intel/20 rounded text-xs font-sans font-medium text-intel hover:bg-intel/20 transition-all flex items-center justify-center gap-2"
-            >
-              Open Bot
-              <ExternalLink className="h-3.5 w-3.5" />
-            </a>
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-4 pt-4 border-t border-line-1">
-          <div className="space-y-4 text-xs text-t2 bg-bg-base p-4 rounded-lg">
-            <p className="font-bold text-t1 uppercase">How to Connect:</p>
-            <ol className="list-decimal list-inside space-y-1 opacity-80">
-              <li>Message @BotFather on Telegram</li>
-              <li>Send /newbot and follow prompts</li>
-              <li>Add your token to .env file</li>
-            </ol>
-          </div>
-          <button onClick={onRefresh} className="w-full py-2.5 bg-bg-elevated border border-line-1 rounded font-sans font-bold text-sm text-t1 hover:bg-bg-subtle transition-all">
-            Check Connection
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function SecurityTab({ showApiKey, setShowApiKey, apiKey }: any) {
-  return (
-    <Card className="p-6 space-y-6">
-      <div className="flex items-center gap-2 border-b border-line-1 pb-4 mb-2">
-        <Shield className="h-6 w-6 text-t1" />
-        <h3 className="text-xl font-sans font-medium text-t1 uppercase">Security</h3>
-      </div>
-
-      <div className="space-y-6">
-        <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <label className="text-[10px] font-mono font-medium uppercase tracking-widest text-text-3 flex items-center gap-2">
-                <Shield className="h-3 w-3 text-border-active" />
-                Claude AI Engine
-              </label>
-              <button 
-                onClick={() => setShowApiKey(!showApiKey)}
-                className="text-[10px] font-sans font-medium uppercase tracking-widest text-border-active hover:underline flex items-center gap-1.5"
-              >
-                {showApiKey ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                {showApiKey ? 'Mask Key' : 'Show Key'}
-              </button>
-            </div>
-            <div className="relative group">
-              <input 
-                type={showApiKey ? 'text' : 'password'}
-                value={apiKey}
-                readOnly
-                className="w-full bg-bg-surface border border-border-dim rounded px-4 py-2.5 text-xs font-mono opacity-80 group-hover:opacity-100 transition-opacity outline-none"
-              />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-intel animate-pulse" />
-                  <span className="text-[9px] font-mono font-medium uppercase text-intel tracking-tighter">Verified</span>
-              </div>
-            </div>
-        </div>
-
-        <p className="text-[10px] text-text-3 italic leading-relaxed">
-          Your keys are encrypted using AES-256 and stored securely. We never store raw keys in our database.
-        </p>
-      </div>
-    </Card>
-  );
-}
-
-function PreviewTab() {
-  return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <Card className="p-8 space-y-8">
-        <div className="flex items-center gap-3 border-b border-border-dim pb-6">
-          <Eye className="h-6 w-6 text-text-1" />
-          <h3 className="text-xl font-sans font-medium text-text-1 uppercase">Notification Simulation</h3>
-        </div>
-
-        <p className="text-sm text-text-2 font-sans">
-          Preview exactly how your intelligence signals will appear on each platform before connecting. 
-        </p>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="space-y-4">
-            <span className="text-[10px] font-mono font-medium uppercase tracking-widest text-text-3">WhatsApp Style</span>
-            <div className="bg-[#0b141a] p-4 rounded-lg border border-white/10 font-mono text-[13px] text-[#e9edef] whitespace-pre-wrap leading-tight shadow-xl min-h-[300px]">
-              K9 found something
-              ────────────────────────
-              WHAT'S HAPPENING
-              A brand new wallet — opened just 2 days ago — just placed a $47,000 bet on Polymarket that Venezuela's Maduro will be removed from power before January 31st.
-              
-              CONFIDENCE: 91/100
-              TIME TO ACT: 2–6 hours
-              
-              WHAT YOU CAN DO
-              ① Go to polymarket.com - search 'Maduro' - click 'Yes'
-              ② Watch for news breaking in the next 24 hours
-              ③ Share this signal
-              
-              HOW RISKY IS THIS?
-              HIGH RISK — This is speculation.
-              
-              SOURCE: Polymarket Insider Tracker
-              ────────────────────────
-              K9 · k9.app
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <span className="text-[10px] font-mono font-medium uppercase tracking-widest text-text-3">Telegram Style</span>
-            <div className="bg-[#0e1621] p-4 rounded-lg border border-white/10 font-sans text-[13px] text-white whitespace-pre-wrap leading-relaxed shadow-xl min-h-[300px]">
-              <b>K9 found something for you</b>
-              ─────────────────────────────────
-              
-              🕵️ <b>INSIDER ALERT</b>
-              
-              <b>WHAT K9 FOUND</b>
-              A brand new wallet — opened just 2 days ago — just placed a $47,000 bet on Polymarket that Venezuela's Maduro will be removed from power before January 31st.
-              
-              <b>CONFIDENCE:</b> 91/100
-              <b>TIME TO ACT:</b> 2–6 hours
-              
-              <b>WHAT YOU CAN DO</b>
-              ① Go to polymarket.com - search 'Maduro' - click 'Yes'
-              ② Watch for news breaking in the next 24 hours
-              
-              <b>HOW RISKY IS THIS?</b>
-              <i>HIGH RISK — This is speculation.</i>
-              
-              <b>SOURCE:</b> Polymarket Insider Tracker
-              ─────────────────────────────────
-              K9 · <a href="#" className="text-intel underline">Stop missing opportunities</a>
-            </div>
-          </div>
-        </div>
-      </Card>
-    </div>
-  );
-}
-
-function BillingTab() {
-  return (
-    <Card className="p-6 space-y-6">
-      <div className="flex items-center gap-2 border-b border-line-1 pb-4 mb-2">
-        <CreditCard className="h-6 w-6 text-t1" />
-        <h3 className="text-xl font-sans font-medium text-t1 uppercase">Billing</h3>
-      </div>
-
-      <div className="space-y-6">
-        <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-border-active text-text-4">
-              <Zap className="h-5 w-5 fill-text-4" />
-            </div>
-            <div>
-              <h3 className="text-2xl font-sans font-medium tracking-tight text-text-1 leading-none uppercase">ALPHA PLAN</h3>
-              <span className="text-[10px] font-mono font-medium uppercase tracking-widest text-border-active">Pro Subscription</span>
-            </div>
-        </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
-            <div className="space-y-2">
-              <p className="text-[10px] font-mono font-medium uppercase text-text-3 tracking-widest">Billing Period</p>
-              <p className="text-sm font-sans font-medium text-text-1">Annual (HUNT_MASTER)</p>
-            </div>
-            <div className="space-y-2">
-              <p className="text-[10px] font-mono font-medium uppercase text-text-3 tracking-widest">Next Renewal</p>
-              <p className="text-sm font-sans font-medium text-text-1">Oct 24, 2026</p>
-            </div>
-        </div>
-
-        <div className="pt-4 flex gap-4">
-            <button className="flex-1 h-11 bg-border-active text-text-4 rounded font-sans font-medium text-sm hover:opacity-90 transition-opacity uppercase">Manage Plan</button>
-            <button className="flex-1 h-11 bg-bg-surface border border-border-dim rounded font-sans font-medium text-sm text-text-1 hover:border-border-mid transition-all uppercase">Upgrade Tier</button>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-function Card({ children, className }: { children: React.ReactNode, className?: string }) {
-  return (
-    <div className={cn("bg-bg-surface border border-line-1 rounded-xl", className)}>
-      {children}
-    </div>
-  );
-}
+            onClick={() => connectMutation.mutate({ instanceId, token, phoneNumber: phone })} 
+            disabled={connectMutation.isPending || !instanceId || !token || !phone} 
+            style={{ width: '100%', padding: '10px 0', background: !instanceId || !token || !phone ? 'rgba(91,140,245,0.3)' : C.blue, color: '#fff', border: 'none', borderRadius: 7, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: C.f }}> 
+            {connectMutation.isPending ? 'Connecting...' : 'Connect WhatsApp'} 
+          </button> 
+        </div> 
+      )} 
+    </div> 
+  ); 
+} 
+ 
+function TelegramCard() { 
+  const [open, setOpen] = useState(false); 
+ 
+  const testMutation = useMutation({ 
+    mutationFn: api.testTG, 
+    onSuccess: (data: any) => { 
+      if (data?.sent) toast.success('Test message sent to Telegram!'); 
+      else toast.error('Could not send test message'); 
+    }, 
+  }); 
+ 
+  return ( 
+    <div style={{ background: 'rgba(255,255,255,0.02)', border: `1px solid ${C.border}`, borderRadius: 8, overflow: 'hidden' }}> 
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', cursor: 'pointer' }} 
+        onClick={() => setOpen(o => !o)}> 
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}> 
+          <div style={{ width: 30, height: 30, borderRadius: 7, background: 'rgba(255,255,255,0.05)', border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}> 
+            <Send style={{ width: 14, height: 14, color: C.t2 }} /> 
+          </div> 
+          <div> 
+            <p style={{ fontSize: 13, fontWeight: 500, color: C.t1, margin: '0 0 1px' }}>Telegram</p> 
+            <p style={{ fontSize: 10, fontFamily: C.m, color: C.red, margin: 0, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Not connected</p> 
+          </div> 
+        </div> 
+        <ChevronRight style={{ width: 14, height: 14, color: C.t3, transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }} /> 
+      </div> 
+      {open && ( 
+        <div style={{ padding: '0 16px 16px', borderTop: `1px solid ${C.border}` }}> 
+          <div style={{ background: C.inset, borderRadius: 7, padding: '11px 14px', margin: '14px 0', border: `1px solid ${C.border}` }}> 
+            <p style={{ fontSize: 12, fontWeight: 500, color: C.t1, margin: '0 0 6px' }}>How to connect</p> 
+            <ol style={{ paddingLeft: 16, margin: 0 }}> 
+              {['Message @BotFather on Telegram', 'Send /newbot and follow the prompts', 'Copy the bot token and paste it in your .env file'].map((s, i) => ( 
+                <li key={i} style={{ fontSize: 12, color: C.t2, marginBottom: i < 2 ? 4 : 0, lineHeight: 1.5 }}>{s}</li> 
+              ))} 
+            </ol> 
+          </div> 
+          <button onClick={() => testMutation.mutate()} 
+            style={{ width: '100%', padding: '10px 0', background: 'rgba(255,255,255,0.05)', color: C.t1, border: `1px solid ${C.border}`, borderRadius: 7, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: C.f }}> 
+            {testMutation.isPending ? 'Checking...' : 'Check connection'} 
+          </button> 
+        </div> 
+      )} 
+    </div> 
+  ); 
+} 
+ 
+// ── Security Tab ───────────────────────────────────────────── 
+function SecurityTab() { 
+  const [show, setShow] = useState(false); 
+  const apiKey = '••••••••••••••••••••••••••••••••'; 
+ 
+  return ( 
+    <Card> 
+      <SectionHead label="Security" Icon={Key} /> 
+      <div> 
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}> 
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}> 
+            <Shield style={{ width: 12, height: 12, color: C.t3 }} /> 
+            <span style={LABEL as any}>Claude AI Engine</span> 
+          </div> 
+          <button onClick={() => setShow(s => !s)} 
+            style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: C.blue, background: 'none', border: 'none', cursor: 'pointer', fontFamily: C.f }}> 
+            {show ? <EyeOff style={{ width: 12, height: 12 }} /> : <Eye style={{ width: 12, height: 12 }} />} 
+            {show ? 'Hide' : 'Show key'} 
+          </button> 
+        </div> 
+        <div style={{ position: 'relative' }}> 
+          <input type={show ? 'text' : 'password'} value={apiKey} readOnly 
+            style={{ ...INPUT, fontFamily: C.m, paddingRight: 80, opacity: 0.8 }} /> 
+          <div style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', gap: 5 }}> 
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: C.blue }} /> 
+            <span style={{ fontSize: 9, fontFamily: C.m, color: C.blue, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Verified</span> 
+          </div> 
+        </div> 
+        <p style={{ fontSize: 11, color: C.t3, marginTop: 10, lineHeight: 1.6, fontStyle: 'italic' }}> 
+          Keys are encrypted with AES-256. We never store raw keys. 
+        </p> 
+      </div> 
+    </Card> 
+  ); 
+} 
+ 
+// ── Billing Tab ────────────────────────────────────────────── 
+function BillingTab() { 
+  return ( 
+    <Card> 
+      <SectionHead label="Billing & Plans" Icon={CreditCard} /> 
+      <div style={{ textAlign: 'center', padding: '32px 16px' }}> 
+        <p style={{ fontSize: 16, fontWeight: 500, color: C.t1, margin: '0 0 10px' }}> 
+          I no go bill you yet, calm down. 
+        </p> 
+        <p style={{ fontSize: 14, color: C.t2, margin: '0 0 24px', lineHeight: 1.65, maxWidth: 340, marginLeft: 'auto', marginRight: 'auto' }}> 
+         
+        </p> 
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 20, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)' }}> 
+          <div style={{ width: 5, height: 5, borderRadius: '50%', background: C.green }} /> 
+          <span style={{ fontSize: 11, fontFamily: C.m, color: C.green, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Free Alpha Access</span> 
+        </div> 
+      </div> 
+    </Card> 
+  ); 
+} 

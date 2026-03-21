@@ -11,7 +11,7 @@ import LogoMark from './LogoMark';
  
 const NAV = [ 
   { path: '/feed',       label: 'Dispatch',    Icon: Zap }, 
-  { path: '/free-money', label: 'Free Money',  Icon: DollarSign }, 
+  { path: '/airdrops',   label: 'Airdrops',    Icon: DollarSign }, 
   { path: '/jobs',       label: 'Jobs',        Icon: Briefcase }, 
   { path: '/hunt',       label: 'Hunt',        Icon: Crosshair }, 
   { path: '/verify',     label: 'Is It Safe?', Icon: ShieldCheck }, 
@@ -203,8 +203,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: '0.1em', fontFamily: 'monospace' }}>K9</span>
         </div>
 
-        <main style={{ flex: 1, overflowY: 'auto', padding: '24px' }}> 
-          <div style={{ maxWidth: 900, margin: '0 auto', width: '100%' }}> 
+        <main className="k9-content" style={{ flex: 1, overflowY: 'auto', padding: '24px' }}> 
+          <div style={{ maxWidth: 900, margin: '0 auto', width: '100%', minWidth: 0 }}> 
             {children} 
           </div> 
         </main> 

@@ -1,0 +1,20 @@
+{ 
+  "name": "K9 — Find it before anyone else", 
+  "short_name": "K9", 
+  "description": "Real-time crypto signals, airdrops, jobs, and insider alerts", 
+  "start_url": "/", 
+  "display": "standalone", 
+  "background_color": "#1a1a1a", 
+  "theme_color": "#1a1a1a", 
+  "orientation": "portrait-primary", 
+  "icons": [ 
+    { 
+      "src": "/k9-icon.svg", 
+      "sizes": "any", 
+      "type": "image/svg+xml", 
+      "purpose": "any maskable" 
+    } 
+  ], 
+  "categories": ["finance", "utilities"], 
+  "lang": "en-US" 
+ } 

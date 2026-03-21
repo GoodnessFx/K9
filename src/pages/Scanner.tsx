@@ -59,9 +59,9 @@ export default function ScannerPage() {
         <p style={{ fontSize: 14, color: C.t2, margin: 0, lineHeight: 1.6 }}>Paste any crypto address to instantly check if it is safe to interact with.</p> 
       </section> 
  
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 16 }}> 
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 24 }}> 
         {/* Main column */} 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}> 
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}> 
           {/* Input card */} 
           <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 8, padding: '18px 20px' }}> 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 160px', gap: 12, marginBottom: 12 }}> 

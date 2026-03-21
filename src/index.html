@@ -2,54 +2,67 @@
 <html lang="en" class="dark"> 
   <head> 
     <meta charset="UTF-8" /> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0" /> 
+ 
+    <!-- Primary meta --> 
+    <title>K9 — Find it before anyone else</title> 
+    <meta name="description" content="K9 scans 15+ sources every 90 seconds — free airdrops, trading signals, crypto jobs, insider moves, and prediction markets. Straight to your phone." /> 
+    <meta name="keywords" content="crypto, airdrop, defi, polymarket, blockchain, jobs, signals, opportunities, web3, trading" /> 
+    <meta name="author" content="K9" /> 
+ 
+    <!-- Security --> 
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" /> 
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" /> 
+ 
+    <!-- PWA / Mobile --> 
+    <meta name="theme-color" content="#1a1a1a" /> 
+    <meta name="mobile-web-app-capable" content="yes" /> 
+    <meta name="apple-mobile-web-app-capable" content="yes" /> 
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" /> 
+    <meta name="apple-mobile-web-app-title" content="K9" /> 
     <link rel="icon" type="image/svg+xml" href="/k9-icon.svg" /> 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" /> 
-    <meta name="description" content="K9 — AI-powered crypto intelligence. Find opportunities before anyone else." /> 
-    <title>K9 — Intelligence Platform</title> 
+    <link rel="apple-touch-icon" href="/k9-icon.svg" /> 
+    <link rel="manifest" href="/manifest.json" /> 
+ 
+    <!-- Open Graph --> 
+    <meta property="og:type" content="website" /> 
+    <meta property="og:url" content="https://k9.app/" /> 
+    <meta property="og:title" content="K9 — Find it before anyone else" /> 
+    <meta property="og:description" content="Real-time crypto signals, free airdrops, jobs, and insider alerts. Delivered to your WhatsApp or Telegram." /> 
+    <meta property="og:image" content="https://k9.app/og-image.png" /> 
+ 
+    <!-- Twitter --> 
+    <meta name="twitter:card" content="summary_large_image" /> 
+    <meta name="twitter:title" content="K9 — Find it before anyone else" /> 
+    <meta name="twitter:description" content="Real-time crypto signals, free airdrops, jobs, and insider alerts." /> 
+    <meta name="twitter:image" content="https://k9.app/og-image.png" /> 
  
     <style> 
-      * { margin: 0; padding: 0; box-sizing: border-box; } 
-      body { background: #1a1a1a; color: #ececec; font-family: system-ui, -apple-system, sans-serif; overflow: hidden; } 
-      #root { min-height: 100vh; } 
-      .k9-splash { 
-        display: flex; flex-direction: column; 
-        align-items: center; justify-content: center; 
-        height: 100vh; background: #1a1a1a;
-      } 
-      .k9-logo-container {
-        position: relative;
-        margin-bottom: 24px;
-      }
-      .k9-name { 
-        font-size: 24px; font-weight: 800; letter-spacing: 0.2em; color: #ececec; 
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-        text-transform: uppercase;
-      } 
-      .k9-loader {
-        width: 40px; height: 2px; background: rgba(255,255,255,0.1);
-        margin-top: 16px; border-radius: 2px; overflow: hidden;
-      }
-      .k9-loader-bar {
-        width: 40%; height: 100%; background: #3b82f6;
-        animation: loading 1.5s infinite ease-in-out;
-      }
-      @keyframes loading {
-        0% { transform: translateX(-100%); }
-        100% { transform: translateX(250%); }
-      }
+      *{margin:0;padding:0;box-sizing:border-box} 
+      body{background:#1a1a1a;color:#ececec;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow-x:hidden} 
+      #root{min-height:100vh} 
+      .k9-splash{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:12px} 
+      .k9-splash-mark{color:#ececec} 
+      .k9-splash-name{font-size:14px;font-weight:600;letter-spacing:.12em;color:#ececec;font-family:monospace;text-transform:uppercase} 
+      .k9-splash-sub{font-size:12px;color:#555} 
+      .k9-dot{animation:blink 1.4s ease-in-out infinite;opacity:0} 
+      .k9-dot:nth-child(2){animation-delay:.2s} 
+      .k9-dot:nth-child(3){animation-delay:.4s} 
+      @keyframes blink{0%,100%{opacity:0}50%{opacity:1}} 
     </style> 
   </head>
   <body>
     <div id="root"> 
       <div class="k9-splash"> 
-        <div class="k9-logo-container">
-          <!-- Minimalist K9 Mark -->
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M4 4V20M4 12H12M20 4L12 12M12 12L20 20" stroke="#ececec" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <div class="k9-splash-mark">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4V20M4 12H12M20 4L12 12M12 12L20 20"/>
           </svg>
         </div>
-        <div class="k9-name">K9</div> 
-        <div class="k9-loader"><div class="k9-loader-bar"></div></div>
+        <div class="k9-splash-name">K9</div> 
+        <div class="k9-splash-sub"> 
+          Connecting<span class="k9-dot">.</span><span class="k9-dot">.</span><span class="k9-dot">.</span> 
+        </div> 
       </div> 
     </div> 
     <script type="module" src="/src/main.tsx"></script> 

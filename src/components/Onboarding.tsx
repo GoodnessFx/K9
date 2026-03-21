@@ -30,6 +30,7 @@ export function Onboarding({ onComplete }: { onComplete: () => void }) {
     if (phone) localStorage.setItem('k9_user_phone', phone); 
     localStorage.setItem('k9_user_channel', channel); 
     localStorage.setItem('k9_user_interests', JSON.stringify(interests)); 
+    if (phone) localStorage.setItem('k9_profile_name', phone.startsWith('+') ? '' : phone); 
     onComplete(); 
   } 
  
@@ -46,7 +47,7 @@ export function Onboarding({ onComplete }: { onComplete: () => void }) {
       <div style={{ 
         width: '100%', maxWidth: 400, background: '#232323', 
         border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, 
-        padding: '32px 24px' 
+        padding: '32px 24px', position: 'relative', overflow: 'hidden'
       }}> 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}> 
           <LogoMark size={24} /> 
@@ -82,8 +83,8 @@ export function Onboarding({ onComplete }: { onComplete: () => void }) {
           <h1 style={{ fontSize: 22, fontWeight: 800, color: '#ececec', marginBottom: 12, lineHeight: 1.2 }}> 
             Find it before anyone else. 
           </h1> 
-          <p style={{ fontSize: 14, color: '#a0a0a0', marginBottom: 20, lineHeight: 1.5 }}> 
-            K9 scans 14+ sources every 90 seconds — free airdrops, trading signals, jobs, and insider alerts. Plain English. Straight to your phone. 
+          <p style={{ fontSize: 14, color: '#a0a0a0', margin: '0 0 18px', lineHeight: 1.7 }}> 
+            While everyone else reacts, K9 is already watching. 14+ sources. Every 90 seconds. Free airdrops worth thousands, verified trading signals, remote jobs, whale moves, prediction market alpha — translated into plain English and sent straight to your phone before the crowd catches up. 
           </p> 
           <PrimaryBtn label="Get started →" onClick={() => setStep('phone')} /> 
           <button onClick={onComplete} style={{ 

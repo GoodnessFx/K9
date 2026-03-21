@@ -84,7 +84,7 @@ export default function HuntPage() {
           <Activity style={{ width: 14, height: 14, color: C.t3 }} /> 
           <span style={{ fontSize: 11, fontFamily: C.m, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Market Health Index</span> 
         </div> 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}> 
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8 }}> 
           {loading && signals.length === 0 
             ? Array.from({ length: 6 }).map((_, i) => ( 
                 <div key={i} style={{ height: 110, background: C.card, border: `1px solid ${C.border}`, borderRadius: 8 }} /> 
@@ -127,55 +127,57 @@ export default function HuntPage() {
       </section> 
  
       {/* Convergence + Anomalies */} 
-      <section style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 16 }}> 
+      <section style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 24 }}> 
  
          {/* Where Sources Agree */} 
-         <div> 
+         <div style={{ minWidth: 0 }}> 
            <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}> 
              <Layers style={{ width: 14, height: 14, color: C.t3 }} /> 
              <span style={{ fontSize: 11, fontFamily: C.m, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Where Sources Agree</span> 
            </div> 
            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 8, overflow: 'hidden' }}> 
-             <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 56px 40px 36px', padding: '10px 16px', borderBottom: `1px solid ${C.border}`, background: 'rgba(255,255,255,0.02)' }}> 
+             <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 56px 40px 36px', padding: '10px 16px', borderBottom: `1px solid ${C.border}`, background: 'rgba(255,255,255,0.02)', minWidth: 400 }}> 
                {['Opportunity', 'Sources', 'Conf', 'Trend', ''].map((h, i) => ( 
                  <span key={i} style={{ fontSize: 10, fontFamily: C.m, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{h}</span> 
                ))} 
              </div> 
-             {loading && signals.length === 0 
-               ? Array.from({ length: 4 }).map((_, i) => ( 
-                   <div key={i} style={{ padding: '14px 16px', borderBottom: `1px solid ${C.border}`, opacity: 0.3, background: C.card }} /> 
-                 )) 
-               : convergence.map((row, i) => ( 
-                   <div key={i} 
-                     style={{ display: 'grid', gridTemplateColumns: '1fr 80px 56px 40px 36px', alignItems: 'center', padding: '12px 16px', borderBottom: i < convergence.length - 1 ? `1px solid ${C.border}` : 'none', cursor: 'pointer', transition: 'background 0.1s' }} 
-                     onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = C.cardHover; }} 
-                     onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }} 
-                   > 
-                     <p style={{ fontSize: 13, color: C.t1, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingRight: 12 }}>{row.name}</p> 
-                     <div style={{ display: 'flex', gap: 3 }}> 
-                       {Array.from({ length: row.sources }).map((_, j) => ( 
-                         <div key={j} style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(91,140,245,0.15)', border: '1px solid rgba(91,140,245,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontFamily: C.m, color: C.blue }}>S{j + 1}</div> 
-                       ))} 
-                     </div> 
-                     <span style={{ fontSize: 13, fontFamily: C.m, fontWeight: 500, color: C.blue }}>{row.score}</span> 
-                     <div style={{ color: row.up ? C.green : C.red }}> 
-                       {row.up ? <TrendingUp style={{ width: 14, height: 14 }} /> : <TrendingDown style={{ width: 14, height: 14 }} />} 
-                     </div> 
-                     <button onClick={() => row.url && window.open(row.url, '_blank')} 
-                       style={{ border: 'none', background: 'none', cursor: 'pointer', color: C.t3, padding: 2 }} 
-                       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = C.t1; }} 
-                       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = C.t3; }} 
+             <div style={{ overflowX: 'auto', scrollbarWidth: 'none' }}> 
+               {loading && signals.length === 0 
+                 ? Array.from({ length: 4 }).map((_, i) => ( 
+                     <div key={i} style={{ padding: '14px 16px', borderBottom: `1px solid ${C.border}`, opacity: 0.3, background: C.card, minWidth: 400 }} /> 
+                   )) 
+                 : convergence.map((row, i) => ( 
+                     <div key={i} 
+                       style={{ display: 'grid', gridTemplateColumns: '1fr 80px 56px 40px 36px', alignItems: 'center', padding: '12px 16px', borderBottom: i < convergence.length - 1 ? `1px solid ${C.border}` : 'none', cursor: 'pointer', transition: 'background 0.1s', minWidth: 400 }} 
+                       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = C.cardHover; }} 
+                       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }} 
                      > 
-                       <ArrowRight style={{ width: 14, height: 14 }} /> 
-                     </button> 
-                   </div> 
-                 )) 
-             } 
+                       <p style={{ fontSize: 13, color: C.t1, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingRight: 12 }}>{row.name}</p> 
+                       <div style={{ display: 'flex', gap: 3 }}> 
+                         {Array.from({ length: row.sources }).map((_, j) => ( 
+                           <div key={j} style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(91,140,245,0.15)', border: '1px solid rgba(91,140,245,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontFamily: C.m, color: C.blue }}>S{j + 1}</div> 
+                         ))} 
+                       </div> 
+                       <span style={{ fontSize: 13, fontFamily: C.m, fontWeight: 500, color: C.blue }}>{row.score}</span> 
+                       <div style={{ color: row.up ? C.green : C.red }}> 
+                         {row.up ? <TrendingUp style={{ width: 14, height: 14 }} /> : <TrendingDown style={{ width: 14, height: 14 }} />} 
+                       </div> 
+                       <button onClick={() => row.url && window.open(row.url, '_blank')} 
+                         style={{ border: 'none', background: 'none', cursor: 'pointer', color: C.t3, padding: 2 }} 
+                         onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = C.t1; }} 
+                         onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = C.t3; }} 
+                       > 
+                         <ArrowRight style={{ width: 14, height: 14 }} /> 
+                       </button> 
+                     </div> 
+                   )) 
+               } 
+             </div> 
            </div> 
          </div> 
  
          {/* Unusual Activity */} 
-         <div> 
+         <div style={{ minWidth: 0 }}> 
            <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}> 
              <AlertTriangle style={{ width: 14, height: 14, color: C.t3 }} /> 
              <span style={{ fontSize: 11, fontFamily: C.m, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Unusual Activity</span> 
