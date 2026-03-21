@@ -7,6 +7,8 @@ import ScannerPage from './pages/Scanner';
 import Telegram from './pages/Telegram';
 import Settings from './pages/Settings';
 import Saved from './pages/Saved';
+import { DeveloperFeed } from './components/DeveloperFeed'; 
+import { CommunityHub }  from './components/CommunityHub'; 
 import { Onboarding } from './components/Onboarding';
 import { Toaster } from 'sonner';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -45,6 +47,8 @@ export default function App() {
                 <Route path="/free-money" element={<Dashboard />} />
                 <Route path="/jobs" element={<Dashboard />} />
                 <Route path="/saved" element={<Saved />} />
+                <Route path="/tech-news" element={<DeveloperFeed />} /> 
+                <Route path="/community" element={<CommunityHub />} /> 
                 <Route path="/alerts" element={<Telegram />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="*" element={<Navigate to="/feed" replace />} />

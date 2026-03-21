@@ -1,377 +1,214 @@
-import React, { useState, useEffect } from 'react'; 
-import { AnimatePresence, motion } from 'motion/react'; 
-import { NotificationCenter } from './NotificationCenter'; 
-import { Settings } from './Settings'; 
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react'; 
+import { NavLink, useLocation } from 'react-router-dom'; 
+import { motion, AnimatePresence } from 'framer-motion'; 
 import { 
-  Zap, TrendingUp, Shield, Archive, Code, Users, 
-  Settings as SettingsIcon, Moon, Sun, Menu, X, 
+  Zap, DollarSign, Briefcase, Crosshair, ShieldCheck, 
+  Bookmark, Bell, Settings as SettingsIcon, Users, 
+  Menu, X, ChevronLeft, LogOut, 
 } from 'lucide-react'; 
+import { useSignalStream } from '../hooks/useSignalStream'; 
+import LogoMark from './LogoMark'; 
  
-// ─── Inline K9 Dog Logo ────────────────────────────────────────── 
-// 3D-style Belgian Malinois SVG — warm tan coat, amber eyes, purple collar glow 
- 
-function K9Mark({ size = 26 }: { size?: number }) { 
-  return ( 
-    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"> 
-      <defs> 
-        <radialGradient id="km-b" cx="45%" cy="35%" r="60%"> 
-          <stop offset="0%" stopColor="#D4A055"/> 
-          <stop offset="60%" stopColor="#A8732A"/> 
-          <stop offset="100%" stopColor="#6B4A18"/> 
-        </radialGradient> 
-        <radialGradient id="km-d" cx="50%" cy="40%" r="55%"> 
-          <stop offset="0%" stopColor="#3A2810"/> 
-          <stop offset="100%" stopColor="#1A1008"/> 
-        </radialGradient> 
-        <radialGradient id="km-n" cx="35%" cy="30%" r="60%"> 
-          <stop offset="0%" stopColor="#5A4A3A"/> 
-          <stop offset="100%" stopColor="#1A1008"/> 
-        </radialGradient> 
-        <radialGradient id="km-e" cx="35%" cy="30%" r="70%"> 
-          <stop offset="0%" stopColor="#8B5E2A"/> 
-          <stop offset="70%" stopColor="#3A2010"/> 
-          <stop offset="100%" stopColor="#0A0605"/> 
-        </radialGradient> 
-        <radialGradient id="km-c" cx="50%" cy="50%" r="50%"> 
-          <stop offset="0%" stopColor="#A78BFA"/> 
-          <stop offset="100%" stopColor="#6D28D9"/> 
-        </radialGradient> 
-        <filter id="km-s"> 
-          <feDropShadow dx="0" dy="1" stdDeviation="1.5" floodColor="#00000055"/> 
-        </filter> 
-        <style>{`@keyframes km-np{0%,100%{opacity:.2}50%{opacity:.7}}.km-np{animation:km-np 2s ease-in-out infinite}`}</style> 
-      </defs> 
-      <g filter="url(#km-s)"> 
-        <ellipse cx="26" cy="46" rx="10" ry="8" fill="url(#km-b)"/> 
-        <ellipse cx="20" cy="50" rx="14" ry="7" fill="url(#km-b)"/> 
-        <ellipse cx="20" cy="48" rx="10" ry="5" fill="url(#km-d)" opacity=".7"/> 
-        <ellipse cx="36" cy="30" rx="16" ry="14" fill="url(#km-b)"/> 
-        <ellipse cx="34" cy="22" rx="12" ry="8" fill="url(#km-d)" opacity=".85"/> 
-        <ellipse cx="42" cy="33" rx="5" ry="4" fill="#D4A055" opacity=".5"/> 
-        <ellipse cx="48" cy="36" rx="9" ry="7" fill="url(#km-b)"/> 
-        <ellipse cx="49" cy="39" rx="7" ry="4" fill="#C49045"/> 
-        <ellipse cx="55" cy="35" rx="4" ry="3" fill="url(#km-n)"/> 
-        <ellipse cx="53.5" cy="33.8" rx="1.2" ry=".8" fill="#6A5A4A" opacity=".7"/> 
-        <ellipse cx="54" cy="35.5" rx="1" ry=".6" fill="#0A0605"/> 
-        <ellipse cx="56.5" cy="35.5" rx="1" ry=".6" fill="#0A0605"/> 
-        <circle className="km-np" cx="55" cy="35" r="5" fill="#8B5CF6" opacity=".3"/> 
-        <ellipse cx="42" cy="28" rx="4" ry="3.5" fill="url(#km-e)"/> 
-        <ellipse cx="40.8" cy="26.8" rx="1.2" ry=".9" fill="white" opacity=".85"/> 
-        <path d="M38 24.5C40 23.5 44 23 46 24" stroke="#6B4A18" strokeWidth="1.2" strokeLinecap="round" fill="none"/> 
-        <path d="M26 20C25 14 29 10 32 12C30 15 28 18 27 22Z" fill="url(#km-d)"/> 
-        <path d="M34 18C33 11 38 7 42 10C39 13 37 17 36 22Z" fill="url(#km-b)"/> 
-        <path d="M36 19C35 14 38 10 40 12C38 15 37 18 36.5 21Z" fill="#C8703A" opacity=".6"/> 
-        <path d="M24 43Q36 46 46 41" stroke="url(#km-c)" strokeWidth="2.5" strokeLinecap="round" fill="none"/> 
-      </g> 
-    </svg> 
-  ); 
-} 
- 
-// ─── Nav config ─────────────────────────────────────────────────── 
- 
-const NAV_ITEMS = [ 
-  { id: 'dashboard', label: 'Dispatch',    Icon: Zap, path: '/feed' }, 
-  { id: 'radar',     label: 'Hunt',        Icon: TrendingUp, path: '/hunt' }, 
-  { id: 'security',  label: 'Is It Safe?', Icon: Shield, path: '/verify' }, 
-  { id: 'vault',     label: 'Saved',       Icon: Archive, path: '/saved' }, 
-  { id: 'dev',       label: 'Tech News',   Icon: Code, path: '/feed' }, 
-  { id: 'community', label: 'Community',   Icon: Users, path: '/feed' }, 
+const NAV = [ 
+  { path: '/feed',       label: 'Dispatch',    Icon: Zap }, 
+  { path: '/free-money', label: 'Free Money',  Icon: DollarSign }, 
+  { path: '/jobs',       label: 'Jobs',        Icon: Briefcase }, 
+  { path: '/hunt',       label: 'Hunt',        Icon: Crosshair }, 
+  { path: '/verify',     label: 'Is It Safe?', Icon: ShieldCheck }, 
+  { path: '/saved',      label: 'Saved',       Icon: Bookmark }, 
+  { path: '/tech-news',  label: 'Tech News',   Icon: Bell }, 
+  { path: '/community',  label: 'Community',   Icon: Users }, 
 ]; 
  
-// ─── Layout ─────────────────────────────────────────────────────── 
+const W_OPEN   = 240; 
+const W_CLOSED = 68; 
+ 
+function logout() { 
+  ['k9_onboarding_done','k9_user_phone','k9_settings', 
+   'k9_telegram_connected','k9_saved','k9_user_interests', 
+   'k9_user_channel'].forEach(k => localStorage.removeItem(k)); 
+  window.location.href = '/'; 
+} 
  
 export default function AppLayout({ children }: { children: React.ReactNode }) { 
-  const [dark, setDark]         = useState(true);   // dark by default 
-  const [mobileOpen, setMobile] = useState(false); 
-  const [settingsOpen, setSettings] = useState(false); 
-  const location = useLocation();
-  const navigate = useNavigate();
+  const [pinned, setPinned] = useState(() => localStorage.getItem('k9_sidebar_pinned') === 'true'); 
+  const [expanded, setExpanded] = useState(false); 
+  const [mobile, setMobile] = useState(false); 
+  const dark = true; 
+  const { status } = useSignalStream(); 
+  const location = useLocation(); 
+  
+  const isSidebarOpen = pinned || expanded; 
  
-  // Apply dark class 
   useEffect(() => { 
     document.documentElement.classList.toggle('dark', dark); 
   }, [dark]); 
  
-  // Close mobile sidebar on resize to desktop 
   useEffect(() => { 
-    const fn = () => { if (window.innerWidth >= 768) setMobile(false); }; 
-    window.addEventListener('resize', fn); 
-    return () => window.removeEventListener('resize', fn); 
-  }, []); 
+    localStorage.setItem('k9_sidebar_pinned', String(pinned));
+  }, [pinned]);
+
+  useEffect(() => { setMobile(false); }, [location.pathname]); 
  
-  function handleNavigate(path: string) { 
-    navigate(path); 
-    setMobile(false); 
-  } 
- 
-  // ── Sidebar content (shared between desktop + mobile) ────────── 
-  const SidebarContent = () => ( 
-    <div style={{ 
-      width: 220, 
-      minWidth: 220, 
-      height: '100vh', 
-      background: dark ? '#171717' : '#F0EFE9', 
-      borderRight: `1px solid ${dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, 
-      display: 'flex', 
-      flexDirection: 'column', 
-      overflow: 'hidden', 
-      flexShrink: 0, 
-    }}> 
-      {/* Logo */} 
-      <div style={{ 
-        padding: '18px 14px 10px', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'space-between', 
-      }}> 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}> 
-          <K9Mark size={26} /> 
-          <span style={{ 
-            fontSize: 16, 
-            fontWeight: 700, 
-            letterSpacing: '-0.3px', 
-            color: dark ? '#ececec' : '#1a1a1a', 
-          }}> 
-            K9 
-          </span> 
-        </div> 
-        {/* Mobile close button */} 
-        <button 
-          onClick={() => setMobile(false)} 
-          style={{ 
-            border: 'none', background: 'none', cursor: 'pointer', 
-            color: dark ? '#666' : '#888', padding: 4, 
-            display: mobileOpen ? 'flex' : 'none', 
-            alignItems: 'center', 
-          }} 
-        > 
-          <X style={{ width: 16, height: 16 }} /> 
-        </button> 
-      </div> 
- 
-      {/* Navigation */} 
-      <nav style={{ padding: '4px 8px', flex: 1, overflowY: 'auto' }}> 
-        {NAV_ITEMS.map(({ id, label, Icon, path }) => { 
-          const active = location.pathname === path; 
-          return ( 
-            <button 
-              key={id} 
-              onClick={() => handleNavigate(path)} 
-              style={{ 
-                width: '100%', 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 9, 
-                padding: '7px 10px', 
-                borderRadius: 6, 
-                border: 'none', 
-                cursor: 'pointer', 
-                textAlign: 'left', 
-                marginBottom: 1, 
-                fontSize: 13, 
-                fontWeight: active ? 500 : 400, 
-                background: active 
-                  ? dark ? 'rgba(255,255,255,0.09)' : 'rgba(0,0,0,0.06)' 
-                  : 'transparent', 
-                color: active 
-                  ? dark ? '#ececec' : '#1a1a1a' 
-                  : dark ? '#8a8a8a' : '#666', 
-                transition: 'background 0.1s, color 0.1s', 
-              }} 
-              onMouseEnter={e => { 
-                if (!active) { 
-                  (e.currentTarget as HTMLButtonElement).style.background = dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.04)'; 
-                  (e.currentTarget as HTMLButtonElement).style.color = dark ? '#ececec' : '#1a1a1a'; 
-                } 
-              }} 
-              onMouseLeave={e => { 
-                if (!active) { 
-                  (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; 
-                  (e.currentTarget as HTMLButtonElement).style.color = dark ? '#8a8a8a' : '#666'; 
-                } 
-              }} 
-            > 
-              <Icon style={{ 
-                width: 15, height: 15, flexShrink: 0, 
-                opacity: active ? 1 : 0.65, 
-              }} /> 
+  const Sidebar = ({ isMobile = false }: { isMobile?: boolean }) => {
+    const show = isMobile || isSidebarOpen;
+    const width = isMobile ? W_OPEN : (isSidebarOpen ? W_OPEN : W_CLOSED);
+
+    return (
+      <div 
+        style={{ 
+          width, 
+          height: '100vh',
+          background: '#171717',
+          borderRight: '1px solid rgba(255,255,255,0.08)',
+          display: 'flex',
+          flexDirection: 'column',
+          transition: 'width 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+          overflow: 'hidden',
+          flexShrink: 0,
+          zIndex: 100
+        }}
+      >
+        {/* Header */}
+        <div style={{ 
+          height: 64, 
+          padding: show ? '0 20px' : '0', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: show ? 'space-between' : 'center',
+          borderBottom: '1px solid rgba(255,255,255,0.04)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ position: 'relative' }}>
+              <LogoMark size={24} />
+              <div style={{ 
+                position: 'absolute', bottom: -1, right: -1, 
+                width: 8, height: 8, borderRadius: '50%',
+                background: status === 'live' ? '#00bf72' : '#d4a843',
+                border: '2px solid #171717'
+              }} />
+            </div>
+            {show && (
               <span style={{ 
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', 
-              }}> 
-                {label} 
-              </span> 
-            </button> 
-          ); 
-        })} 
-      </nav> 
- 
-      {/* Bottom */} 
-      <div style={{ 
-        padding: '10px 8px', 
-        borderTop: `1px solid ${dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, 
-      }}> 
-        {/* Live status */} 
-        <div style={{ 
-          display: 'flex', alignItems: 'center', gap: 8, 
-          padding: '6px 10px', marginBottom: 2, 
-        }}> 
-          <div style={{ 
-            width: 5, height: 5, borderRadius: '50%', 
-            background: '#22c55e', 
-            boxShadow: '0 0 5px #22c55e', 
-            flexShrink: 0, 
-          }} /> 
-          <span style={{ fontSize: 11, color: dark ? '#555' : '#888' }}> 
-            K9 is watching · sniffs every 90s 
-          </span> 
-        </div> 
- 
-        {/* Notifications */} 
-        <div style={{ 
-          padding: '2px 10px 4px', 
-          display: 'flex', alignItems: 'center', gap: 9, 
-        }}> 
-          <NotificationCenter /> 
-        </div> 
- 
-        {/* Settings + dark toggle */} 
-        <button 
-          onClick={() => setSettings(true)} 
-          style={{ 
-            width: '100%', display: 'flex', alignItems: 'center', gap: 9, 
-            padding: '7px 10px', borderRadius: 6, 
-            border: 'none', background: 'transparent', cursor: 'pointer', 
-            color: dark ? '#8a8a8a' : '#666', fontSize: 13, 
-            transition: 'background 0.1s', 
-          }} 
-          onMouseEnter={e => { 
-            (e.currentTarget as HTMLButtonElement).style.background = dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.04)'; 
-          }} 
-          onMouseLeave={e => { 
-            (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; 
-          }} 
-        > 
-          <SettingsIcon style={{ width: 14, height: 14, flexShrink: 0, opacity: 0.65 }} /> 
-          <span>Settings</span> 
-          {/* Dark mode toggle inside settings row */} 
-          <button 
-            onClick={e => { e.stopPropagation(); setDark(d => !d); }} 
-            style={{ 
-              marginLeft: 'auto', border: 'none', background: 'none', 
-              cursor: 'pointer', color: dark ? '#666' : '#888', 
-              display: 'flex', alignItems: 'center', padding: 2, 
-            }} 
-            title="Toggle dark/light mode" 
-          > 
-            {dark 
-              ? <Sun style={{ width: 13, height: 13 }} /> 
-              : <Moon style={{ width: 13, height: 13 }} /> 
-            } 
-          </button> 
-        </button> 
-      </div> 
-    </div> 
-  ); 
+                fontSize: 13, fontWeight: 800, letterSpacing: '0.15em', 
+                color: '#ececec', textTransform: 'uppercase', fontFamily: 'monospace' 
+              }}>K9</span>
+            )}
+          </div>
+          {show && !isMobile && (
+            <button 
+              onClick={() => setPinned(!pinned)}
+              style={{ background: 'none', border: 'none', padding: 4, cursor: 'pointer', color: '#8a8a8a' }}
+            >
+              <ChevronLeft size={16} style={{ transform: pinned ? 'none' : 'rotate(180deg)', transition: 'transform 0.2s' }} />
+            </button>
+          )}
+          {isMobile && (
+            <button onClick={() => setMobile(false)} style={{ background: 'none', border: 'none', color: '#8a8a8a' }}>
+              <X size={20} />
+            </button>
+          )}
+        </div>
+
+        {/* Nav */}
+        <nav style={{ flex: 1, padding: '12px 8px', overflowY: 'auto' }}>
+          {NAV.map(({ path, label, Icon }) => {
+            const active = location.pathname === path;
+            return (
+              <NavLink key={path} to={path} style={{ 
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: show ? '10px 12px' : '12px 0',
+                justifyContent: show ? 'flex-start' : 'center',
+                borderRadius: 8, marginBottom: 4, textDecoration: 'none',
+                background: active ? 'rgba(255,255,255,0.05)' : 'transparent',
+                color: active ? '#ececec' : '#a0a0a0',
+                border: active ? '1px solid rgba(255,255,255,0.08)' : '1px solid transparent',
+                transition: 'all 0.2s'
+              }}>
+                <Icon size={18} style={{ opacity: active ? 1 : 0.7, flexShrink: 0 }} />
+                {show && <span style={{ fontSize: 13, fontWeight: active ? 600 : 400, whiteSpace: 'nowrap' }}>{label}</span>}
+              </NavLink>
+            );
+          })}
+        </nav>
+
+        {/* Footer */}
+        <div style={{ padding: '12px 8px', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+          <NavLink to="/settings" style={{ 
+            display: 'flex', alignItems: 'center', gap: 12,
+            padding: show ? '10px 12px' : '12px 0',
+            justifyContent: show ? 'flex-start' : 'center',
+            borderRadius: 8, textDecoration: 'none', color: '#a0a0a0'
+          }}>
+            <SettingsIcon size={18} style={{ opacity: 0.7 }} />
+            {show && <span style={{ fontSize: 13 }}>Settings</span>}
+          </NavLink>
+          <button onClick={logout} style={{ 
+            width: '100%', display: 'flex', alignItems: 'center', gap: 12,
+            padding: show ? '10px 12px' : '12px 0',
+            justifyContent: show ? 'flex-start' : 'center',
+            borderRadius: 8, background: 'none', border: 'none', color: '#f03a5f',
+            cursor: 'pointer', marginTop: 4
+          }}>
+            <LogOut size={18} style={{ opacity: 0.8 }} />
+            {show && <span style={{ fontSize: 13 }}>Sign out</span>}
+          </button>
+        </div>
+      </div>
+    );
+  };
  
   return ( 
-    <div style={{ 
-      display: 'flex', 
-      height: '100vh', 
-      overflow: 'hidden', 
-      background: dark ? '#1c1c1c' : '#F7F7F5', 
-      color: dark ? '#ececec' : '#1a1a1a', 
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', 
-      WebkitFontSmoothing: 'antialiased', 
-    }}> 
- 
-      {/* Desktop sidebar — always visible on md+ */} 
-      <div className="k9-sidebar-desktop"> 
-        <SidebarContent /> 
-      </div> 
- 
-      {/* Mobile sidebar overlay */} 
-      <AnimatePresence> 
-        {mobileOpen && ( 
-          <> 
+    <div style={{ display: 'flex', height: '100vh', background: '#1a1a1a', color: '#ececec', overflow: 'hidden' }}> 
+      {/* Sidebar Wrapper */}
+      <div 
+        onMouseEnter={() => !pinned && setExpanded(true)}
+        onMouseLeave={() => !pinned && setExpanded(false)}
+        className="hidden md:block"
+      >
+        <Sidebar />
+      </div>
+
+      {/* Mobile Sidebar */}
+      <AnimatePresence>
+        {mobile && (
+          <>
             <motion.div 
-              key="mob-backdrop" 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }} 
-              onClick={() => setMobile(false)} 
-              style={{ 
-                position: 'fixed', inset: 0, 
-                background: 'rgba(0,0,0,0.5)', 
-                zIndex: 40, 
-              }} 
-            /> 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setMobile(false)}
+              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 90 }}
+            />
             <motion.div 
-              key="mob-sidebar" 
-              initial={{ x: -240 }} 
-              animate={{ x: 0 }} 
-              exit={{ x: -240 }} 
-              transition={{ type: 'spring', stiffness: 320, damping: 32 }} 
-              style={{ position: 'fixed', left: 0, top: 0, bottom: 0, zIndex: 50 }} 
-            > 
-              <SidebarContent /> 
-            </motion.div> 
-          </> 
-        )} 
-      </AnimatePresence> 
+              initial={{ x: -240 }} animate={{ x: 0 }} exit={{ x: -240 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              style={{ position: 'fixed', left: 0, top: 0, bottom: 0, zIndex: 100 }}
+            >
+              <Sidebar isMobile />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
  
-      {/* Main content area */} 
-      <div style={{ 
-        flex: 1, 
-        display: 'flex', 
-        flexDirection: 'column', 
-        overflow: 'hidden', 
-        minWidth: 0, 
-      }}> 
- 
-        {/* Mobile top bar */} 
-        <div className="k9-mobile-bar" style={{ 
-          display: 'none', 
-          alignItems: 'center', 
-          padding: '11px 14px', 
-          borderBottom: `1px solid ${dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, 
-          background: dark ? '#1c1c1c' : '#F7F7F5', 
-          gap: 10, 
-          flexShrink: 0, 
-        }}> 
-          <button 
-            onClick={() => setMobile(true)} 
-            style={{ 
-              border: 'none', background: 'none', cursor: 'pointer', 
-              color: dark ? '#ececec' : '#1a1a1a', 
-              display: 'flex', alignItems: 'center', padding: 4, 
-            }} 
-          > 
-            <Menu style={{ width: 19, height: 19 }} /> 
-          </button> 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}> 
-            <K9Mark size={22} /> 
-            <span style={{ fontSize: 15, fontWeight: 700 }}>K9</span> 
-          </div> 
-        </div> 
- 
-        {/* Scrollable content */} 
-        <main 
-          className="k9-content" 
-          style={{ 
-            flex: 1, 
-            overflowY: 'auto', 
-            padding: '28px 40px', 
-          }} 
-        > 
-          {/* Inner max-width container */} 
-          <div style={{ maxWidth: 820, margin: '0 auto', width: '100%' }}> 
+      {/* Main Content */} 
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}> 
+        {/* Mobile Header */}
+        <div className="md:hidden" style={{ 
+          height: 56, background: '#171717', borderBottom: '1px solid rgba(255,255,255,0.08)',
+          display: 'flex', alignItems: 'center', padding: '0 16px', gap: 16
+        }}>
+          <button onClick={() => setMobile(true)} style={{ background: 'none', border: 'none', color: '#ececec' }}>
+            <Menu size={24} />
+          </button>
+          <LogoMark size={24} />
+          <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: '0.1em', fontFamily: 'monospace' }}>K9</span>
+        </div>
+
+        <main style={{ flex: 1, overflowY: 'auto', padding: '24px' }}> 
+          <div style={{ maxWidth: 900, margin: '0 auto', width: '100%' }}> 
             {children} 
           </div> 
         </main> 
       </div> 
- 
-      <Settings open={settingsOpen} onOpenChange={setSettings} /> 
     </div> 
   ); 
 } 

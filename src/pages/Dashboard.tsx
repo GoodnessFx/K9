@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useK9DataEngine, K9Signal } from '../hooks/useK9DataEngine';
+import { useK9DataEngine, K9Signal, getSignalPlaybook } from '../hooks/useK9DataEngine';
+import { Button } from '../components/ui/button';
 import { 
   Send, 
   Filter,
@@ -38,6 +39,13 @@ export default function FeedPage() {
   const [minScore, setMinScore] = useState(65);
   const [showFilters, setShowFilters] = useState(false);
 
+  const stats = [
+    { label: 'Signals found', value: signals.length, sub: `+${signals.filter(s => s.isNew).length} new`, color: 'text-t1', icon: Zap },
+    { label: 'High Confidence', value: signals.filter(s => s.confidence >= 85).length, sub: null, color: 'text-t1', icon: Zap },
+    { label: 'Avg Confidence', value: signals.length ? Math.round(signals.reduce((acc, s) => acc + s.confidence, 0) / signals.length) : 0, sub: null, color: 'text-t1', icon: Zap },
+    { label: 'Critical Risks', value: signals.filter(s => s.risk === 'critical').length, sub: null, color: 'text-t1', icon: Zap },
+  ];
+
   const filteredSignals = useMemo(() => {
     let result = signals.filter(s => {
       if (activeFilter === 'all') return true;
@@ -57,9 +65,9 @@ export default function FeedPage() {
   }, [signals, activeFilter, searchQuery, minScore]);
 
   return (
-    <div className="space-y-12 pb-20 max-w-[1440px] mx-auto">
+    <div className="space-y-8 pb-16">
       {/* Page Header */}
-      <section id="dispatch-top" className="flex flex-col gap-2">
+      <section className="flex flex-col gap-2">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-3">
             <div className="p-1.5 rounded-lg bg-intel/10 border border-intel/20 flex items-center gap-2">
@@ -98,30 +106,23 @@ export default function FeedPage() {
 
       {/* Stat Cards Header */}
       <section className="stat-cards">
-        {[
-          { label: 'Signals found', value: signals.length, delta: `+${signals.filter(s => s.isNew).length} new`, color: 'text-t1', isAlert: false },
-          { label: 'High Confidence', value: signals.filter(s => s.confidence >= 85).length, delta: null, color: 'text-t1', isAlert: false },
-          { label: 'Avg Confidence', value: signals.length ? Math.round(signals.reduce((acc, s) => acc + s.confidence, 0) / signals.length) : 0, delta: null, color: 'text-t1', isAlert: false },
-          { label: 'Critical Risks', value: signals.filter(s => s.risk === 'critical').length, delta: null, color: 'text-t1', isAlert: true },
-        ].map((stat, i) => (
-          <div key={i} className="bg-bg-surface border border-line-1 p-5 rounded-lg space-y-3 relative overflow-hidden group">
-            <div className="flex flex-col gap-1 relative z-10">
-              <span className="text-[10px] font-mono font-medium uppercase tracking-widest text-t3 group-hover:text-intel transition-colors">{stat.label}</span>
+        {stats.map((stat, i) => (
+          <div key={i} className="bg-bg-surface border border-line-1 p-5 rounded-lg relative overflow-hidden group">
+            <div className="flex flex-col gap-1.5 relative z-10">
+              <span className="text-[10px] font-mono text-t3 uppercase tracking-widest">{stat.label}</span>
               <div className="flex items-baseline gap-2">
-                <span className={cn("text-3xl font-display font-bold tracking-tighter", stat.color)}>{stat.value}</span>
-                {stat.delta && <span className="text-[10px] font-mono text-safe uppercase">{stat.delta}</span>}
+                <span className={cn("text-2xl font-semibold", stat.color)}>{stat.value}</span>
+                <span className="text-[10px] text-t3">{stat.sub}</span>
               </div>
             </div>
-            {stat.isAlert && (
-              <div className="absolute right-0 top-0 h-full w-1 bg-critical shadow-[0_0_12px_rgba(240,58,95,0.4)]" />
-            )}
+            <stat.icon className={cn("absolute -right-2 -bottom-2 h-16 w-16 opacity-5 rotate-12 transition-transform duration-500 group-hover:rotate-0", stat.color)} />
           </div>
         ))}
       </section>
 
-      {/* Filter Bar & Feed Controls */}
-      <section className="space-y-6">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 border-b border-line-2 pb-6">
+      {/* Filters Section */}
+      <section className="space-y-4">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-b border-line-1 pb-5">
           <div className="filter-tabs w-full lg:w-auto">
             {FILTER_TABS.map((cat) => (
               <button
@@ -236,11 +237,10 @@ export default function FeedPage() {
               </div>
             </div>
           ) : (
-            filteredSignals.map((signal, i) => (
+            filteredSignals.map((signal) => (
               <SignalCard 
                 key={signal.id} 
                 signal={signal} 
-                index={i} 
               />
             ))
           )}
@@ -250,29 +250,14 @@ export default function FeedPage() {
   );
 }
 
-function SignalCard({ signal, index }: { signal: K9Signal, index: number }) {
+function SignalCard({ signal }: { signal: K9Signal }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [sendState, setSendState] = useState<'idle' | 'loading' | 'sent' | 'error'>('idle');
 
-  const [savedSignals, setSavedSignals] = useState<any[]>(() => {
-    const data = localStorage.getItem('saved_opportunities');
-    return data ? JSON.parse(data) : [];
+  const [savedSignals, setSavedSignals] = useState<K9Signal[]>(() => {
+    try { return JSON.parse(localStorage.getItem('saved_opportunities') ?? '[]'); }
+    catch { return []; }
   });
-
-  const getScoreColor = (score: number) => {
-    if (score >= 90) return 'text-purple-500';
-    if (score >= 80) return 'text-safe';
-    return 'text-medium';
-  };
-
-  const getStatusDot = (score: number, risk: string) => {
-    const r = risk?.toLowerCase() || 'medium';
-    if (score >= 90) return <div className="h-3 w-3 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]" title="Rare Insider Signal" />;
-    if (r === 'critical') return <div className="h-3 w-3 rounded-full bg-critical shadow-[0_0_8px_rgba(240,58,95,0.5)] animate-pulse" title="Urgent Crisis" />;
-    if (r === 'high') return <div className="h-3 w-3 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.5)]" title="Act Fast" />;
-    if (r === 'medium') return <div className="h-3 w-3 rounded-full bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.5)]" title="Watch Risk" />;
-    return <div className="h-3 w-3 rounded-full bg-safe shadow-[0_0_8px_rgba(0,191,114,0.5)]" title="Good Opportunity" />;
-  };
 
   const saveSignal = (signal: K9Signal) => {
     const isSaved = savedSignals.some(s => s.id === signal.id);
@@ -289,18 +274,67 @@ function SignalCard({ signal, index }: { signal: K9Signal, index: number }) {
     }
   };
 
-  const handleSendToPhone = async () => {
-    setSendState('loading');
-    try {
-      await api.broadcast(signal.id, ['whatsapp', 'telegram']);
-      setSendState('sent');
-      toast.success('Opportunity sent to your phone!');
-    } catch (e) {
-      setSendState('error');
-      toast.error('Failed to send. Connect keys in Settings.');
-    }
-    setTimeout(() => setSendState('idle'), 3000);
-  };
+  const handleSendToPhone = async () => { 
+    setSendState('loading'); 
+    const phone   = localStorage.getItem('k9_user_phone'); 
+    const channel = localStorage.getItem('k9_user_channel') ?? 'whatsapp'; 
+  
+    if (!phone) { 
+      setSendState('error'); 
+      toast.error('No phone connected', { description: 'Go to Settings → Alert Preferences to connect WhatsApp or Telegram' }); 
+      setTimeout(() => setSendState('idle'), 3000); 
+      return; 
+    } 
+  
+    const p = getSignalPlaybook(signal); 
+    const message = [ 
+      `🐕 K9 found something`, 
+      `────────────────────`, 
+      ``, 
+      signal.title.toUpperCase(), 
+      ``, 
+      p.whatHappened, 
+      ``, 
+      `CONFIDENCE: ${signal.confidence}/100`, 
+      signal.timeToAct ? `TIME TO ACT: ${signal.timeToAct}` : '', 
+      ``, 
+      `WHAT YOU CAN DO`, 
+      ...p.steps.map((s, i) => `${i + 1}. ${s}`), 
+      ``, 
+      `RISK: ${p.risk}`, 
+      signal.actionUrl ? `\n→ ${signal.actionUrl}` : '', 
+      ``, 
+      `────────────────────`, 
+      `K9 · Find it first`, 
+    ].filter(Boolean).join('\n'); 
+  
+    try { 
+      const apiBase = import.meta.env.VITE_API_URL; 
+      if (apiBase) { 
+        const res = await fetch(`${apiBase}/api/notify`, { 
+          method: 'POST', 
+          headers: { 'Content-Type': 'application/json' }, 
+          body: JSON.stringify({ phone, channel, message, signalId: signal.id }), 
+        }); 
+        if (res.ok) { 
+          setSendState('sent'); 
+          toast.success(`Sent to your ${channel === 'whatsapp' ? 'WhatsApp' : 'Telegram'}!`); 
+          setTimeout(() => setSendState('idle'), 4000); 
+          return; 
+        } 
+      } 
+      await navigator.clipboard.writeText(message); 
+      setSendState('sent'); 
+      toast.success('Copied to clipboard', { 
+        description: `Paste into ${channel === 'whatsapp' ? 'WhatsApp' : 'Telegram'}. Add VITE_API_URL to automate delivery.`, 
+        duration: 6000, 
+      }); 
+    } catch { 
+      setSendState('error'); 
+      toast.error('Failed'); 
+    } 
+    setTimeout(() => setSendState('idle'), 4000); 
+  }; 
 
   const getTimeAgo = (date: Date) => {
     const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
@@ -311,86 +345,109 @@ function SignalCard({ signal, index }: { signal: K9Signal, index: number }) {
   };
 
   return (
-    <motion.div
+    <motion.div 
       layout
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-      className={cn(
-        "glass-card rounded-lg overflow-hidden flex flex-col h-fit group/card border border-line-1",
-        signal.risk === 'critical' && "border-critical/40 border-l-[3px] border-l-critical",
-        signal.isNew && "ring-1 ring-intel/30"
-      )}
+      className="rounded-xl overflow-hidden flex flex-col h-fit border border-line-1 bg-bg-surface"
     >
-      <div className="p-6 space-y-5 relative z-10">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {getStatusDot(signal.confidence, signal.risk)}
-            <div className="flex items-baseline gap-1">
-              <span className="text-[10px] font-mono text-t3 uppercase tracking-[0.08em]">Confidence</span>
-              <span className={cn("text-xl font-display font-semibold tracking-[-0.02em]", getScoreColor(signal.confidence))}>
-                {signal.confidence}/100
-              </span>
+      {/* Confidence Header */}
+      <div className="px-5 py-2.5 border-b border-line-1 flex items-center justify-between bg-bg-elevated/50">
+        <div className="flex items-center gap-2">
+          <div className={cn("w-1.5 h-1.5 rounded-full animate-pulse", signal.confidence >= 85 ? "bg-safe" : "bg-intel")} />
+          <span className="text-[10px] font-mono text-t3 uppercase tracking-widest">{signal.confidence}% Confidence</span>
+        </div>
+        <div className="flex items-center gap-2">
+          {signal.isNew && (
+            <div className="px-1.5 py-0.5 rounded bg-safe/10 border border-safe/20">
+              <span className="text-[9px] font-mono font-medium text-safe uppercase tracking-tighter">NEW</span>
+            </div>
+          )}
+          <span className="text-[10px] font-mono text-t3 uppercase">{signal.source}</span>
+        </div>
+      </div>
+
+      <div className="p-5 space-y-4">
+        {/* Main Content */}
+        <div className="space-y-2">
+          <div className="flex items-start justify-between gap-4">
+            <h3 className="text-[15px] font-medium text-t1 leading-snug">
+              {signal.title}
+            </h3>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => saveSignal(signal)}
+                className={cn(
+                  "p-1.5 rounded-md border transition-all",
+                  savedSignals.some(s => s.id === signal.id) 
+                    ? "bg-intel/20 border-intel/40 text-intel" 
+                    : "border-line-1 text-t3 hover:text-t1 hover:border-line-2"
+                )}
+              >
+                <Bookmark className={cn("h-3.5 w-3.5", savedSignals.some(s => s.id === signal.id) && "fill-current")} />
+              </button>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button 
-              onClick={() => saveSignal(signal)}
-              className={cn(
-                "p-1.5 rounded-md border transition-all",
-                savedSignals.some(s => s.id === signal.id) 
-                  ? "bg-intel/20 border-intel/40 text-intel" 
-                  : "border-line-1 text-t3 hover:text-t1 hover:border-line-2"
-              )}
-            >
-              <Bookmark className={cn("h-3.5 w-3.5", savedSignals.some(s => s.id === signal.id) && "fill-current")} />
-            </button>
-            <span className="text-[11px] font-mono text-t3 uppercase">
-              {getTimeAgo(signal.timestamp)}
+            <span className="text-[10px] font-sans font-medium uppercase tracking-[0.04em]" style={{ color: getCategoryColor(signal.category) }}>
+              {getCategoryLabel(signal.category)}
             </span>
+            <span className="h-1 w-1 rounded-full bg-line-2" />
+            <span className="text-[10px] font-mono text-t3 uppercase">{getTimeAgo(signal.timestamp)}</span>
           </div>
+          <p className="text-[13px] text-t2 leading-relaxed line-clamp-2">
+            {signal.summary}
+          </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] font-sans font-medium uppercase tracking-[0.04em]" style={{ color: getCategoryColor(signal.category) }}>
-            {getCategoryLabel(signal.category)}
-          </span>
-          <span className="h-1 w-1 rounded-full bg-line-2" />
-          <span className="text-[10px] font-mono text-t3 uppercase">{signal.source}</span>
-        </div>
-
-        <h3 className="text-[18px] font-sans font-medium text-t1 leading-tight normal-case tracking-normal">
-          {signal.title}
-        </h3>
-
-        <p className="text-[14px] font-sans text-t2 leading-relaxed line-clamp-2">
-          {signal.summary}
-        </p>
-
-        <AnimatePresence>
-          {isExpanded && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden"
-            >
-              <div className="bg-bg-inset border-l-2 border-intel p-4 rounded-r-lg mt-4">
-                <span className="text-[10px] font-mono font-medium uppercase tracking-[0.08em] text-t3 mb-2 block">Opportunity Insight</span>
-                <p className="text-[13px] font-sans italic text-t2 leading-relaxed">
-                  {signal.timeToAct ? `⏰ ${signal.timeToAct}` : 'Action required soon.'}
-                </p>
-                <div className="flex flex-wrap gap-2 mt-4">
-                  {signal.tags.map(tag => (
-                    <span key={tag} className="text-[9px] font-mono bg-bg-elevated text-t3 px-2 py-0.5 rounded-full border border-line-1">
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <AnimatePresence> 
+          {isExpanded && ( 
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} 
+              exit={{ opacity: 0, height: 0 }} className="overflow-hidden" 
+            > 
+              {(() => { 
+                const p = getSignalPlaybook(signal); 
+                return ( 
+                  <div className="mt-4 bg-bg-base border border-line-1 rounded-lg p-4 space-y-4"> 
+                    <div> 
+                      <p className="text-[10px] font-mono text-t3 uppercase tracking-[0.08em] mb-1.5">What this means</p> 
+                      <p className="text-[13px] text-t2 leading-relaxed">{p.whatHappened}</p> 
+                    </div> 
+                    <div> 
+                      <p className="text-[10px] font-mono text-t3 uppercase tracking-[0.08em] mb-2">What you can do</p> 
+                      <div className="space-y-2"> 
+                        {p.steps.map((step, i) => ( 
+                          <div key={i} className="flex gap-2.5 items-start"> 
+                            <div className="w-[18px] h-[18px] rounded-full bg-bg-elevated border border-line-1 flex items-center justify-center text-[9px] font-mono text-t3 flex-shrink-0 mt-0.5">{i + 1}</div> 
+                            <p className="text-[13px] text-t1 leading-relaxed m-0">{step}</p> 
+                          </div> 
+                        ))} 
+                      </div> 
+                    </div> 
+                    <div className="grid grid-cols-2 gap-2"> 
+                      <div className="bg-bg-surface border border-line-1 rounded-lg p-3"> 
+                        <p className="text-[9px] font-mono text-t3 uppercase tracking-[0.08em] mb-1">Risk</p> 
+                        <p className="text-[12px] text-t2 leading-relaxed">{p.risk}</p> 
+                      </div> 
+                      <div className="bg-bg-surface border border-line-1 rounded-lg p-3"> 
+                        <p className="text-[9px] font-mono text-t3 uppercase tracking-[0.08em] mb-1">How early</p> 
+                        <p className="text-[12px] text-t2 leading-relaxed">{p.timing}</p> 
+                      </div> 
+                    </div> 
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      {signal.tags.map(tag => (
+                        <span key={tag} className="text-[9px] font-mono bg-bg-elevated text-t3 px-2 py-0.5 rounded-full border border-line-1">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div> 
+                ); 
+              })()} 
+            </motion.div> 
+          )} 
+        </AnimatePresence> 
 
         <div className="flex items-center gap-3 pt-4 border-t border-line-1">
           <button 
@@ -429,6 +486,4 @@ function SignalCard({ signal, index }: { signal: K9Signal, index: number }) {
   );
 }
 
-// Utility to fix missing imports/vars in Dashboard
-import { Button } from '../components/ui/button';
-import { api } from '../api';
+

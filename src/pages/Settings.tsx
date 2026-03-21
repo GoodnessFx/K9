@@ -15,7 +15,6 @@ import {
   Send,
   MessageSquare,
   ExternalLink,
-  Settings as SettingsIcon,
   Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -120,17 +119,17 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div className="space-y-12 pb-20 max-w-5xl mx-auto px-4 sm:px-6">
+    <div className="space-y-6 pb-16">
       {/* Page Header */}
-      <section className="flex flex-col gap-2">
-        <div className="flex items-center gap-3">
-          <div className="p-1.5 rounded-lg bg-border-active/10 border border-border-active/20">
-            <SettingsIcon className="h-5 w-5 text-border-active" />
-          </div>
-          <span className="text-[10px] font-mono font-medium uppercase tracking-widest text-text-2">System Config</span>
-        </div>
-        <h2 className="text-4xl font-display font-semibold tracking-tight text-text-1 uppercase">Settings</h2>
-        <p className="text-text-2 max-w-xl text-sm leading-relaxed">
+      <section className="flex flex-col gap-2"> 
+        <div className="flex items-center gap-3"> 
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-intel/10 border border-intel/20 rounded"> 
+            <div className="w-1.5 h-1.5 rounded-full bg-safe" /> 
+            <span className="text-[10px] font-mono text-intel tracking-[0.1em] uppercase">Configuration</span> 
+          </div> 
+        </div> 
+        <h2 className="text-[28px] font-bold tracking-tight text-t1">Settings</h2> 
+        <p className="text-t2 max-w-xl text-sm leading-relaxed">
           Manage your profile, security keys, and alert delivery preferences to ensure you never miss an opportunity.
         </p>
       </section>
@@ -143,10 +142,10 @@ export default function SettingsPage() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "flex items-center justify-between p-4 rounded-lg font-sans font-medium text-sm transition-all border",
+                "flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors border",
                 activeTab === tab.id 
-                  ? "bg-bg-elevated text-text-1 border-border-mid shadow-sm" 
-                  : "text-text-2 border-transparent hover:text-text-1 hover:bg-bg-subtle"
+                  ? "bg-bg-elevated text-t1 border-line-1" 
+                  : "text-t2 border-transparent hover:text-t1 hover:bg-bg-elevated"
               )}
              >
                <div className="flex items-center gap-3">
@@ -155,14 +154,14 @@ export default function SettingsPage() {
                </div>
                <ChevronRight className={cn(
                  "h-4 w-4 transition-transform",
-                 activeTab === tab.id ? "text-text-1 translate-x-0.5" : "text-text-3 opacity-50"
+                 activeTab === tab.id ? "text-t1 translate-x-0.5" : "text-t3 opacity-50"
                )} />
              </button>
            ))}
 
            <button 
             onClick={handleLogout}
-            className="flex items-center gap-3 p-4 rounded-lg font-sans font-medium text-sm text-s-critical hover:bg-s-critical/10 transition-all mt-10"
+            className="flex items-center gap-3 p-4 rounded-lg font-sans font-medium text-sm text-critical hover:bg-critical/10 transition-all mt-10"
            >
              <LogOut className="h-4 w-4" />
              Terminate Session
@@ -184,43 +183,43 @@ export default function SettingsPage() {
 
 function ProfileTab({ settings, setSettings, onSave }: any) {
   return (
-    <Card className="p-8 space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <div className="flex items-center gap-3 border-b border-border-dim pb-6">
-        <User className="h-6 w-6 text-text-1" />
-        <h3 className="text-xl font-sans font-medium text-text-1">My Profile</h3>
+    <Card className="p-6 space-y-6">
+      <div className="flex items-center gap-2 border-b border-line-1 pb-4 mb-2">
+        <User className="h-6 w-6 text-t1" />
+        <h3 className="text-xl font-sans font-medium text-t1">My Profile</h3>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-         <div className="flex flex-col items-center justify-center p-6 bg-bg-surface border border-dashed border-border-dim rounded-xl">
-            <div className="h-24 w-24 rounded-full bg-bg-elevated border-2 border-border-mid flex items-center justify-center mb-4 relative group cursor-pointer overflow-hidden">
+         <div className="flex flex-col items-center justify-center p-6 bg-bg-surface border border-dashed border-line-1 rounded-xl">
+            <div className="h-24 w-24 rounded-full bg-bg-elevated border-2 border-line-2 flex items-center justify-center mb-4 relative group cursor-pointer overflow-hidden">
                <img src={settings.avatarUrl || "https://api.dicebear.com/7.x/avataaars/svg?seed=k9"} alt="Avatar" className="w-full h-full" />
                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <span className="text-[10px] font-mono font-medium uppercase tracking-widest text-white">Change</span>
                </div>
             </div>
-            <span className="text-[10px] font-mono text-text-3 uppercase tracking-widest">Master ID: K9-001</span>
+            <span className="text-[10px] font-mono text-t3 uppercase tracking-widest">Master ID: K9-001</span>
          </div>
 
          <div className="space-y-6">
             <div className="space-y-2">
-               <label className="text-[10px] font-mono font-medium uppercase tracking-widest text-text-3">Username</label>
+               <label className="text-[10px] font-mono font-medium uppercase tracking-widest text-t3">Username</label>
                <input 
                 value={settings.username} 
                 onChange={e => setSettings({...settings, username: e.target.value})}
                 placeholder="K9_USER"
-                className="w-full bg-bg-surface border border-border-dim rounded px-4 py-2.5 text-sm font-sans focus:border-border-active outline-none transition-colors" 
+                className="w-full bg-bg-surface border border-line-1 rounded px-4 py-2.5 text-sm font-sans focus:border-line-3 outline-none transition-colors" 
                />
             </div>
             <div className="space-y-2">
-               <label className="text-[10px] font-mono font-medium uppercase tracking-widest text-text-3">Email Address</label>
+               <label className="text-[10px] font-mono font-medium uppercase tracking-widest text-t3">Email Address</label>
                <input 
                 value={settings.email} 
                 onChange={e => setSettings({...settings, email: e.target.value})}
                 placeholder="user@k9.app"
-                className="w-full bg-bg-surface border border-border-dim rounded px-4 py-2.5 text-sm font-sans focus:border-border-active outline-none transition-colors" 
+                className="w-full bg-bg-surface border border-line-1 rounded px-4 py-2.5 text-sm font-sans focus:border-line-3 outline-none transition-colors" 
                />
             </div>
-            <button onClick={onSave} className="w-full py-2.5 bg-border-active text-text-4 rounded font-sans font-medium text-sm hover:opacity-90 transition-opacity">Update Profile</button>
+            <button onClick={onSave} className="w-full py-2.5 bg-intel text-white rounded font-sans font-medium text-sm hover:opacity-90 transition-opacity">Update Profile</button>
          </div>
       </div>
     </Card>
@@ -229,13 +228,13 @@ function ProfileTab({ settings, setSettings, onSave }: any) {
 
 function NotificationsTab({ status, onRefresh }: { status: any, onRefresh: () => void }) {
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <Card className="p-8 space-y-8">
-        <div className="flex items-center gap-3 border-b border-border-dim pb-6">
-          <Bell className="h-6 w-6 text-text-1" />
-          <h3 className="text-xl font-sans font-medium text-text-1 uppercase">Alert Preferences</h3>
+    <div className="space-y-6">
+      <Card className="p-6 space-y-6">
+        <div className="flex items-center gap-2 border-b border-line-1 pb-4 mb-2">
+          <Bell className="h-6 w-6 text-t1" />
+          <h3 className="text-xl font-sans font-medium text-t1 uppercase">Alert Preferences</h3>
         </div>
-        <p className="text-sm text-text-2 font-sans">Connect WhatsApp or Telegram to receive opportunities the moment K9 finds them.</p>
+        <p className="text-sm text-t2 font-sans">Connect WhatsApp or Telegram to receive opportunities the moment K9 finds them.</p>
 
         <div className="space-y-6">
           <WhatsAppCard status={status?.whatsapp} onRefresh={onRefresh} />
@@ -432,10 +431,10 @@ function TelegramCard({ status, onRefresh }: { status: any, onRefresh: () => voi
 
 function SecurityTab({ showApiKey, setShowApiKey, apiKey }: any) {
   return (
-    <Card className="p-8 space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <div className="flex items-center gap-3 border-b border-border-dim pb-6">
-        <Key className="h-6 w-6 text-text-1" />
-        <h3 className="text-xl font-sans font-medium text-text-1 uppercase">Security Keys</h3>
+    <Card className="p-6 space-y-6">
+      <div className="flex items-center gap-2 border-b border-line-1 pb-4 mb-2">
+        <Shield className="h-6 w-6 text-t1" />
+        <h3 className="text-xl font-sans font-medium text-t1 uppercase">Security</h3>
       </div>
 
       <div className="space-y-6">
@@ -548,11 +547,13 @@ function PreviewTab() {
 
 function BillingTab() {
   return (
-    <Card className="p-8 bg-gradient-to-br from-border-active/10 via-border-active/5 to-transparent border-border-active/20 relative overflow-hidden group animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <div className="absolute -right-4 -top-4 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
-        <Zap className="h-32 w-32 text-border-active" />
+    <Card className="p-6 space-y-6">
+      <div className="flex items-center gap-2 border-b border-line-1 pb-4 mb-2">
+        <CreditCard className="h-6 w-6 text-t1" />
+        <h3 className="text-xl font-sans font-medium text-t1 uppercase">Billing</h3>
       </div>
-      <div className="relative z-10 space-y-6">
+
+      <div className="space-y-6">
         <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-border-active text-text-4">
               <Zap className="h-5 w-5 fill-text-4" />

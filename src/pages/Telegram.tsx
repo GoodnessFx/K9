@@ -113,7 +113,7 @@ export default function TelegramPage() {
   };
 
   return (
-    <div className="space-y-12 pb-20 max-w-7xl mx-auto">
+    <div className="space-y-6 pb-16">
       {/* Page Header */}
       <section className="flex flex-col gap-2">
         <div className="flex items-center gap-3">
@@ -246,7 +246,7 @@ export default function TelegramPage() {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
           <div className="xl:col-span-2 space-y-10">
              {/* Alert Rules Panel */}
-             <div className="bg-bg-surface border border-line-1 rounded-xl p-8 space-y-10 ai-glow">
+             <div className="bg-bg-surface border border-line-1 rounded-xl p-6 space-y-6">
                 <div className="flex items-center justify-between border-b border-line-1 pb-6">
                    <div className="flex items-center gap-3">
                       <Settings2 className="h-6 w-6 text-text-1" />
