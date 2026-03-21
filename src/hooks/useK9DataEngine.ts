@@ -39,6 +39,7 @@ const DEXSCREENER = 'https://api.dexscreener.com/latest';
  
 // DefiLlama — free, no key needed 
 const DEFILLAMA = 'https://api.llama.fi'; 
+const DEFILLAMA_YIELDS = 'https://yields.llama.fi'; 
  
 // Polymarket — free, no key needed 
 const POLYMARKET_GAMMA = 'https://gamma-api.polymarket.com'; 
@@ -49,21 +50,27 @@ const HN_API = 'https://hn.algolia.com/api/v1';
 // RSS to JSON proxy — multiple nodes for redundancy
 const RSS_PROXIES = [
   'https://api.rss2json.com/v1/api.json?rss_url=',
-  'https://api.allorigins.win/get?url=', // Needs custom parsing if used
+  'https://api.allorigins.win/get?url=', 
 ];
 
 // CORS Proxies for direct API calls
 const CORS_PROXIES = [
-  'https://corsproxy.io/?',
   'https://api.allorigins.win/raw?url=',
+  'https://corsproxy.io/?',
+  'https://thingproxy.freeboard.io/fetch/',
+  'https://proxy.cors.sh/', // Might need a key but often has free tier
 ];
 
 async function fetchWithProxy(url: string, ms = 10000): Promise<Response> {
-  // Try direct first (some APIs might work or have updated CORS)
-  try {
-    const res = await fetchWithTimeout(url, ms);
-    if (res.ok) return res;
-  } catch (e) { /* ignore and try proxy */ }
+  // Try direct first ONLY if it's not a known CORS-blocked site
+  const isCORSBlocked = /nitter|linkedin|reddit|twitter|rekt|cointelegraph|decrypt|thedefiant|polymarket/i.test(url);
+  
+  if (!isCORSBlocked) {
+    try {
+      const res = await fetchWithTimeout(url, ms);
+      if (res.ok) return res;
+    } catch (e) { /* ignore and try proxy */ }
+  }
 
   // Try proxies
   for (const proxy of CORS_PROXIES) {
@@ -80,29 +87,34 @@ async function fetchWithProxy(url: string, ms = 10000): Promise<Response> {
 async function fetchRSS(rssUrl: string): Promise<any> {
   // Try rss2json first
   try {
-    const res = await fetchWithTimeout(`${RSS_PROXIES[0]}${encodeURIComponent(rssUrl)}&count=10`, 8000);
+    const res = await fetchWithTimeout(`${RSS_PROXIES[0]}${encodeURIComponent(rssUrl)}&count=15`, 8000);
     if (res.ok) {
       const data = await res.json();
       if (data.status === 'ok') return data.items;
     }
   } catch (e) { /* fallback */ }
 
-  // Fallback: Fetch raw XML via CORS proxy and let browser parse it (simplified for now)
+  // Fallback: Fetch raw XML via CORS proxy and parse
   try {
     const res = await fetchWithProxy(rssUrl);
     const xml = await res.text();
     const parser = new DOMParser();
-    const doc = parser.parseFromString(xml, 'text/xml');
-    const items = Array.from(doc.querySelectorAll('item, entry')).map(el => ({
-      title: el.querySelector('title')?.textContent,
-      link: el.querySelector('link')?.textContent || el.querySelector('link')?.getAttribute('href'),
-      description: el.querySelector('description, summary')?.textContent,
-      pubDate: el.querySelector('pubDate, published, updated')?.textContent,
-      guid: el.querySelector('guid, id')?.textContent,
-    }));
+    const doc = parser.parseFromString(xml, 'application/xml');
+    
+    // Support both RSS and Atom
+    const items = Array.from(doc.querySelectorAll('item, entry')).map(el => {
+      const title = el.querySelector('title')?.textContent || '';
+      const link = el.querySelector('link')?.textContent || el.querySelector('link')?.getAttribute('href') || '';
+      const description = el.querySelector('description, summary, content')?.textContent || '';
+      const pubDate = el.querySelector('pubDate, published, updated')?.textContent || '';
+      const guid = el.querySelector('guid, id')?.textContent || link;
+      
+      return { title, link, description, pubDate, guid };
+    });
+    
     return items;
   } catch (e) {
-    console.error(`RSS fetch failed for ${rssUrl}`, e);
+    // Silent fail to avoid console clutter
     return [];
   }
 }
@@ -258,7 +270,7 @@ async function scanDefiLlama(): Promise<K9Signal[]> {
     } 
  
     // High yield opportunities 
-    const yieldRes = await fetchWithProxy(`${DEFILLAMA}/pools`); 
+    const yieldRes = await fetchWithProxy(`${DEFILLAMA_YIELDS}/pools`); 
     const yieldData = await yieldRes.json(); 
     const hotPools = (yieldData.data ?? []) 
       .filter((p: any) => p.apy > 40 && p.tvlUsd > 500_000 && !p.stablecoin) 
