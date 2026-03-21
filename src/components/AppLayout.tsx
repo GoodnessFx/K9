@@ -164,7 +164,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div 
         onMouseEnter={() => !pinned && setExpanded(true)}
         onMouseLeave={() => !pinned && setExpanded(false)}
-        className="hidden md:block"
+        className="k9-sidebar-desktop"
       >
         <Sidebar />
       </div>
@@ -191,8 +191,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
  
       {/* Main Content */} 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}> 
-        {/* Mobile Header */}
-        <div className="md:hidden" style={{ 
+        {/* Mobile Header — only visible on mobile */}
+        <div className="k9-mobile-topbar" style={{ 
           height: 56, background: '#171717', borderBottom: '1px solid rgba(255,255,255,0.08)',
           display: 'flex', alignItems: 'center', padding: '0 16px', gap: 16
         }}>

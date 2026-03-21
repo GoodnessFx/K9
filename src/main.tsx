@@ -21,3 +21,14 @@ createRoot(document.getElementById("root")!).render(
     </BrowserRouter>
   </QueryClientProvider>
 );
+
+// Force splash screen to last 3 seconds
+setTimeout(() => {
+  const splash = document.getElementById('splash-screen');
+  if (splash) {
+    splash.style.opacity = '0';
+    setTimeout(() => {
+      splash.remove();
+    }, 500); // Wait for transition
+  }
+}, 3000);

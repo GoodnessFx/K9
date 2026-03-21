@@ -217,3 +217,12 @@ html, body, #root {
  
 /* ── Table overflow on mobile ────────────────────────────── */ 
 table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; } 
+
+/* ── Topbar: mobile only, sidebar: desktop only ───────── */ 
+.k9-mobile-topbar { display: none !important; } 
+.k9-sidebar-desktop { display: block !important; } 
+ 
+@media (max-width: 767px) { 
+  .k9-mobile-topbar { display: flex !important; } 
+  .k9-sidebar-desktop { display: none !important; } 
+} 

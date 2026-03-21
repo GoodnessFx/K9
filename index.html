@@ -3,90 +3,151 @@
    <head> 
      <meta charset="UTF-8" /> 
      <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0" /> 
-     <meta name="description" content="K9 — The intelligence layer between you and your next life-changing opportunity. Real-time signals. Plain English. Straight to your phone." /> 
+     <meta name="description" content="K9 sniffs out money-making opportunities and sends them to your phone before anyone else finds them." /> 
      <meta name="theme-color" content="#1a1a1a" /> 
      <meta name="mobile-web-app-capable" content="yes" /> 
      <meta name="apple-mobile-web-app-capable" content="yes" /> 
      <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" /> 
      <meta name="apple-mobile-web-app-title" content="K9" /> 
      <meta property="og:title" content="K9 — Find it before anyone else" /> 
-     <meta property="og:description" content="The intelligence layer between you and your next life-changing opportunity." /> 
+     <meta property="og:description" content="Free airdrops, insider signals, crypto jobs, prediction markets. Delivered to your WhatsApp." /> 
      <meta property="og:type" content="website" /> 
-     <meta property="og:url" content="https://k9.app/" /> 
-     <meta name="twitter:card" content="summary_large_image" /> 
-     <meta name="twitter:title" content="K9 — Find it before anyone else" /> 
      <title>K9 — Find it before anyone else</title> 
  
      <style> 
        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; } 
  
-       body { 
+       /* Load Inter + Syne — same fonts the app uses */ 
+       @font-face { 
+         font-family: 'Inter'; 
+         src: url('https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7.woff2') format('woff2'); 
+         font-weight: 400; 
+         font-display: swap; 
+       } 
+       @font-face { 
+         font-family: 'Inter'; 
+         src: url('https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1pL7.woff2') format('woff2'); 
+         font-weight: 500; 
+         font-display: swap; 
+       } 
+       @font-face { 
+         font-family: 'Syne'; 
+         src: url('https://fonts.gstatic.com/s/syne/v22/8vIJ7w0mEglA7m7rgP_K7A.woff2') format('woff2'); 
+         font-weight: 600; 
+         font-display: swap; 
+       } 
+       @font-face { 
+         font-family: 'Syne'; 
+         src: url('https://fonts.gstatic.com/s/syne/v22/8vIN7w0mEglAjR33oigU8Q.woff2') format('woff2'); 
+         font-weight: 700; 
+         font-display: swap; 
+       } 
+       @font-face { 
+         font-family: 'Syne'; 
+         src: url('https://fonts.gstatic.com/s/syne/v22/8vIN7w0mEglAjR33oCwU8Q.woff2') format('woff2'); 
+         font-weight: 800; 
+         font-display: swap; 
+       } 
+ 
+       html, body { 
+         height: 100%; 
          background: #1a1a1a; 
          color: #ececec; 
-         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif; 
-         overflow-x: hidden; 
+         -webkit-font-smoothing: antialiased; 
+         -moz-osx-font-smoothing: grayscale; 
+         overflow: hidden; 
        } 
  
        #root { min-height: 100vh; } 
  
-       .k9-splash { 
+       /* ── Splash ─────────────────────────────────────────── */ 
+       .splash { 
+         position: fixed; 
+         inset: 0; 
          display: flex; 
          flex-direction: column; 
          align-items: center; 
          justify-content: center; 
-         height: 100vh; 
-         gap: 0; 
          background: #1a1a1a; 
+         gap: 0; 
+         z-index: 9999; 
+         transition: opacity 0.5s ease-out; 
        } 
  
-       .k9-splash-wordmark { 
-         font-size: clamp(72px, 15vw, 120px); 
+       /* K9 — Syne, the same display font Claude uses */ 
+       .splash-name { 
+         font-family: 'Syne', -apple-system, BlinkMacSystemFont, sans-serif; 
          font-weight: 800; 
-         letter-spacing: -0.04em; 
+         font-size: clamp(96px, 18vw, 160px); 
+         letter-spacing: -0.05em; 
          color: #ececec; 
-         line-height: 1; 
-         margin-bottom: 16px; 
-         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+         line-height: 0.9; 
+         margin-bottom: 20px; 
+         /* Subtle gradient so it has depth, not flat */ 
+         background: linear-gradient(160deg, #ffffff 0%, #ececec 40%, #8a8a8a 100%); 
+         -webkit-background-clip: text; 
+         -webkit-text-fill-color: transparent; 
+         background-clip: text; 
        } 
  
-       .k9-splash-tagline { 
-         font-size: clamp(13px, 2.5vw, 15px); 
-         color: #555; 
-         letter-spacing: 0.02em; 
-         margin-bottom: 28px; 
+       /* Tagline — Inter, regular weight */ 
+       .splash-tagline { 
+         font-family: 'Inter', -apple-system, sans-serif; 
+         font-weight: 400; 
+         font-size: clamp(13px, 2vw, 15px); 
+         color: #484848; 
+         letter-spacing: 0.01em; 
+         margin-bottom: 36px; 
          text-align: center; 
-         padding: 0 24px; 
+         padding: 0 32px; 
        } 
  
-       .k9-loader { 
-         width: 32px; 
-         height: 2px; 
-         background: rgba(255,255,255,0.08); 
-         border-radius: 2px; 
-         overflow: hidden; 
+       /* Three pulsing dots */ 
+       .splash-dots { 
+         display: flex; 
+         align-items: center; 
+         gap: 7px; 
        } 
  
-       .k9-loader-bar { 
-         height: 100%; 
-         width: 45%; 
+       .splash-dot { 
+         width: 4px; 
+         height: 4px; 
+         border-radius: 50%; 
          background: #5b8cf5; 
-         border-radius: 2px; 
-         animation: k9load 1.4s ease-in-out infinite; 
+         animation: pulse 1.4s ease-in-out infinite; 
        } 
  
-       @keyframes k9load { 
-         0%   { transform: translateX(-100%); } 
-         100% { transform: translateX(320%); } 
+       .splash-dot:nth-child(1) { animation-delay: 0s; } 
+       .splash-dot:nth-child(2) { animation-delay: 0.18s; } 
+       .splash-dot:nth-child(3) { animation-delay: 0.36s; } 
+ 
+       @keyframes pulse { 
+         0%, 100% { opacity: 0.2; transform: scale(0.8); } 
+         50%       { opacity: 1;   transform: scale(1.3); } 
+       } 
+ 
+       /* Mono caption below dots */ 
+       .splash-caption { 
+         font-family: 'SFMono-Regular', Consolas, 'DM Mono', monospace; 
+         font-size: 10px; 
+         color: #333; 
+         letter-spacing: 0.14em; 
+         text-transform: uppercase; 
+         margin-top: 12px; 
        } 
      </style> 
    </head> 
    <body> 
-     <div id="root"> 
-       <div class="k9-splash"> 
-         <div class="k9-splash-wordmark">K9</div> 
-         <div class="k9-splash-tagline">The intelligence layer between you and your next opportunity</div> 
-         <div class="k9-loader"><div class="k9-loader-bar"></div></div> 
+     <div id="root"></div> 
+     <div id="splash-screen" class="splash"> 
+       <div class="splash-name">K9</div> 
+       <div class="splash-tagline">Sniffing out opportunities</div> 
+       <div class="splash-dots"> 
+         <div class="splash-dot"></div> 
+         <div class="splash-dot"></div> 
+         <div class="splash-dot"></div> 
        </div> 
+       <div class="splash-caption">scanning 14+ sources</div> 
      </div> 
      <script type="module" src="/src/main.tsx"></script> 
    </body> 
