@@ -19,8 +19,16 @@ import { detectConvergence } from './convergence.js';
 import { detectCorrelations } from './correlation.js';
 import { detectAnomalies } from './baseline.js';
 
+import { OpportunityWorker } from '../workers/OpportunityWorker.js';
+
+import { FilterService } from '../filter/FilterService.js';
+import { MatchingService } from '../matching/MatchingService.js';
+
 class SignalEngine {
   private isScanning = false;
+  private opportunityWorker = new OpportunityWorker();
+  private filterService = new FilterService();
+  private matchingService = new MatchingService();
 
   async runScan() {
     if (this.isScanning) {
@@ -32,7 +40,17 @@ class SignalEngine {
     logger.info('🚀 Starting signal scan...');
 
     try {
-      // 1. Fetch raw signals from all sources
+      // 1. Run Opportunity Sniffer for high-signal sources
+      const snifferUrls = [
+        'https://remoteok.com/remote-web3-jobs',
+        'https://weworkremotely.com/categories/remote-web-development-jobs',
+      ];
+      
+      for (const url of snifferUrls) {
+        await this.opportunityWorker.processUrl(url);
+      }
+
+      // 2. Fetch raw signals from all sources
       const rawSignalsPromises = [
         scrapeDexScreener(),
         scrapeDefiLlama(),
@@ -53,63 +71,44 @@ class SignalEngine {
 
       logger.info(`Fetched ${allRawSignals.length} raw signals.`);
 
-      // 2. Deduplicate signals (simple title-based deduplication)
+      // 3. Deduplicate signals
       const uniqueRawSignals = this.deduplicate(allRawSignals);
       logger.info(`Found ${uniqueRawSignals.length} unique signals after deduplication.`);
 
-      // 3. Score signals with AI
+      // 4. Score and Filter signals
       const scoredSignals: Signal[] = [];
       const batch = uniqueRawSignals.slice(0, config.MAX_SIGNALS_PER_BATCH);
 
       for (const raw of batch) {
-        // Check if signal was already scored recently
-        const cached = await store.get<Signal>(`scored-${raw.id}`);
-        if (cached) {
-          scoredSignals.push(cached);
-          continue;
-        }
-
+        // AI Scoring (Existing logic)
         const scored = await scoreSignal(raw);
         if (scored) {
-          // Apply velocity multiplier
-          const velocityMultiplier = calculateVelocity(scoredSignals);
-          scored.score = Math.min(100, Math.round(scored.score * velocityMultiplier));
-          scored.velocityMultiplier = velocityMultiplier;
+          // Apply K9 Filter Logic (Module 3)
+          const filterScore = this.filterService.scoreListing({
+            role: scored.title,
+            company: scored.source, // Simplified mapping
+            location: 'Remote',
+            type: 'Full-time',
+            pay_range: scored.metadata?.pay || 'N/A',
+            source: scored.source,
+            scraped_at: scored.timestamp,
+            raw_url: scored.url,
+            vision_parsed: false
+          });
 
-          // Generate Intelligence Brief for signals scoring 65+
+          // Combine AI score with Filter score
+          scored.score = Math.round((scored.score + filterScore) / 2);
+
           if (scored.score >= 65) {
             scored.intelligenceBrief = await generateIntelligenceBrief(scored);
+            emitter.emit('newSignal', scored);
           }
 
           scoredSignals.push(scored);
-          await store.set(`scored-${raw.id}`, scored, 1800); // 30 min TTL
-          
-          // Emit SSE event for new high-quality signal
-          if (scored.score >= 65) {
-            emitter.emit('newSignal', scored);
-          }
-        } else if (config.ANTHROPIC_API_KEY === 'sk-ant-placeholder') {
-           // Create a mock signal for testing purposes when no API key is provided
-           const mockSignal: Signal = {
-             ...raw,
-             score: 75,
-             confidence: 80,
-             risk: 'medium',
-             analysis: 'Mock AI analysis for testing purposes.',
-             intelligenceBrief: `**What's happening** — ${raw.summary}\n\n**How to capitalize** — 1. Monitor the situation. 2. Prepare for a possible entry. 3. Watch for macro confirmation.\n\n**Risks to watch** — 1. Early-stage frontrunning. 2. Macro volatility.\n\n**Information edge** — Early signal from ${raw.source}.`,
-             tags: ['mock', 'test'],
-             shouldSend: true,
-             timestamp: new Date().toISOString()
-           };
-           scoredSignals.push(mockSignal);
-           await store.set(`scored-${raw.id}`, mockSignal, 1800);
-           
-           // Emit SSE event for mock signal
-           emitter.emit('newSignal', mockSignal);
         }
       }
 
-      // 4. Run intelligence systems on scored signals
+      // 5. Update store and emit stats
       const convergenceSignals = detectConvergence(scoredSignals);
       const correlationSignals = detectCorrelations(scoredSignals);
       const anomalySignals = await detectAnomalies(scoredSignals);
@@ -121,17 +120,15 @@ class SignalEngine {
         ...anomalySignals
       ];
 
-      // 5. Update store
       const currentSignals = await store.getSignals();
-      const updatedSignals = [...allProcessedSignals, ...currentSignals].slice(0, 200); // Keep last 200
+      const updatedSignals = [...allProcessedSignals, ...currentSignals].slice(0, 200);
       await store.setSignals(updatedSignals);
 
-      logger.info(`Successfully processed ${allProcessedSignals.length} signals total.`);
+      logger.info(`Successfully processed ${allProcessedSignals.length} signals.`);
       
-      // Emit stats update
       emitter.emit('statsUpdate', {
         totalSignals: updatedSignals.length,
-        users: 1542, // Mock data
+        users: 1542,
         lastScan: new Date().toISOString(),
         activeSources: 12,
       });

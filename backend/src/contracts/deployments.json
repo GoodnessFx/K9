@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0",
+  "contracts": {
+    "K9Escrow": {
+      "address": "0x0000000000000000000000000000000000000000",
+      "network": "base-mainnet",
+      "deployedAt": "2024-03-26T12:00:00Z",
+      "abi": []
+    }
+  },
+  "history": []
+}

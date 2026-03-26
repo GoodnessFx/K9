@@ -38,6 +38,12 @@ const envSchema = z.object({
   SIGNAL_SCAN_INTERVAL_MINUTES: z.string().default('5').transform(Number),
   MIN_SIGNAL_SCORE: z.string().default('65').transform(Number),
   MAX_SIGNALS_PER_BATCH: z.string().default('20').transform(Number),
+
+  // Sniffer config
+  PROXY_PROVIDER: z.enum(['brightdata', 'smartproxy', 'oxylabs']).optional(),
+  PROXY_USERNAME: z.string().optional(),
+  PROXY_PASSWORD: z.string().optional(),
+  PROXY_ENDPOINT: z.string().optional(),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

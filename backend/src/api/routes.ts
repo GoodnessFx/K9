@@ -3,15 +3,83 @@ import { store } from '../utils/store.js';
 import { signalEngine } from '../services/signalEngine.js';
 import { config } from '../config/index.js';
 import logger from '../utils/logger.js';
-import { getWhatsAppStatus, sendTestMessage, sendSignalToWhatsApp } from '../notifications/whatsapp.js';
+import { getWhatsAppStatus, sendWhatsApp } from '../notifications/whatsapp.js';
 import { emitter } from '../utils/events.js';
 import axios from 'axios';
+import { VettingService } from '../verify/VettingService.js';
+import { MatchingService } from '../matching/MatchingService.js';
+import { ProofService } from '../proof/ProofService.js';
+import { AuditLogService, AuditAction } from '../utils/auditLogger.js';
+import * as schemas from './validation.js';
 
 const router = Router();
+const vettingService = new VettingService();
+const matchingService = new MatchingService();
+const proofService = new ProofService();
 
 const ok = (res: any, data: any) => res.json({ status: 'ok', data });
 const err = (res: any, message: string, code = 400) => res.status(code).json({ status: 'error', error: message });
 
+// --- MODULE 1: LISTINGS ---
+router.get('/listings', async (req, res) => {
+  const query = schemas.listingQuerySchema.safeParse(req.query);
+  if (!query.success) return err(res, query.error.message);
+  
+  const signals = await store.getSignals();
+  const listings = signals.filter(s => s.category === 'jobs' || s.category === 'free');
+  ok(res, listings.slice(0, query.data.limit));
+});
+
+// --- MODULE 2: VERIFY (KYB/KYC) ---
+router.post('/verify/company', async (req, res) => {
+  const body = schemas.verifyCompanySchema.safeParse(req.body);
+  if (!body.success) return err(res, body.error.message);
+
+  const result = await vettingService.verifyCompany(body.data);
+  
+  await AuditLogService.log({
+    action: result.isVerified ? AuditAction.VERIFICATION_APPROVED : AuditAction.VERIFICATION_REVOKED,
+    actor: (req as any).walletAddress || 'SYSTEM',
+    targetId: body.data.website,
+    details: { score: result.score, reasons: result.reasons }
+  });
+
+  ok(res, result);
+});
+
+router.post('/verify/talent/github', async (req, res) => {
+  const body = schemas.verifyTalentSchema.safeParse(req.body);
+  if (!body.success) return err(res, body.error.message);
+
+  const result = await vettingService.verifyTalentGitHub(body.data.username);
+  
+  await AuditLogService.log({
+    action: result.isVerified ? AuditAction.VERIFICATION_APPROVED : AuditAction.VERIFICATION_REVOKED,
+    actor: (req as any).walletAddress || 'SYSTEM',
+    targetId: body.data.username,
+    details: { score: result.skillConfidenceScore, badges: result.badges }
+  });
+
+  ok(res, result);
+});
+
+// --- MODULE 3: PROOF & PULSE ---
+router.get('/pulse', async (_req, res) => {
+  const records = await store.get('outcome_records') || [];
+  ok(res, records);
+});
+
+// --- MODULE 5: MATCHING ---
+router.post('/match', async (req, res) => {
+  const body = schemas.matchSchema.safeParse(req.body);
+  if (!body.success) return err(res, body.error.message);
+
+  const { talent, job, complexity } = body.data;
+  const result = await matchingService.matchTalentToJob(talent, job, complexity);
+  ok(res, result);
+});
+
+// --- EXISTING ROUTES ---
 // GET /api/stream — SSE for real-time updates
 router.get('/stream', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
@@ -78,16 +146,23 @@ async function getTelegramStatus() {
 
 // POST /api/notifications/whatsapp/connect
 router.post('/notifications/whatsapp/connect', async (req, res) => {
-  const { instanceId, token, phoneNumber } = req.body;
-  if (!instanceId || !token || !phoneNumber) {
-    return err(res, 'instanceId, token, and phoneNumber are required');
-  }
+  const body = schemas.notificationStatusSchema.safeParse(req.body);
+  if (!body.success) return err(res, body.error.message);
+
+  const { instanceId, token, phoneNumber } = body.data;
 
   process.env.GREEN_API_INSTANCE_ID = instanceId;
   process.env.GREEN_API_TOKEN = token;
   process.env.MY_WHATSAPP_NUMBER = phoneNumber;
 
   const status = await getWhatsAppStatus();
+  
+  await AuditLogService.log({
+    action: AuditAction.AUTH_SUCCESS,
+    actor: (req as any).walletAddress || 'SYSTEM',
+    details: { service: 'WhatsApp', phoneNumber }
+  });
+
   ok(res, status);
 });
 
@@ -277,13 +352,21 @@ router.get('/health', (_req, res) => {
 
 // POST /api/scan — Security scan
 router.post('/scan', async (req, res) => {
-  const { address, chain } = req.body;
-  if (!address || !chain) {
-    return res.status(400).json({ error: 'Address and chain are required' });
-  }
+  const body = schemas.scanSchema.safeParse(req.body);
+  if (!body.success) return err(res, body.error.message);
+
+  const { address, chain } = body.data;
 
   try {
     const analysis = await require('../services/security').analyzeContract(address, chain);
+    
+    await AuditLogService.log({
+      action: AuditAction.VERIFICATION_APPROVED,
+      actor: (req as any).walletAddress || 'SYSTEM',
+      targetId: address,
+      details: { chain, score: analysis.score }
+    });
+
     res.json(analysis);
   } catch (error) {
     logger.error('Error in security scan:', error);

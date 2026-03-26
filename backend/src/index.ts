@@ -9,7 +9,15 @@ import { startBot } from './telegram/bot.js';
 import { initScheduler } from './services/scheduler.js';
 import logger from './utils/logger.js';
 
+import { createServer } from 'http';
+import { NotificationService } from './services/notificationService.js';
+import { authenticateWallet } from './api/authMiddleware.js';
+
 const app = express();
+const httpServer = createServer(app);
+
+// Initialize Notification Service (WebSockets)
+new NotificationService(httpServer);
 
 // Rate limiting
 const limiter = rateLimit({
@@ -40,6 +48,17 @@ app.use(helmet({
   },
 }));
 
+// Enforce HTTPS in production
+if (config.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    if (req.header('x-forwarded-proto') !== 'https') {
+      res.redirect(`https://${req.header('host')}${req.url}`);
+    } else {
+      next();
+    }
+  });
+}
+
 app.use(cors({ 
   origin: config.NODE_ENV === 'production' ? config.FRONTEND_URL : 'http://localhost:5173',
   credentials: true
@@ -47,6 +66,16 @@ app.use(cors({
 
 app.use(express.json());
 app.use('/api', limiter);
+
+// Apply wallet authentication to all sensitive API routes
+app.use('/api/verify', authenticateWallet);
+app.use('/api/contracts', authenticateWallet);
+app.use('/api/proof', authenticateWallet);
+app.use('/api/signals', authenticateWallet);
+app.use('/api/stats', authenticateWallet);
+app.use('/api/match', authenticateWallet);
+app.use('/api/broadcast', authenticateWallet);
+app.use('/api/scan/run', authenticateWallet);
 
 // Apply strict limiter to sensitive routes
 app.use('/api/scan', strictLimiter);
@@ -62,7 +91,7 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 });
 
 // Start server
-app.listen(config.PORT, () => {
+httpServer.listen(config.PORT, () => {
   logger.info(`🚀 Server running on http://localhost:${config.PORT}`);
   logger.info(`🌍 NODE_ENV: ${config.NODE_ENV}`);
 });
