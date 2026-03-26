@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react';
  import Saved from './pages/Saved'; 
  import AirdropsPage from './pages/Airdrops'; 
  import JobsPage from './pages/Jobs'; 
+ import EscrowPage from './pages/Escrow'; 
  import { DeveloperFeed } from './components/DeveloperFeed'; 
  import { CommunityHub }  from './components/CommunityHub'; 
  import { Onboarding } from './components/Onboarding'; 
@@ -43,6 +44,7 @@ import { useState, useEffect } from 'react';
                <Route path="/airdrops"    element={<AirdropsPage />} /> 
                <Route path="/free-money"  element={<AirdropsPage />} /> 
                <Route path="/jobs"        element={<JobsPage />} /> 
+               <Route path="/escrow"      element={<EscrowPage />} /> 
                <Route path="/hunt"        element={<Radar />} /> 
                <Route path="/verify"      element={<ScannerPage />} /> 
                <Route path="/saved"       element={<Saved />} /> 

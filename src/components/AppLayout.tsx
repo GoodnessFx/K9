@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom'; 
 import { motion, AnimatePresence } from 'framer-motion'; 
 import { 
-  Zap, DollarSign, Briefcase, Crosshair, ShieldCheck, 
+  Zap, DollarSign, Briefcase, Lock, Crosshair, ShieldCheck, 
   Bookmark, Bell, Settings as SettingsIcon, Users, 
   Menu, X, ChevronLeft, LogOut, 
 } from 'lucide-react'; 
@@ -13,6 +13,7 @@ const NAV = [
   { path: '/feed',       label: 'Dispatch',    Icon: Zap }, 
   { path: '/airdrops',   label: 'Airdrops',    Icon: DollarSign }, 
   { path: '/jobs',       label: 'Jobs',        Icon: Briefcase }, 
+  { path: '/escrow',     label: 'Escrow',      Icon: Lock }, 
   { path: '/hunt',       label: 'Hunt',        Icon: Crosshair }, 
   { path: '/verify',     label: 'Is It Safe?', Icon: ShieldCheck }, 
   { path: '/saved',      label: 'Saved',       Icon: Bookmark }, 

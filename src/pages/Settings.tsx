@@ -10,15 +10,15 @@ import { useMutation } from '@tanstack/react-query';
 import { api } from '../api'; 
  
 const C = { 
-  bg:    '#1a1a1a', 
-  card:  'rgba(255,255,255,0.03)', 
-  inset: 'rgba(0,0,0,0.2)', 
-  border:     'rgba(255,255,255,0.08)', 
+  bg:    'var(--background)', 
+  card:  'var(--card)', 
+  inset: 'var(--muted)', 
+  border:     'var(--border)', 
   borderHover: 'rgba(255,255,255,0.14)', 
-  t1: '#ececec', t2: '#8a8a8a', t3: '#555', 
-  blue:  '#5b8cf5', green: '#22c55e', red: '#ef4444', 
-  f: "'Inter', -apple-system, sans-serif", 
-  m: "'DM Mono', monospace", 
+  t1: 'var(--foreground)', t2: 'var(--muted-foreground)', t3: '#555', 
+  blue:  'var(--color-intel)', green: 'var(--color-safe)', red: 'var(--color-critical)', 
+  f: "var(--font-sans)", 
+  m: "var(--font-mono)", 
 }; 
  
 // ── Shared input style ────────────────────────────────────── 
@@ -165,6 +165,7 @@ function ProfileTab() {
   const [name,   setName]   = useState(() => load('k9_profile_name',   '')); 
   const [phone,  setPhone]  = useState(() => load('k9_user_phone',     '')); 
   const [email,  setEmail]  = useState(() => load('k9_profile_email',  '')); 
+  const [skills, setSkills] = useState<string>(() => load('k9_profile_skills', ''));
   const [channel, setChannel] = useState<'whatsapp'|'telegram'>(() => load('k9_user_channel', 'whatsapp')); 
   const [avatar, setAvatar] = useState<string>(() => load('k9_profile_avatar', '')); 
   const fileRef = useRef<HTMLInputElement>(null); 
@@ -189,8 +190,9 @@ function ProfileTab() {
     save('k9_profile_name',   name); 
     save('k9_user_phone',     phone); 
     save('k9_profile_email',  email); 
+    save('k9_profile_skills', skills);
     save('k9_user_channel',   channel); 
-    toast.success('Profile saved'); 
+    toast.success('Profile saved', { description: 'Skill-matching engine updated.' }); 
   } 
  
   const displayName = name || 'K9 User'; 
@@ -198,7 +200,7 @@ function ProfileTab() {
  
   return ( 
     <Card> 
-      <SectionHead label="My Profile" Icon={User} /> 
+      <SectionHead label="Professional Profile" Icon={User} /> 
  
       <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: 24 }}> 
         {/* Avatar */} 
@@ -233,7 +235,7 @@ function ProfileTab() {
             </div> 
           </div> 
           <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileChange} /> 
-          <span style={{ fontSize: 10, fontFamily: C.m, color: C.t3, textAlign: 'center', lineHeight: 1.4 }}>Click to upload photo</span> 
+          <span style={{ fontSize: 10, fontFamily: C.m, color: C.t3, textAlign: 'center', lineHeight: 1.4 }}>Professional Headshot</span> 
           {avatar && ( 
             <button onClick={() => { setAvatar(''); save('k9_profile_avatar', ''); }} 
               style={{ fontSize: 11, color: C.red, background: 'none', border: 'none', cursor: 'pointer', fontFamily: C.f }}> 
@@ -244,49 +246,70 @@ function ProfileTab() {
  
         {/* Fields */} 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}> 
-          <div> 
-            <label style={LABEL}>Name</label> 
-            <input value={name} onChange={e => setName(e.target.value)} placeholder="Your name" 
-              style={INPUT} 
-              onFocus={e => { e.currentTarget.style.borderColor = 'rgba(91,140,245,0.5)'; }} 
-              onBlur={e => { e.currentTarget.style.borderColor = C.border; }} 
-            /> 
-          </div> 
-          <div> 
-            <label style={LABEL}>Phone number</label> 
-            <input value={phone} onChange={e => setPhone(e.target.value)} type="tel" placeholder="+234 801 234 5678" 
-              style={INPUT} 
-              onFocus={e => { e.currentTarget.style.borderColor = 'rgba(91,140,245,0.5)'; }} 
-              onBlur={e => { e.currentTarget.style.borderColor = C.border; }} 
-            /> 
-          </div> 
-          <div> 
-            <label style={LABEL}>Email (optional)</label> 
-            <input value={email} onChange={e => setEmail(e.target.value)} type="email" placeholder="you@example.com" 
-              style={INPUT} 
-              onFocus={e => { e.currentTarget.style.borderColor = 'rgba(91,140,245,0.5)'; }} 
-              onBlur={e => { e.currentTarget.style.borderColor = C.border; }} 
-            /> 
-          </div> 
-          <div> 
-            <label style={LABEL}>Default alert channel</label> 
-            <div style={{ display: 'flex', gap: 8 }}> 
-              {(['whatsapp', 'telegram'] as const).map(ch => ( 
-                <button key={ch} onClick={() => setChannel(ch)} 
-                  style={{ 
-                    flex: 1, padding: '8px 0', borderRadius: 7, fontSize: 13, fontFamily: C.f, 
-                    border: `1px solid ${channel === ch ? 'rgba(91,140,245,0.4)' : C.border}`, 
-                    background: channel === ch ? 'rgba(91,140,245,0.1)' : 'transparent', 
-                    color: channel === ch ? C.blue : C.t2, cursor: 'pointer', transition: 'all 0.1s', 
-                  }}> 
-                  {ch === 'whatsapp' ? 'WhatsApp' : 'Telegram'} 
-                </button> 
-              ))} 
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div> 
+              <label style={LABEL}>Full Name</label> 
+              <input value={name} onChange={e => setName(e.target.value)} placeholder="Display name" 
+                style={INPUT} 
+                onFocus={e => { e.currentTarget.style.borderColor = 'rgba(91,140,245,0.5)'; }} 
+                onBlur={e => { e.currentTarget.style.borderColor = C.border; }} 
+              /> 
             </div> 
-          </div> 
+            <div> 
+              <label style={LABEL}>Email Address</label> 
+              <input value={email} onChange={e => setEmail(e.target.value)} type="email" placeholder="you@example.com" 
+                style={INPUT} 
+                onFocus={e => { e.currentTarget.style.borderColor = 'rgba(91,140,245,0.5)'; }} 
+                onBlur={e => { e.currentTarget.style.borderColor = C.border; }} 
+              /> 
+            </div> 
+          </div>
+
+          <div> 
+            <label style={LABEL}>Skills & Stack (Comma separated)</label> 
+            <textarea 
+              value={skills} 
+              onChange={e => setSkills(e.target.value)} 
+              placeholder="React, Solidity, Node.js, UI/UX, Python..." 
+              style={{ ...INPUT, minHeight: 80, resize: 'none', padding: '12px' }} 
+              onFocus={e => { e.currentTarget.style.borderColor = 'rgba(91,140,245,0.5)'; }} 
+              onBlur={e => { e.currentTarget.style.borderColor = C.border; }} 
+            /> 
+            <p style={{ fontSize: 10, color: C.t3, marginTop: 6, fontStyle: 'italic' }}>
+              Used by the K9 matching engine to calculate your Match % for new opportunities.
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div> 
+              <label style={LABEL}>Phone number</label> 
+              <input value={phone} onChange={e => setPhone(e.target.value)} type="tel" placeholder="+234 801 234 5678" 
+                style={INPUT} 
+                onFocus={e => { e.currentTarget.style.borderColor = 'rgba(91,140,245,0.5)'; }} 
+                onBlur={e => { e.currentTarget.style.borderColor = C.border; }} 
+              /> 
+            </div> 
+            <div> 
+              <label style={LABEL}>Alert Channel</label> 
+              <div style={{ display: 'flex', gap: 6 }}> 
+                {(['whatsapp', 'telegram'] as const).map(ch => ( 
+                  <button key={ch} onClick={() => setChannel(ch)} 
+                    style={{ 
+                      flex: 1, padding: '9px 0', borderRadius: 7, fontSize: 12, fontFamily: C.f, 
+                      border: `1px solid ${channel === ch ? 'rgba(91,140,245,0.4)' : C.border}`, 
+                      background: channel === ch ? 'rgba(91,140,245,0.1)' : 'transparent', 
+                      color: channel === ch ? C.blue : C.t2, cursor: 'pointer', transition: 'all 0.1s', 
+                    }}> 
+                    {ch === 'whatsapp' ? 'WhatsApp' : 'Telegram'} 
+                  </button> 
+                ))} 
+              </div> 
+            </div> 
+          </div>
+
           <button onClick={handleSave} 
-            style={{ padding: '10px 0', background: C.blue, color: '#fff', border: 'none', borderRadius: 7, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: C.f, marginTop: 4 }}> 
-            Save profile 
+            style={{ padding: '11px 0', background: C.blue, color: '#fff', border: 'none', borderRadius: 7, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: C.f, marginTop: 8 }}> 
+            Update Professional Profile 
           </button> 
         </div> 
       </div> 
@@ -435,36 +458,72 @@ function TelegramCard() {
 // ── Security Tab ───────────────────────────────────────────── 
 function SecurityTab() { 
   const [show, setShow] = useState(false); 
+  const [address, setAddress] = useState(load<string>('k9_wallet_address', ''));
+  const [signing, setSigning] = useState(false);
   const apiKey = '••••••••••••••••••••••••••••••••'; 
+
+  const connectWallet = async () => {
+    setSigning(true);
+    // Mock EIP-712 signing
+    await new Promise(r => setTimeout(r, 1200));
+    const mockAddr = '0x71C765...d897';
+    setAddress(mockAddr);
+    save('k9_wallet_address', mockAddr);
+    setSigning(false);
+    toast.success('Wallet verified via EIP-712');
+  };
  
   return ( 
-    <Card> 
-      <SectionHead label="Security" Icon={Key} /> 
-      <div> 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}> 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}> 
-            <Shield style={{ width: 12, height: 12, color: C.t3 }} /> 
-            <span style={LABEL as any}>Claude AI Engine</span> 
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <Card> 
+        <SectionHead label="Wallet Authentication" Icon={Shield} />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <p style={{ fontSize: 13, fontWeight: 500, color: C.t1, margin: '0 0 4px' }}>
+              {address ? 'Wallet Connected' : 'No Wallet Connected'}
+            </p>
+            <p style={{ fontSize: 11, color: C.t2, margin: 0 }}>
+              {address ? address : 'Use your wallet to sign in securely.'}
+            </p>
+          </div>
+          <button onClick={connectWallet} disabled={signing}
+            style={{ padding: '8px 16px', background: address ? 'rgba(255,255,255,0.05)' : C.blue, color: address ? C.t1 : '#fff', border: address ? `1px solid ${C.border}` : 'none', borderRadius: 7, fontSize: 13, fontWeight: 500, cursor: 'pointer', transition: 'all 0.1s' }}>
+            {signing ? 'Signing...' : address ? 'Change Wallet' : 'Connect & Sign'}
+          </button>
+        </div>
+        <p style={{ fontSize: 10, fontFamily: C.m, color: C.t3, marginTop: 14, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          Protocol: EIP-712 Typed Data Signing
+        </p>
+      </Card>
+
+      <Card> 
+        <SectionHead label="API Access" Icon={Key} /> 
+        <div> 
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}> 
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}> 
+              <Shield style={{ width: 12, height: 12, color: C.t3 }} /> 
+              <span style={LABEL as any}>Claude AI Engine</span> 
+            </div> 
+            <button onClick={() => setShow(s => !s)} 
+              style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: C.blue, background: 'none', border: 'none', cursor: 'pointer', fontFamily: C.f }}> 
+              {show ? <EyeOff style={{ width: 12, height: 12 }} /> : <Eye style={{ width: 12, height: 12 }} />} 
+              {show ? 'Hide' : 'Show key'} 
+            </button> 
           </div> 
-          <button onClick={() => setShow(s => !s)} 
-            style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: C.blue, background: 'none', border: 'none', cursor: 'pointer', fontFamily: C.f }}> 
-            {show ? <EyeOff style={{ width: 12, height: 12 }} /> : <Eye style={{ width: 12, height: 12 }} />} 
-            {show ? 'Hide' : 'Show key'} 
-          </button> 
-        </div> 
-        <div style={{ position: 'relative' }}> 
-          <input type={show ? 'text' : 'password'} value={apiKey} readOnly 
-            style={{ ...INPUT, fontFamily: C.m, paddingRight: 80, opacity: 0.8 }} /> 
-          <div style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', gap: 5 }}> 
-            <div style={{ width: 6, height: 6, borderRadius: '50%', background: C.blue }} /> 
-            <span style={{ fontSize: 9, fontFamily: C.m, color: C.blue, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Verified</span> 
+          <div style={{ position: 'relative' }}> 
+            <input type={show ? 'text' : 'password'} value={apiKey} readOnly 
+              style={{ ...INPUT, fontFamily: C.m, paddingRight: 80, opacity: 0.8 }} /> 
+            <div style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', gap: 5 }}> 
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: C.blue }} /> 
+              <span style={{ fontSize: 9, fontFamily: C.m, color: C.blue, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Verified</span> 
+            </div> 
           </div> 
+          <p style={{ fontSize: 11, color: C.t3, marginTop: 10, lineHeight: 1.6, fontStyle: 'italic' }}> 
+            Keys are encrypted with AES-256. We never store raw keys. 
+          </p> 
         </div> 
-        <p style={{ fontSize: 11, color: C.t3, marginTop: 10, lineHeight: 1.6, fontStyle: 'italic' }}> 
-          Keys are encrypted with AES-256. We never store raw keys. 
-        </p> 
-      </div> 
-    </Card> 
+      </Card> 
+    </div>
   ); 
 } 
  

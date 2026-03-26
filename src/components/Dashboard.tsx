@@ -1,11 +1,11 @@
-import { useState } from 'react'; 
+import { useState, useEffect } from 'react'; 
 import { motion, AnimatePresence } from 'motion/react'; 
 import { useAlphaFeed } from '../hooks/useAlphaFeed'; 
 import { toast } from 'sonner'; 
 import { 
   RefreshCw, Search, X, ChevronRight, 
   ChevronLeft, Bookmark, ExternalLink, 
-  AlertTriangle, TrendingUp, 
+  AlertTriangle, TrendingUp, ShieldCheck, Activity
 } from 'lucide-react'; 
 import { AlphaSignal } from '../types'; 
 import { K9Logo } from './K9Logo'; 
@@ -36,7 +36,36 @@ function ago(d: Date): string {
   if (s < 86400) return `${Math.floor(s / 3600)}h ago`; 
   return `${Math.floor(s / 86400)}d ago`; 
 } 
- 
+
+function PulseRow({ record }: { record: any }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '12px 14px', borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.01)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(34,197,94,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(34,197,94,0.2)' }}>
+          <ShieldCheck style={{ width: 12, height: 12, color: '#00C87A' }} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--foreground)', margin: 0 }}>
+            {record.talentName} <span style={{ fontWeight: 400, color: 'var(--muted-foreground)' }}>verified win</span>
+          </p>
+        </div>
+        <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--muted-foreground)' }}>{ago(new Date(record.date))}</span>
+      </div>
+      
+      <div style={{ padding: '8px 10px', borderRadius: 6, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)' }}>
+        <p style={{ fontSize: 11, color: 'var(--foreground)', margin: '0 0 4px', fontWeight: 500 }}>
+          {record.skillCategory} · {record.valueTier}
+        </p>
+        {record.testimonial && (
+          <p style={{ fontSize: 10, color: 'var(--muted-foreground)', margin: 0, fontStyle: 'italic', lineHeight: 1.4 }}>
+            "{record.testimonial}"
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 const TABS = [ 
   { id: 'all',     label: 'All'          }, 
   { id: 'free',    label: 'Free Money'   }, 
@@ -345,10 +374,20 @@ export function Dashboard() {
   const [tab,    setTab]    = useState('all'); 
   const [query,  setQuery]  = useState(''); 
   const [detail, setDetail] = useState<AlphaSignal | null>(null); 
+  const [pulse,  setPulse]  = useState<any[]>([]);
   const [saved,  setSaved]  = useState<Set<string>>(() => { 
     try { return new Set(JSON.parse(localStorage.getItem('k9_saved') ?? '[]')); } 
     catch { return new Set(); } 
   }); 
+
+  // Load mock pulse data
+  useEffect(() => {
+    setPulse([
+      { id: '1', talentName: 'anon..f2a', skillCategory: 'Solidity Audit', valueTier: '$2k-10k', date: new Date(Date.now() - 3600000).toISOString(), testimonial: 'Smooth escrow process, K9 arbitration wasn\'t even needed.' },
+      { id: '2', talentName: 'oxdev', skillCategory: 'React Landing', valueTier: '$500-2k', date: new Date(Date.now() - 14400000).toISOString(), testimonial: 'Fast verification, got my badge and the gig in 24h.' },
+      { id: '3', talentName: 'crypto_ninja', skillCategory: 'UI/UX Design', valueTier: '$10k+', date: new Date(Date.now() - 86400000).toISOString(), testimonial: 'K9 is the only place where proof of work actually matters.' },
+    ]);
+  }, []);
  
   function toggleSave(id: string, e?: React.MouseEvent) { 
     e?.stopPropagation(); 
@@ -443,113 +482,141 @@ export function Dashboard() {
           <Stat label="Safety alerts"   value={alerts} accent={alerts > 0 ? '#EF4444' : undefined} /> 
         </div> 
  
-        {/* Search */}
-        <div style={{ position: 'relative', marginBottom: 12 }}> 
-          <Search style={{ 
-            position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', 
-            width: 13, height: 13, color: 'var(--muted-foreground)', 
-          }} /> 
-          <input 
-            value={query} 
-            onChange={e => setQuery(e.target.value)} 
-            placeholder="Search opportunities, tokens, projects…" 
-            style={{ 
-              width: '100%', padding: '9px 36px 9px 32px', 
-              border: '1px solid var(--border)', borderRadius: 8, 
-              background: 'var(--background)', color: 'var(--foreground)', 
-              fontSize: 13, outline: 'none', boxSizing: 'border-box', 
-            }} 
-          /> 
-          {query && ( 
-            <button 
-              onClick={() => setQuery('')} 
-              style={{ 
-                position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', 
-                border: 'none', background: 'none', cursor: 'pointer', 
-                color: 'var(--muted-foreground)', padding: 2, 
-              }} 
-            > 
-              <X style={{ width: 13, height: 13 }} /> 
-            </button> 
-          )} 
-        </div> 
- 
-        {/* Tabs — scroll on mobile */}
-        <div style={{ 
-          display: 'flex', gap: 6, overflowX: 'auto', 
-          scrollbarWidth: 'none', paddingBottom: 2, marginBottom: 14, 
-        }} className="filter-scroll"> 
-          {TABS.map(t => ( 
-            <button 
-              key={t.id} 
-              onClick={() => setTab(t.id)} 
-              style={{ 
-                padding: '6px 14px', borderRadius: 20, fontSize: 12, 
-                cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, 
-                border: `1px solid ${tab === t.id ? '#8B5CF6' : 'var(--border)'}`, 
-                background: tab === t.id ? 'rgba(139,92,246,0.12)' : 'transparent', 
-                color: tab === t.id ? '#8B5CF6' : 'var(--muted-foreground)', 
-                fontWeight: tab === t.id ? 600 : 400, 
-                transition: 'all 0.12s', 
-              }} 
-            > 
-              {t.label} 
-            </button> 
-          ))} 
-        </div> 
- 
-        {/* Count */}
-        <p style={{ fontSize: 11, color: 'var(--muted-foreground)', margin: '0 0 8px' }}> 
-          Showing {shown.length} of {signals.length} 
-          {query && ` matching "${query}"`} 
-        </p> 
- 
-        {/* Error */}
-        {error && ( 
-          <div style={{ 
-            padding: '12px 16px', borderRadius: 8, marginBottom: 12, 
-            border: '1px solid #EF4444', background: 'rgba(239,68,68,0.08)', 
-            display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, 
-          }}> 
-            <AlertTriangle style={{ width: 13, height: 13, color: '#EF4444', flexShrink: 0 }} /> 
-            <span style={{ flex: 1 }}>{error}</span> 
-            <button 
-              onClick={refreshFeed} 
-              style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#8B5CF6', fontSize: 12 }} 
-            > 
-              Retry 
-            </button> 
-          </div> 
-        )} 
- 
-        {/* List */}
-        <div style={{ 
-          border: '1px solid var(--border)', borderRadius: 10, 
-          overflow: 'hidden', background: 'var(--card)', 
-        }}> 
-          {loading && ( 
-            <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--muted-foreground)', fontSize: 13 }}> 
-              K9 is sniffing… 
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 32 }}>
+          {/* Main Feed */}
+          <div>
+            {/* Search */}
+            <div style={{ position: 'relative', marginBottom: 12 }}> 
+              <Search style={{ 
+                position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', 
+                width: 13, height: 13, color: 'var(--muted-foreground)', 
+              }} /> 
+              <input 
+                value={query} 
+                onChange={e => setQuery(e.target.value)} 
+                placeholder="Search opportunities, tokens, projects…" 
+                style={{ 
+                  width: '100%', padding: '9px 36px 9px 32px', 
+                  border: '1px solid var(--border)', borderRadius: 8, 
+                  background: 'var(--background)', color: 'var(--foreground)', 
+                  fontSize: 13, outline: 'none', boxSizing: 'border-box', 
+                }} 
+              /> 
+              {query && ( 
+                <button 
+                  onClick={() => setQuery('')} 
+                  style={{ 
+                    position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', 
+                    border: 'none', background: 'none', cursor: 'pointer', 
+                    color: 'var(--muted-foreground)', padding: 2, 
+                  }} 
+                > 
+                  <X style={{ width: 13, height: 13 }} /> 
+                </button> 
+              )} 
             </div> 
-          )} 
-          {!loading && shown.length === 0 && ( 
-            <div style={{ padding: '48px 20px', textAlign: 'center' }}> 
-              <TrendingUp style={{ width: 28, height: 28, color: 'var(--muted-foreground)', margin: '0 auto 10px', display: 'block' }} /> 
-              <p style={{ fontSize: 13, color: 'var(--muted-foreground)', margin: 0 }}> 
-                {query ? `Nothing matches "${query}"` : 'K9 is scanning. Opportunities appear every 90 seconds.'} 
-              </p> 
+    
+            {/* Tabs — scroll on mobile */}
+            <div style={{ 
+              display: 'flex', gap: 6, overflowX: 'auto', 
+              scrollbarWidth: 'none', paddingBottom: 2, marginBottom: 14, 
+            }} className="filter-scroll"> 
+              {TABS.map(t => ( 
+                <button 
+                  key={t.id} 
+                  onClick={() => setTab(t.id)} 
+                  style={{ 
+                    padding: '6px 14px', borderRadius: 20, fontSize: 12, 
+                    cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, 
+                    border: `1px solid ${tab === t.id ? '#8B5CF6' : 'var(--border)'}`, 
+                    background: tab === t.id ? 'rgba(139,92,246,0.12)' : 'transparent', 
+                    color: tab === t.id ? '#8B5CF6' : 'var(--muted-foreground)', 
+                    fontWeight: tab === t.id ? 600 : 400, 
+                    transition: 'all 0.12s', 
+                  }} 
+                > 
+                  {t.label} 
+                </button> 
+              ))} 
             </div> 
-          )} 
-          {shown.map(s => ( 
-            <Row 
-              key={s.id} 
-              s={s} 
-              onClick={() => setDetail(s)} 
-              saved={saved.has(s.id)} 
-              onSave={e => toggleSave(s.id, e)} 
-            /> 
-          ))} 
-        </div> 
+    
+            {/* Count */}
+            <p style={{ fontSize: 11, color: 'var(--muted-foreground)', margin: '0 0 8px' }}> 
+              Showing {shown.length} of {signals.length} 
+              {query && ` matching "${query}"`} 
+            </p> 
+    
+            {/* Error */}
+            {error && ( 
+              <div style={{ 
+                padding: '12px 16px', borderRadius: 8, marginBottom: 12, 
+                border: '1px solid #EF4444', background: 'rgba(239,68,68,0.08)', 
+                display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, 
+              }}> 
+                <AlertTriangle style={{ width: 13, height: 13, color: '#EF4444', flexShrink: 0 }} /> 
+                <span style={{ flex: 1 }}>{error}</span> 
+                <button 
+                  onClick={refreshFeed} 
+                  style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#8B5CF6', fontSize: 12 }} 
+                > 
+                  Retry 
+                </button> 
+              </div> 
+            )} 
+    
+            {/* List */}
+            <div style={{ 
+              border: '1px solid var(--border)', borderRadius: 10, 
+              overflow: 'hidden', background: 'var(--card)', 
+            }}> 
+              {loading && ( 
+                <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--muted-foreground)', fontSize: 13 }}> 
+                  K9 is sniffing… 
+                </div> 
+              )} 
+              {!loading && shown.length === 0 && ( 
+                <div style={{ padding: '48px 20px', textAlign: 'center' }}> 
+                  <TrendingUp style={{ width: 28, height: 28, color: 'var(--muted-foreground)', margin: '0 auto 10px', display: 'block' }} /> 
+                  <p style={{ fontSize: 13, color: 'var(--muted-foreground)', margin: 0 }}> 
+                    {query ? `Nothing matches "${query}"` : 'K9 is scanning. Opportunities appear every 90 seconds.'} 
+                  </p> 
+                </div> 
+              )} 
+              {shown.map(s => ( 
+                <Row 
+                  key={s.id} 
+                  s={s} 
+                  onClick={() => setDetail(s)} 
+                  saved={saved.has(s.id)} 
+                  onSave={e => toggleSave(s.id, e)} 
+                /> 
+              ))} 
+            </div> 
+          </div>
+
+          {/* Sidebar: K9 Pulse */}
+          <aside>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}> 
+              <Activity size={16} color="#00C87A" /> 
+              <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', margin: 0 }}>K9 Pulse</h2> 
+            </div> 
+            <div style={{ border: '1px solid var(--border)', borderRadius: 12, background: 'var(--card)', overflow: 'hidden' }}> 
+              {pulse.map(r => (
+                <PulseRow key={r.id} record={r} />
+              ))}
+              <button style={{ width: '100%', padding: '12px', border: 'none', background: 'transparent', color: '#8B5CF6', fontSize: 12, fontWeight: 500, cursor: 'pointer', textAlign: 'center' }}>
+                View All Outcomes
+              </button>
+            </div> 
+
+            <div style={{ marginTop: 24, padding: 16, borderRadius: 12, background: 'rgba(139,92,246,0.05)', border: '1px solid rgba(139,92,246,0.1)' }}>
+              <p style={{ fontSize: 10, fontWeight: 700, color: '#8B5CF6', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px' }}>Trust Signal</p>
+              <p style={{ fontSize: 12, color: 'var(--muted-foreground)', margin: 0, lineHeight: 1.5 }}>
+                Always check the Match Score % before applying. Verified listings carry the <ShieldCheck size={10} style={{ display: 'inline', verticalAlign: 'middle' }} /> badge.
+              </p>
+            </div>
+          </aside>
+        </div>
       </div> 
  
       {/* Detail overlay */}

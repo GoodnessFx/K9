@@ -1,18 +1,18 @@
 import { useMemo, useState } from 'react'; 
 import { motion } from 'framer-motion'; 
 import { useK9DataEngine, K9Signal } from '../hooks/useK9DataEngine'; 
-import { ExternalLink, RefreshCw, Bookmark, Send } from 'lucide-react'; 
+import { ExternalLink, RefreshCw, Bookmark, Send, ShieldCheck } from 'lucide-react'; 
 import { toast } from 'sonner'; 
  
 const C = { 
-  card:  'rgba(255,255,255,0.03)', 
-  elv:   'rgba(255,255,255,0.05)', 
-  border:      'rgba(255,255,255,0.08)', 
+  card:  'var(--card)', 
+  elv:   'var(--accent)', 
+  border:      'var(--border)', 
   borderHover: 'rgba(255,255,255,0.14)', 
-  t1: '#ececec', t2: '#8a8a8a', t3: '#555', 
-  green: '#22c55e', blue: '#5b8cf5', 
-  f: "'Inter', -apple-system, sans-serif", 
-  m: "'DM Mono', monospace", 
+  t1: 'var(--foreground)', t2: 'var(--muted-foreground)', t3: '#555', 
+  green: '#00C87A', blue: '#8B5CF6', 
+  f: "var(--font-sans)", 
+  m: "var(--font-mono)", 
 }; 
  
 function timeAgo(d: Date) { 
@@ -26,6 +26,25 @@ function timeAgo(d: Date) {
 function isNoExp(s: K9Signal) { 
   return /community|moderator|social|writer|translator|content|discord/i.test(s.title + ' ' + (s.summary ?? '')); 
 } 
+
+function MatchBadge({ score }: { score: number }) {
+  const color = score >= 80 ? 'var(--color-safe)' : score >= 60 ? 'var(--color-medium)' : 'var(--color-critical)';
+  return (
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 12, background: `color-mix(in srgb, ${color} 15%, transparent)`, border: `1px solid color-mix(in srgb, ${color} 30%, transparent)` }}>
+      <span style={{ fontSize: 10, fontFamily: "var(--font-mono)", color, fontWeight: 600 }}>{score}% MATCH</span>
+    </div>
+  );
+}
+
+function VerifiedBadge() {
+  const color = 'var(--color-safe)';
+  return (
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 12, background: `color-mix(in srgb, ${color} 10%, transparent)`, border: `1px solid color-mix(in srgb, ${color} 20%, transparent)` }}>
+      <ShieldCheck style={{ width: 10, height: 10, color }} />
+      <span style={{ fontSize: 10, fontFamily: "var(--font-mono)", color, fontWeight: 600 }}>VERIFIED</span>
+    </div>
+  );
+}
  
 export default function JobsPage() { 
   const { signals, loading, refreshNow, activeSources, totalSources } = useK9DataEngine(); 
@@ -78,11 +97,11 @@ export default function JobsPage() {
           <div> 
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '3px 10px', borderRadius: 20, background: 'rgba(91,140,245,0.1)', border: '1px solid rgba(91,140,245,0.2)', marginBottom: 10 }}> 
               <div style={{ width: 5, height: 5, borderRadius: '50%', background: C.green, boxShadow: `0 0 4px ${C.green}` }} /> 
-              <span style={{ fontSize: 10, fontFamily: C.m, color: C.blue, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Live scanning</span> 
+              <span style={{ fontSize: 10, fontFamily: C.m, color: C.blue, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Trust-First Marketplace</span> 
             </div> 
             <h1 style={{ fontSize: 22, fontWeight: 600, color: C.t1, margin: '0 0 4px', letterSpacing: '-0.3px' }}>Jobs</h1> 
             <p style={{ fontSize: 13, color: C.t2, margin: 0 }}> 
-              {activeSources}/{totalSources} sources · Remote crypto jobs 
+              {activeSources}/{totalSources} sources · Real work, verified people 
             </p> 
           </div> 
           <button onClick={refreshNow} disabled={loading} 
@@ -96,13 +115,13 @@ export default function JobsPage() {
       {/* Stats */} 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 8, marginBottom: 20 }}> 
         {[ 
-          { label: 'Open roles',     value: stats.total,  color: C.t1 }, 
-          { label: 'Remote only',    value: stats.remote, color: C.t1 }, 
-          { label: 'No exp needed',  value: stats.noExp,  color: C.green }, 
-        ].map((st, i) => ( 
+          { label: 'Verified roles', value: stats.total,  color: C.t1 }, 
+          { label: 'Remote gigs',    value: stats.remote, color: C.t1 }, 
+          { label: 'No experience',  value: stats.noExp,  color: C.t1 }, 
+        ].map((s, i) => ( 
           <div key={i} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 8, padding: '12px 16px' }}> 
-            <p style={{ fontSize: 10, fontFamily: C.m, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 4px' }}>{st.label}</p> 
-            <p style={{ fontSize: 22, fontWeight: 600, color: st.color, margin: 0 }}>{st.value}</p> 
+            <p style={{ fontSize: 10, fontFamily: C.m, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 4px' }}>{s.label}</p> 
+            <p style={{ fontSize: 18, fontWeight: 600, color: s.color, margin: 0 }}>{s.value}</p> 
           </div> 
         ))} 
       </div> 
@@ -147,6 +166,8 @@ export default function JobsPage() {
                       {s.source} 
                     </span> 
                     <span style={{ fontSize: 10, color: C.t3 }}>· {timeAgo(s.timestamp)}</span> 
+                    {s.confidence >= 80 && <VerifiedBadge />}
+                    <MatchBadge score={s.confidence} />
                     {noExpTag && ( 
                       <span style={{ fontSize: 9, fontFamily: C.m, color: C.green, textTransform: 'uppercase', letterSpacing: '0.06em', background: 'rgba(34,197,94,0.1)', padding: '1px 5px', borderRadius: 3 }}> 
                         No exp 
