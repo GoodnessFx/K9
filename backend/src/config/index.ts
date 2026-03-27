@@ -30,6 +30,9 @@ const envSchema = z.object({
   COINGECKO_API_KEY: z.string().optional(),
   ETHERSCAN_API_KEY: z.string().optional(),
   GITHUB_TOKEN: z.string().optional(),
+  IMMUNEFI_API_KEY: z.string().optional(),
+  BIRDEYE_API_KEY: z.string().optional(),
+  GOPLUS_API_KEY: z.string().optional(),
 
   // Frontend
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),

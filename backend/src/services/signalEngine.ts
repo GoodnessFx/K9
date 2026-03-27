@@ -7,6 +7,7 @@ import { scrapeGitHub } from '../scrapers/github.js';
 import { scrapePolymarket } from '../scrapers/polymarket.js';
 import { scrapeFreeMoney } from '../scrapers/freeOpportunities.js';
 import { scrapeJobs } from '../scrapers/jobs.js';
+import { scrapeBounties } from '../scrapers/bounties.js';
 import { scrapeGDELT } from '../scrapers/gdelt.js';
 import { scrapeHackerNews } from '../scrapers/hackernews.js';
 import { scrapeArxiv } from '../scrapers/arxiv.js';
@@ -23,12 +24,35 @@ import { OpportunityWorker } from '../workers/OpportunityWorker.js';
 
 import { FilterService } from '../filter/FilterService.js';
 import { MatchingService } from '../matching/MatchingService.js';
+import { analyzeContract } from './security.js';
+import axios from 'axios';
 
 class SignalEngine {
   private isScanning = false;
   private opportunityWorker = new OpportunityWorker();
   private filterService = new FilterService();
   private matchingService = new MatchingService();
+
+  /**
+   * Verify if a URL is alive before surfacing it.
+   */
+  private async verifyLink(url: string): Promise<boolean> {
+    if (!url || url === '#' || url.startsWith('javascript:')) return false;
+    try {
+      // Basic check: head request to see if it exists
+      const res = await axios.head(url, { timeout: 3000, validateStatus: (s) => s < 400 });
+      return res.status < 400;
+    } catch (e) {
+      // Fallback to GET if HEAD is not allowed
+      try {
+        const res = await axios.get(url, { timeout: 3000, validateStatus: (s) => s < 400 });
+        return res.status < 400;
+      } catch (e2) {
+        logger.warn(`DROPPED: dead link - ${url}`);
+        return false;
+      }
+    }
+  }
 
   async runScan() {
     if (this.isScanning) {
@@ -59,6 +83,7 @@ class SignalEngine {
         scrapePolymarket(),
         scrapeFreeMoney(),
         scrapeJobs(),
+        scrapeBounties(),
         scrapeGDELT(),
         scrapeHackerNews(),
         scrapeArxiv(),
@@ -99,9 +124,66 @@ class SignalEngine {
           // Combine AI score with Filter score
           scored.score = Math.round((scored.score + filterScore) / 2);
 
-          if (scored.score >= 65) {
-            scored.intelligenceBrief = await generateIntelligenceBrief(scored);
+          // 1. Drop signals below 70 CONF (Signal Quality Upgrade)
+          if (scored.score < 70) {
+            logger.info(`DROPPED: Signal ${scored.id} score too low (${scored.score})`);
+            continue;
+          }
+
+          // 2. Convergence Bonus (The secret weapon)
+          // Already handled partially in detectConvergence, but we can boost individual signals here
+          // if they match recent signals from other sources
+          const currentSignals = await store.getSignals();
+          const matches = currentSignals.filter(s => 
+            s.id !== scored.id && 
+            (s.title.toLowerCase().includes(scored.title.toLowerCase()) || 
+             (scored.tokenSymbol && s.tokenSymbol === scored.tokenSymbol))
+          );
+          if (matches.length >= 1) {
+            scored.score += 20;
+            scored.isConvergence = true;
+            logger.info(`BOOST: Signal ${scored.id} score boosted by convergence (+20)`);
+          }
+
+          // 3. Safety Filter (Protect the money)
+          if (scored.category === 'defi' || scored.category === 'token_launch') {
+            const tokenAddr = scored.metadata?.tokenAddress;
+            if (tokenAddr) {
+              const safety = await analyzeContract(tokenAddr, scored.chain || '1');
+              if (safety.overallRisk === 'critical') {
+                logger.info(`DROPPED: Signal ${scored.id} failed safety check (Critical Risk)`);
+                continue;
+              }
+              // Adjust score based on safety (bonus for low risk)
+              if (safety.overallRisk === 'low') scored.score += 10;
+            }
+          }
+
+          // 5. Link Verification (One Card. One Link. Real Money.)
+          const isAlive = await this.verifyLink(scored.url);
+          if (!isAlive) {
+            continue; // Dropped already logged in verifyLink
+          }
+
+          // Generate Intelligence Brief for 70+
+          scored.intelligenceBrief = await generateIntelligenceBrief(scored);
+          
+          // 6. WhatsApp/Telegram Alert for 70+
+          if (scored.intelligenceBrief) {
+            const msg = `🚨 *K9 HIGH SIGNAL OPPORTUNITY (${scored.score}%)*\n\n${scored.intelligenceBrief}`;
+            // Call existing notification service
+            await require('./notificationService').broadcastSignal(msg, scored.category);
+          }
+
+          // IMMEDIATE BROADCAST: Ensure the signal lands in the right UI bucket
+            // Map SignalCategory to frontend tab IDs if necessary
             emitter.emit('newSignal', scored);
+            
+            // Specific category emissions for high-priority streams
+            if (scored.category === 'jobs') emitter.emit('newJob', scored);
+            if (scored.category === 'airdrop' || scored.category === 'free') emitter.emit('newAirdrop', scored);
+            
+            logger.info(`📡 Broadcasted high-signal opportunity: ${scored.title} (${scored.category})`);
           }
 
           scoredSignals.push(scored);
