@@ -1,9 +1,9 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { store } from '../utils/store.js';
 import { signalEngine } from '../services/signalEngine.js';
 import { config } from '../config/index.js';
 import logger from '../utils/logger.js';
-import { getWhatsAppStatus, sendWhatsApp } from '../notifications/whatsapp.js';
+import { getWhatsAppStatus, sendWhatsApp, sendTestMessage, sendSignalToWhatsApp } from '../notifications/whatsapp.js';
 import { emitter } from '../utils/events.js';
 import axios from 'axios';
 import { VettingService } from '../verify/VettingService.js';
@@ -17,8 +17,8 @@ const vettingService = new VettingService();
 const matchingService = new MatchingService();
 const proofService = new ProofService();
 
-const ok = (res: any, data: any) => res.json({ status: 'ok', data });
-const err = (res: any, message: string, code = 400) => res.status(code).json({ status: 'error', error: message });
+const ok = (res: Response, data: any) => res.json({ status: 'ok', data });
+const err = (res: Response, message: string, code = 400) => res.status(code).json({ status: 'error', error: message });
 
 // --- MODULE 1: LISTINGS ---
 router.get('/listings', async (req, res) => {

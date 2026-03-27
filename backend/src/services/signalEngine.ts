@@ -71,7 +71,11 @@ class SignalEngine {
       ];
       
       for (const url of snifferUrls) {
-        await this.opportunityWorker.processUrl(url);
+        try {
+          await this.opportunityWorker.processSniffJob(url);
+        } catch (e) {
+          logger.error(`Sniffer failed for ${url}`, e);
+        }
       }
 
       // 2. Fetch raw signals from all sources
@@ -102,16 +106,17 @@ class SignalEngine {
 
       // 4. Score and Filter signals
       const scoredSignals: Signal[] = [];
-      const batch = uniqueRawSignals.slice(0, config.MAX_SIGNALS_PER_BATCH);
+      const batch = uniqueRawSignals.slice(0, config.MAX_SIGNALS_PER_BATCH || 50);
 
       for (const raw of batch) {
-        // AI Scoring (Existing logic)
-        const scored = await scoreSignal(raw);
-        if (scored) {
-          // Apply K9 Filter Logic (Module 3)
+        try {
+          const scored = await scoreSignal(raw);
+          if (!scored) continue;
+
+          // Apply K9 Filter Logic
           const filterScore = this.filterService.scoreListing({
             role: scored.title,
-            company: scored.source, // Simplified mapping
+            company: scored.source,
             location: 'Remote',
             type: 'Full-time',
             pay_range: scored.metadata?.pay || 'N/A',
@@ -121,18 +126,15 @@ class SignalEngine {
             vision_parsed: false
           });
 
-          // Combine AI score with Filter score
           scored.score = Math.round((scored.score + filterScore) / 2);
 
-          // 1. Drop signals below 70 CONF (Signal Quality Upgrade)
+          // Signal Quality Upgrade: Threshold 70
           if (scored.score < 70) {
             logger.info(`DROPPED: Signal ${scored.id} score too low (${scored.score})`);
             continue;
           }
 
-          // 2. Convergence Bonus (The secret weapon)
-          // Already handled partially in detectConvergence, but we can boost individual signals here
-          // if they match recent signals from other sources
+          // Convergence Bonus
           const currentSignals = await store.getSignals();
           const matches = currentSignals.filter(s => 
             s.id !== scored.id && 
@@ -142,55 +144,43 @@ class SignalEngine {
           if (matches.length >= 1) {
             scored.score += 20;
             scored.isConvergence = true;
-            logger.info(`BOOST: Signal ${scored.id} score boosted by convergence (+20)`);
           }
 
-          // 3. Safety Filter (Protect the money)
+          // Safety Filter
           if (scored.category === 'defi' || scored.category === 'token_launch') {
             const tokenAddr = scored.metadata?.tokenAddress;
             if (tokenAddr) {
               const safety = await analyzeContract(tokenAddr, scored.chain || '1');
               if (safety.overallRisk === 'critical') {
-                logger.info(`DROPPED: Signal ${scored.id} failed safety check (Critical Risk)`);
+                logger.info(`DROPPED: Signal ${scored.id} failed safety check`);
                 continue;
               }
-              // Adjust score based on safety (bonus for low risk)
               if (safety.overallRisk === 'low') scored.score += 10;
             }
           }
 
-          // 5. Link Verification (One Card. One Link. Real Money.)
+          // Link Verification
           const isAlive = await this.verifyLink(scored.url);
-          if (!isAlive) {
-            continue; // Dropped already logged in verifyLink
-          }
+          if (!isAlive) continue;
 
-          // Generate Intelligence Brief for 70+
+          // AI Briefing
           scored.intelligenceBrief = await generateIntelligenceBrief(scored);
           
-          // 6. WhatsApp/Telegram Alert for 70+
-          if (scored.intelligenceBrief) {
-            const msg = `🚨 *K9 HIGH SIGNAL OPPORTUNITY (${scored.score}%)*\n\n${scored.intelligenceBrief}`;
-            // Call existing notification service
-            await require('./notificationService').broadcastSignal(msg, scored.category);
-          }
+          // Alerts are handled by NotificationService listening to 'newSignal'
+          // if score >= 80. For 70-79, they just appear in the feed.
 
-          // IMMEDIATE BROADCAST: Ensure the signal lands in the right UI bucket
-            // Map SignalCategory to frontend tab IDs if necessary
-            emitter.emit('newSignal', scored);
-            
-            // Specific category emissions for high-priority streams
-            if (scored.category === 'jobs') emitter.emit('newJob', scored);
-            if (scored.category === 'airdrop' || scored.category === 'free') emitter.emit('newAirdrop', scored);
-            
-            logger.info(`📡 Broadcasted high-signal opportunity: ${scored.title} (${scored.category})`);
-          }
-
+          // Real-time broadcast
+          emitter.emit('newSignal', scored);
+          if (scored.category === 'jobs') emitter.emit('newJob', scored);
+          if (scored.category === 'airdrop' || scored.category === 'free') emitter.emit('newAirdrop', scored);
+          
           scoredSignals.push(scored);
+        } catch (err) {
+          logger.error(`Error processing signal ${raw.id}:`, err);
         }
       }
 
-      // 5. Update store and emit stats
+      // 5. Advanced Analysis
       const convergenceSignals = detectConvergence(scoredSignals);
       const correlationSignals = detectCorrelations(scoredSignals);
       const anomalySignals = await detectAnomalies(scoredSignals);
@@ -206,8 +196,6 @@ class SignalEngine {
       const updatedSignals = [...allProcessedSignals, ...currentSignals].slice(0, 200);
       await store.setSignals(updatedSignals);
 
-      logger.info(`Successfully processed ${allProcessedSignals.length} signals.`);
-      
       emitter.emit('statsUpdate', {
         totalSignals: updatedSignals.length,
         users: 1542,
@@ -225,18 +213,18 @@ class SignalEngine {
   }
 
   async analyzeSecurityRisk(address: string, chain: string) {
-    // This is handled by security.ts, but can be called from here
-    return require('./security').analyzeContract(address, chain);
+    const { analyzeContract } = await import('./security.js');
+    return analyzeContract(address, chain);
   }
 
   async generateDailyDigest() {
     const signals = await store.getSignals();
     const topSignals = signals.filter(s => s.score >= 80);
-    return require('../ai/scorer').generateDailyDigest(topSignals);
+    const { generateDailyDigest } = await import('../ai/scorer.js');
+    return generateDailyDigest(topSignals);
   }
 
   private deduplicate(signals: RawSignal[]): RawSignal[] {
-
     const seen = new Set<string>();
     return signals.filter((s) => {
       const normalizedTitle = s.title.toLowerCase().trim();
@@ -248,4 +236,3 @@ class SignalEngine {
 }
 
 export const signalEngine = new SignalEngine();
-

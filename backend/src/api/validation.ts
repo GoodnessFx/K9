@@ -29,7 +29,11 @@ export const verifyTalentSchema = z.object({
 export const matchSchema = z.object({
   talent: z.any(), // Replace with specific talent shape
   job: z.any(),    // Replace with specific job shape
-  complexity: z.number().min(0).max(100),
+  complexity: z.object({
+    skillLevelRequired: z.enum(['Junior', 'Intermediate', 'Senior', 'Expert']),
+    estimatedHours: z.number(),
+    technicalStack: z.array(z.string()),
+  }),
 });
 
 // --- SCAN SCHEMAS ---
@@ -51,5 +55,5 @@ export const listingQuerySchema = z.object({
   minScore: z.string().regex(/^\d+$/).transform(Number).optional(),
   risk: z.enum(['low', 'medium', 'high', 'critical']).optional(),
   chain: z.string().optional(),
-  limit: z.string().regex(/^\d+$/).transform(Number).default('20'),
+  limit: z.preprocess((val) => val ?? '20', z.string().regex(/^\d+$/).transform(Number)),
 });

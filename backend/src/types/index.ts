@@ -40,6 +40,7 @@ export interface Signal {
   velocityMultiplier?: number;
   isConvergence?: boolean;
   intelligenceBrief?: string;
+  metadata?: Record<string, any>;
 }
 
 export interface RawSignal {

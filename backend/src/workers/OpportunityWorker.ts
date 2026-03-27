@@ -12,9 +12,9 @@ import { VettingService } from '../verify/VettingService.js';
 import { sendWhatsApp } from '../notifications/whatsapp.js';
 import logger from '../utils/logger.js';
 import { config } from '../config/index.js';
-import IORedis from 'ioredis';
+import { Redis } from 'ioredis';
 
-const connection = new IORedis(config.UPSTASH_REDIS_REST_URL, {
+const connection = new Redis(config.UPSTASH_REDIS_REST_URL, {
   maxRetriesPerRequest: null,
 });
 

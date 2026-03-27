@@ -3,7 +3,7 @@ import logger from '../utils/logger.js';
 export const scrapeArxiv = async () => {
     try {
         // arXiv API for 'crypto' search in cs.CR (cryptography and security)
-        const response = await axios.get('https://export.arxiv.org/api/query?search_query=all:crypto+blockchain+security&sortBy=lastUpdatedDate&sortOrder=descending&max_results=5');
+        await axios.get('https://export.arxiv.org/api/query?search_query=all:crypto+blockchain+security&sortBy=lastUpdatedDate&sortOrder=descending&max_results=5');
         // NOTE: This response is XML, but we can use a simple parser or just handle the raw data if needed.
         // Since we already have a robust XML parser with rss-parser, but arXiv's atom feed format might need more care.
         // For now, I'll use a simplified regex-based extractor or a placeholder.

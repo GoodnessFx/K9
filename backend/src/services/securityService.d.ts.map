@@ -1,0 +1,1 @@
+{"version":3,"file":"securityService.d.ts","sourceRoot":"","sources":["securityService.ts"],"names":[],"mappings":"AAAA;;;;GAIG;AAQH,qBAAa,eAAe;IAC1B,OAAO,CAAC,aAAa,CAAS;;IAM9B;;OAEG;IACH,qBAAqB,CACnB,OAAO,EAAE,MAAM,EACf,SAAS,EAAE,MAAM,EACjB,OAAO,EAAE,GAAG,GACX,OAAO;IAcV;;OAEG;IACH,eAAe,CAAC,OAAO,EAAE,MAAM,GAAG,MAAM;IAUxC;;OAEG;IACH,eAAe,CAAC,gBAAgB,EAAE,MAAM,GAAG,MAAM;CAUlD"}

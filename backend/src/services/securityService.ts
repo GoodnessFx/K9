@@ -4,8 +4,8 @@
  * Part of the K9 Security module.
  */
 
-import { sigUtil } from 'eth-sig-util';
-import { ethUtil } from 'ethereumjs-util';
+import sigUtil from 'eth-sig-util';
+import * as ethUtil from 'ethereumjs-util';
 import crypto from 'crypto';
 import logger from '../utils/logger.js';
 import { config } from '../config/index.js';

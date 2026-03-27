@@ -1,3 +1,3 @@
 import type { Signal } from '../types/index.js';
-export declare const detectCorrelations: (signals: Signal[]) => Signal[];
+export declare const detectCorrelations: (_signals: Signal[]) => Signal[];
 //# sourceMappingURL=correlation.d.ts.map

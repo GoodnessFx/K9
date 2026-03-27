@@ -35,6 +35,10 @@ class MemoryStore {
     async setSignals(signals) {
         await this.set('signals', signals);
     }
+    async getStats() {
+        const signals = await this.getSignals();
+        return { totalSignals: signals.length };
+    }
 }
 export const store = new MemoryStore();
 //# sourceMappingURL=store.js.map

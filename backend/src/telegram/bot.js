@@ -1,4 +1,4 @@
-import { Telegraf, Context } from 'telegraf';
+import { Telegraf } from 'telegraf';
 import { config } from '../config/index.js';
 import { store } from '../utils/store.js';
 import logger from '../utils/logger.js';
@@ -83,58 +83,61 @@ bot.command('cri', async (ctx) => {
 });
 // Helper: Format signal for Telegram HTML
 function formatSignal(signal) {
-    const emoji = getCategoryEmoji(signal.category);
-    const scoreBar = '█'.repeat(Math.floor(signal.score / 10)) + '░'.repeat(10 - Math.floor(signal.score / 10));
-    const riskEmoji = getRiskEmoji(signal.risk);
+    const categoryLabel = {
+        free: '🎁 <b>FREE MONEY ALERT</b>',
+        jobs: '💼 <b>CRYPTO JOB — No Experience Needed</b>',
+        insider: '🕵️ <b>INSIDER ALERT — Someone Knows Something</b>',
+        market: '📈 <b>MARKET OPPORTUNITY</b>',
+        prediction: '🔮 <b>PREDICTION MARKET ALERT</b>',
+    };
+    const header = categoryLabel[signal.category] || '📢 <b>K9 FOUND SOMETHING</b>';
     return `
-${emoji} <b>${signal.title.toUpperCase()}</b>
+<b>K9 found something for you</b>
+─────────────────────────────────
 
-${signal.summary}
+${header}
 
-Score: ${scoreBar} ${signal.score}/100
-Risk:  ${riskEmoji} ${signal.risk.toUpperCase()}
-Confidence: ${signal.confidence}%
-${signal.chain ? `Chain: ${signal.chain}` : ''}
-${signal.tokenSymbol ? `Token: ${signal.tokenSymbol}` : ''}
-${signal.priceTarget ? `Target: ${signal.priceTarget}` : ''}
-${signal.stopLoss ? `Stop: ${signal.stopLoss}` : ''}
-${signal.timeframe ? `Timeframe: ${signal.timeframe}` : ''}
+<b>WHAT K9 FOUND</b>
+${signal.intelligenceBrief || signal.summary}
 
-AI says: "${signal.analysis}"
+<b>CONFIDENCE:</b> ${signal.score}/100
+<b>TIME TO ACT:</b> ${signal.timeframe || 'Today only'}
 
-${signal.tags.map(t => `#${t}`).join(' ')} #${signal.category}
+<b>HOW RISKY IS THIS?</b>
+<i>${signal.risk.toUpperCase()} RISK — ${signal.analysis}</i>
 
-<a href="${signal.url}">View source →</a>
-⏰ ${new Date(signal.timestamp).toUTCString()}
+<b>WHY YOU'RE SEEING THIS EARLY</b>
+K9 found this ${signal.source} signal before it trended.
+
+<b>SOURCE:</b> ${signal.source}
+─────────────────────────────────
+K9 · <a href="https://k9.app">Stop missing opportunities</a>
   `;
 }
-function getCategoryEmoji(cat) {
-    switch (cat) {
-        case 'defi': return '🏦';
-        case 'token_launch': return '🚀';
-        case 'airdrop': return '🎁';
-        case 'whale': return '🐋';
-        case 'developer': return '👨‍💻';
-        case 'security': return '🛡️';
-        case 'polymarket': return '🔮';
-        case 'tradfi': return '📉';
-        case 'nft': return '🖼️';
-        case 'macro': return '🌍';
-        case 'stablecoin': return '⚖️';
-        case 'convergence': return '🎯';
-        case 'anomaly': return '⚠️';
-        default: return '📢';
-    }
+/*
+function getCategoryEmoji(cat: string): string {
+  const emojis: Record<string, string> = {
+    defi: '🏦',
+    security: '🛡️',
+    whale: '🐋',
+    market: '📊',
+    convergence: '⚡',
+    airdrop: '🪂',
+    jobs: '💼'
+  };
+  return emojis[cat] || '📡';
 }
-function getRiskEmoji(risk) {
-    switch (risk) {
-        case 'low': return '🟢';
-        case 'medium': return '🟡';
-        case 'high': return '🔴';
-        case 'critical': return '🔥';
-        default: return '⚪';
-    }
+
+function getRiskEmoji(risk: string): string {
+  const emojis: Record<string, string> = {
+    low: '🟢',
+    medium: '🟡',
+    high: '🟠',
+    critical: '🔴'
+  };
+  return emojis[risk] || '⚪';
 }
+*/
 export const startBot = async () => {
     if (config.TELEGRAM_BOT_TOKEN === 'placeholder') {
         logger.warn('Skipping Telegram bot start due to placeholder token');

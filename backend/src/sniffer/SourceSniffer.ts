@@ -4,8 +4,10 @@
  * Part of the K9 Stealth Sniffer module.
  */
 
-import { chromium, Browser, Page } from 'playwright-extra';
+import pkg from 'playwright-extra';
+const { chromium } = pkg;
 import stealthPlugin from 'playwright-stealth';
+import type { Browser, Page } from 'playwright';
 import Anthropic from '@anthropic-ai/sdk';
 import logger from '../utils/logger.js';
 import { config } from '../config/index.js';

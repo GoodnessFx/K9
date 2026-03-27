@@ -12,6 +12,9 @@ declare class MemoryStore {
     exists(key: string): Promise<boolean>;
     getSignals(): Promise<Signal[]>;
     setSignals(signals: Signal[]): Promise<void>;
+    getStats(): Promise<{
+        totalSignals: number;
+    }>;
 }
 export declare const store: MemoryStore;
 export {};

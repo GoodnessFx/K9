@@ -1,4 +1,4 @@
-export type SignalCategory = 'defi' | 'token_launch' | 'airdrop' | 'whale' | 'developer' | 'security' | 'polymarket' | 'tradfi' | 'nft' | 'macro' | 'stablecoin' | 'convergence' | 'anomaly';
+export type SignalCategory = 'defi' | 'token_launch' | 'airdrop' | 'free' | 'jobs' | 'insider' | 'whale' | 'developer' | 'security' | 'polymarket' | 'tradfi' | 'nft' | 'macro' | 'stablecoin' | 'convergence' | 'anomaly';
 export type RiskLevel = 'low' | 'medium' | 'high' | 'critical';
 export interface Signal {
     id: string;
@@ -21,6 +21,8 @@ export interface Signal {
     shouldSend: boolean;
     velocityMultiplier?: number;
     isConvergence?: boolean;
+    intelligenceBrief?: string;
+    metadata?: Record<string, any>;
 }
 export interface RawSignal {
     id: string;

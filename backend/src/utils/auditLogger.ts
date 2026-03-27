@@ -46,10 +46,10 @@ export class AuditLogService {
 
     // Persist to store (In a real app, this would be a dedicated DB table)
     try {
-      const logs = await store.get('audit_logs') || [];
+      const logs = await (store as any).get('audit_logs') || [];
       logs.push(fullEntry);
       // Keep only last 1000 logs in the store for performance
-      await store.set('audit_logs', logs.slice(-1000));
+      await (store as any).set('audit_logs', logs.slice(-1000));
     } catch (error) {
       logger.error('Failed to persist audit log:', error);
     }

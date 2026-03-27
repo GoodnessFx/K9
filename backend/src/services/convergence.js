@@ -6,9 +6,8 @@ export const detectConvergence = (signals) => {
     // Group by entity (protocol/token name extracted from title)
     const clusters = new Map(); // entity -> Set of sources
     recent.forEach(s => {
-        // Very basic entity extraction (can be improved with NLP/AI)
-        const words = s.title.split(' ');
-        const entity = words.find(w => w.startsWith('$')) || words[0] || 'unknown'; // Simple heuristic
+        // Basic entity extraction (e.g. token symbols, protocol names)
+        const entity = s.tokenSymbol || s.title.split(' ')[0] || 'unknown';
         if (!clusters.has(entity)) {
             clusters.set(entity, new Set());
         }
@@ -16,19 +15,19 @@ export const detectConvergence = (signals) => {
     });
     const convergenceSignals = [];
     for (const [entity, sources] of clusters.entries()) {
-        if (sources.size >= 3) {
-            // Create a convergence signal
+        if (sources.size >= 2) {
+            const isHighConviction = sources.size >= 3;
             convergenceSignals.push({
                 id: `convergence-${entity}-${Date.now()}`,
-                title: `CONVERGENCE DETECTED: ${entity}`,
-                summary: `Multi-source activity around ${entity} from ${Array.from(sources).join(', ')}.`,
+                title: `${isHighConviction ? 'HIGH CONVICTION' : 'CONVERGED'}: ${entity}`,
+                summary: `${sources.size} independent sources agreed on ${entity}. Sources: ${Array.from(sources).join(', ')}.`,
                 category: 'convergence',
-                score: 95, // Convergence signals auto-score at 85+ (user requested 85+, I'll use 95 for max impact)
-                confidence: 95,
+                score: isHighConviction ? 98 : 85,
+                confidence: isHighConviction ? 95 : 80,
                 risk: 'medium',
-                analysis: `Three or more independent sources (${Array.from(sources).join(', ')}) have reported on ${entity} in the last 2 hours. This indicates high probability alpha.`,
+                analysis: `${sources.size} independent sources reported on ${entity} within a 2-hour window. This kills noise and confirms high signal.`,
                 tags: ['convergence', entity.toLowerCase()],
-                url: '#', // Aggregated URL
+                url: '#',
                 timestamp: new Date().toISOString(),
                 source: 'ConvergenceEngine',
                 shouldSend: true,

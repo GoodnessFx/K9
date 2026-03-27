@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Lock, CheckCircle, AlertCircle, ArrowRight, DollarSign, Clock, HelpCircle, Scale } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Shield, Lock, ArrowRight, DollarSign, Clock, HelpCircle, Scale } from 'lucide-react';
 import { toast } from 'sonner';
 
 const C = {
@@ -133,9 +133,6 @@ function EscrowCard({ contract, role }: { contract: EscrowContract; role: 'buyer
     Released: C.green,
     Refunded: C.t3,
   };
-
-  const isActionable = (role === 'seller' && contract.status === 'Funded') || 
-                      (role === 'buyer' && contract.status === 'Delivered');
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}

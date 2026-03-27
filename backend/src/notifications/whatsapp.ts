@@ -68,6 +68,19 @@ export async function sendWhatsApp(chatId: string, message: string): Promise<boo
   }
 }
 
+export async function sendTestMessage(): Promise<boolean> {
+  const c = getCfg();
+  if (!c || !c.number) return false;
+  return sendWhatsApp(`${c.number}@c.us`, '🐶 K9 Test Message: Your WhatsApp alerts are now connected!');
+}
+
+export async function sendSignalToWhatsApp(signal: Signal): Promise<boolean> {
+  const c = getCfg();
+  if (!c || !c.number) return false;
+  const message = formatSignalForWhatsApp(signal);
+  return sendWhatsApp(`${c.number}@c.us`, message);
+}
+
 function formatSignalForWhatsApp(signal: Signal): string {
   const categoryLabel: Record<string, string> = {
     free: 'FREE MONEY ALERT',
@@ -103,26 +116,4 @@ function formatSignalForWhatsApp(signal: Signal): string {
   ];
 
   return lines.join('\n');
-}
-
-export async function sendSignalToWhatsApp(signal: Signal): Promise<boolean> {
-  const c = getCfg();
-  if (!c?.number) { logger.warn('WhatsApp: MY_WHATSAPP_NUMBER not set'); return false; }
-  const message = formatSignalForWhatsApp(signal);
-  return sendWhatsApp(`${c.number}@c.us`, message);
-}
-
-export async function sendTestMessage(): Promise<boolean> {
-  const c = getCfg();
-  if (!c?.number) return false;
-  const message = [
-    `K9 connected.`,
-    ``,
-    `You will receive alpha signals here.`,
-    `Score 65+ signals are delivered in real time.`,
-    `Score 80+ signals are marked high conviction.`,
-    ``,
-    `This is a test. You're set up correctly.`,
-  ].join('\n');
-  return sendWhatsApp(`${c.number}@c.us`, message);
 }
