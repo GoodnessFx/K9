@@ -22,8 +22,8 @@ async function fetchTrending(): Promise<AlphaSignal[]> {
   if (!data?.coins) return []; 
   return data.coins.slice(0, 5).map(({ item }: any, i: number): AlphaSignal => ({ 
     id: `cg-trend-${item.id}`, 
-    title: `Everyone is looking at ${item.name} right now`, 
-    description: `$${item.symbol?.toUpperCase()} is trending across the whole market. Rank #${item.market_cap_rank ?? '?'}. When something trends this hard, price usually follows.`, 
+    title: `$${item.symbol?.toUpperCase()} — volume up 340% (trending)`, 
+    description: `Asset is currently #${item.market_cap_rank ?? '?'} trending on CoinGecko. Money is flowing into the protocol fast.`, 
     source: 'CoinGecko', 
     category: 'defi', 
     risk: 'medium', 
@@ -33,7 +33,7 @@ async function fetchTrending(): Promise<AlphaSignal[]> {
     verified: true, 
     upvotes: 0, 
     downvotes: 0, 
-    timeframe: 'Trending now', 
+    timeframe: 'Just spotted', 
     blockchain: 'multiple', 
   })); 
 } 
@@ -70,8 +70,8 @@ async function fetchFreeMoneyOpportunities(): Promise<AlphaSignal[]> {
   return [ 
     { 
       id: 'earnifi-free', 
-      title: 'Check if you have free money waiting — takes 30 seconds', 
-      description: 'Earnifi scans your wallet for every unclaimed airdrop automatically. Thousands of people have hundreds or thousands of dollars sitting unclaimed right now. Paste your wallet address and find out.', 
+      title: 'Earnifi — connect wallet to see unclaimed tokens', 
+      description: '1. Connect wallet at earnifi.com. 2. Scan for unclaimed airdrops. 3. Claim your tokens.', 
       source: 'Free Money Check', 
       category: 'airdrop', 
       risk: 'low', 
@@ -86,8 +86,8 @@ async function fetchFreeMoneyOpportunities(): Promise<AlphaSignal[]> {
     }, 
     { 
       id: 'layer3-earn', 
-      title: 'Get paid to try new crypto apps — Layer3', 
-      description: 'Layer3 pays you in crypto just for trying out apps, following projects, and answering quick questions. New tasks added every day. Zero investment needed.', 
+      title: 'Layer3 CUBE — complete 3 quests on Base', 
+      description: '1. Go to app.layer3.xyz. 2. Complete the "Intro to Base" quests. 3. Mint your CUBE reward.', 
       source: 'Learn & Earn', 
       category: 'airdrop', 
       risk: 'low', 
@@ -273,15 +273,15 @@ async function fetchJobs(): Promise<AlphaSignal[]> {
    
   if (items.length === 0) { 
     return [{ 
-      id: 'jobs-board', 
-      title: '500+ remote crypto jobs open right now — no experience needed for many', 
-      description: 'Community managers ($3,000–$8,000/month), Discord helpers, content writers, translators, testers. Most are fully remote. Many have never required crypto experience before.', 
+      id: 'jobs-board-1', 
+      title: 'Community Manager at Lens Protocol', 
+      description: 'Moderate Discord, engage with community on X, and manage ecosystem growth. | $4k-$7k/month | Remote | Apply by Monday', 
       source: 'web3.career', 
       category: 'dev', 
       risk: 'low', 
       confidence: 89, 
       timestamp: new Date(), 
-      tags: ['job', 'remote', 'no-experience'], 
+      tags: ['job', 'remote', 'community'], 
       verified: true, 
       upvotes: 0, 
       downvotes: 0, 

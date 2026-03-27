@@ -152,17 +152,19 @@ function Row({ s, onClick, saved, onSave }: {
  
       {/* Right side */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}> 
-        <div style={{ textAlign: 'right' }}> 
-          <p style={{ 
-            fontSize: 14, fontWeight: 700, margin: 0, lineHeight: 1, 
-            color: s.confidence >= 85 ? '#00C87A' : 'var(--foreground)', 
-          }}> 
-            {s.confidence} 
-          </p> 
-          <p style={{ fontSize: 9, color: 'var(--muted-foreground)', margin: 0, letterSpacing: '0.06em' }}> 
-            CONF 
-          </p> 
-        </div> 
+        {s.confidence >= 70 && (
+          <div style={{ textAlign: 'right' }}> 
+            <p style={{ 
+              fontSize: 14, fontWeight: 700, margin: 0, lineHeight: 1, 
+              color: s.confidence >= 85 ? '#00C87A' : 'var(--foreground)', 
+            }}> 
+              {s.confidence} 
+            </p> 
+            <p style={{ fontSize: 9, color: 'var(--muted-foreground)', margin: 0, letterSpacing: '0.06em' }}> 
+              CONF 
+            </p> 
+          </div> 
+        )}
         <button 
           onClick={onSave} 
           style={{ 

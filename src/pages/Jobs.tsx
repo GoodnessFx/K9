@@ -189,10 +189,12 @@ export default function JobsPage() {
  
                 {/* Actions */} 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}> 
-                  <div style={{ textAlign: 'right' }}> 
-                    <div style={{ fontSize: 13, fontWeight: 700, color: s.confidence >= 85 ? C.green : C.t1 }}>{s.confidence}</div> 
-                    <div style={{ fontSize: 9, color: C.t3, fontFamily: C.m, textTransform: 'uppercase', letterSpacing: '0.06em' }}>CONF</div> 
-                  </div> 
+                  {s.confidence >= 70 && (
+                    <div style={{ textAlign: 'right' }}> 
+                      <div style={{ fontSize: 13, fontWeight: 700, color: s.confidence >= 85 ? C.green : C.t1 }}>{s.confidence}</div> 
+                      <div style={{ fontSize: 9, color: C.t3, fontFamily: C.m, textTransform: 'uppercase', letterSpacing: '0.06em' }}>CONF</div> 
+                    </div> 
+                  )}
                   <button onClick={() => sendToPhone(s)} 
                     style={{ border: 'none', background: 'none', cursor: 'pointer', color: C.t3, padding: 3, display: 'flex' }} 
                     title="Send to phone" 
